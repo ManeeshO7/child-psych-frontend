@@ -5,6 +5,25 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { questionnaireToQandA } from "@/lib/questionnaireLabels";
 
+const RED_FLAG_KEYS = [
+  "activeSuicidalThoughts",
+  "psychiatricHospitalization",
+  "psychoticSymptoms",
+  "severeAggression",
+  "legalCustodyCourt",
+  "childProtectiveServices",
+] as const;
+
+function getRecommendationStatus(
+  questionnaireData: Record<string, unknown> | null | undefined
+): "canBeRejected" | "canBeAccepted" | null {
+  if (!questionnaireData || typeof questionnaireData !== "object") return null;
+  const anyYes = RED_FLAG_KEYS.some(
+    (key) => String(questionnaireData[key] ?? "").toLowerCase() === "yes"
+  );
+  return anyYes ? "canBeRejected" : "canBeAccepted";
+}
+
 type PatientRequest = {
   id: string;
   firstName: string;
@@ -183,8 +202,24 @@ export default function DoctorRequestsList() {
               </p>
             )}
           </div>
-          {showActions ? (
-            <div className="flex flex-col gap-2">
+          <div className="flex flex-col items-end gap-2">
+            {req.questionnaireData && (() => {
+              const rec = getRecommendationStatus(req.questionnaireData);
+              if (!rec) return null;
+              return (
+                <span
+                  className={`inline-flex shrink-0 items-center rounded-full px-3 py-1.5 text-sm font-medium ${
+                    rec === "canBeRejected"
+                      ? "bg-amber-100 text-amber-800"
+                      : "bg-green-100 text-green-800"
+                  }`}
+                >
+                  {rec === "canBeRejected" ? "Can be rejected" : "Can be accepted"}
+                </span>
+              );
+            })()}
+            {showActions ? (
+            <>
               <button
                 onClick={() => approve(req.id)}
                 disabled={!!approvingId}
@@ -210,8 +245,8 @@ export default function DoctorRequestsList() {
                   {rejectingId === req.id ? "Rejecting…" : "Reject"}
                 </button>
               </div>
-            </div>
-          ) : statusBadge ? (
+            </>
+            ) : statusBadge ? (
             <span
               className={`inline-flex shrink-0 items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium ${
                 statusBadge === "accepted"
@@ -222,6 +257,7 @@ export default function DoctorRequestsList() {
               {statusBadge === "accepted" ? "Accepted" : "Rejected"}
             </span>
           ) : null}
+          </div>
         </div>
         {(req.consentAt || req.questionnaireData) && (
           <div className="mt-4 border-t border-cream-200 pt-4">

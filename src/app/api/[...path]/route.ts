@@ -53,7 +53,7 @@ async function proxy(
   let apiPath = pathname.startsWith("/api") ? pathname.slice(4) || "/" : pathname;
   if (
     !apiPath.endsWith("/") &&
-    ["/appointments", "/patient-requests", "/request-access"].includes(apiPath)
+    ["/appointments", "/patient-requests", "/request-access", "/availability"].includes(apiPath)
   ) {
     apiPath += "/";
   }
@@ -61,7 +61,7 @@ async function proxy(
   const url = `${BACKEND_URL}/api${apiPath}${search}`;
 
   const headers = new Headers();
-  request.headers.forEach((value, key) => {
+  request.headers.forEach((value: string, key: string) => {
     if (key.toLowerCase() === "host") return;
     headers.set(key, value);
   });

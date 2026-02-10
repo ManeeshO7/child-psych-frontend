@@ -1,8 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+
+// Practice timezone (California) – always show appointments in Pacific time
+const PRACTICE_TZ = "America/Los_Angeles";
 
 type Appointment = {
   id: string;
@@ -12,35 +15,119 @@ type Appointment = {
   type: string;
   notes: string | null;
   doctor?: { id: string; email: string; name: string };
+  meetLink?: string | null;
 };
+
+function formatAppointmentDateTime(iso: string): string {
+  try {
+    if (!iso) return "Date TBD";
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return "Invalid date";
+    return d.toLocaleString("en-US", {
+      timeZone: PRACTICE_TZ,
+      dateStyle: "medium",
+      timeStyle: "short",
+      hour12: true,
+    });
+  } catch {
+    return "Date error";
+  }
+}
 
 export default function PatientAppointments() {
   const router = useRouter();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [tzLabel, setTzLabel] = useState("PT");
+  const lastInteractionAtRef = useRef<Record<string, number>>({});
+
+  // Cache timezone label to avoid recalculating on every render
+  useEffect(() => {
+    try {
+      const d = new Date();
+      const tzName = d.toLocaleTimeString("en-US", {
+        timeZone: PRACTICE_TZ,
+        timeZoneName: "short",
+      });
+      const match = tzName.match(/\s([A-Z]{3,4})$/);
+      setTzLabel(match ? match[1] : "PT");
+    } catch {
+      setTzLabel("PT");
+    }
+  }, []);
 
   async function load() {
-    const res = await fetch("/api/appointments/", { credentials: "include" });
-    if (res.status === 401) {
-      router.push("/login");
-      return;
+    try {
+      // Fetch a bounded set to avoid crashing the browser if the account has many appointments
+      const res = await fetch("/api/appointments/paged?limit=100", { credentials: "include" });
+      if (res.status === 401) {
+        router.push("/login");
+        return;
+      }
+      if (!res.ok) {
+        console.error("Failed to load appointments:", res.status);
+        setAppointments([]);
+        setLoading(false);
+        return;
+      }
+      const data = await res.json();
+      setAppointments(Array.isArray(data?.items) ? data.items : []);
+    } catch (err) {
+      console.error("Error loading appointments:", err);
+      setAppointments([]);
+    } finally {
+      setLoading(false);
     }
-    const data = await res.json();
-    setAppointments(Array.isArray(data) ? data : []);
-    setLoading(false);
   }
 
   useEffect(() => {
-    load();
+    let cancelled = false;
+    load().then(() => {
+      if (!cancelled) setLoading(false);
+    }).catch(() => {
+      if (!cancelled) setLoading(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const now = new Date();
-  const upcoming = appointments.filter(
-    (a) => a.status === "scheduled" && new Date(a.scheduledAt) >= now
-  );
-  const past = appointments.filter(
-    (a) => a.status !== "scheduled" || new Date(a.scheduledAt) < now
-  );
+  // Memoize filtered appointments to prevent recalculation on every render
+  const { upcoming, past } = useMemo(() => {
+    const now = new Date();
+    const upcomingList = appointments.filter((a) => {
+      try {
+        if (!a.scheduledAt) return false;
+        const appointmentTime = new Date(a.scheduledAt);
+        if (isNaN(appointmentTime.getTime())) return false;
+        // Include scheduled, card_on_file, and paid status as upcoming if in the future
+        const isFuture = appointmentTime >= now;
+        const isUpcomingStatus = a.status === "scheduled" || a.status === "card_on_file" || a.status === "paid";
+        return isUpcomingStatus && isFuture;
+      } catch {
+        return false;
+      }
+    });
+    const pastList = appointments.filter((a) => {
+      try {
+        if (!a.scheduledAt) {
+          // If no scheduledAt, consider it past if completed/cancelled
+          return a.status === "completed" || a.status === "cancelled";
+        }
+        const appointmentTime = new Date(a.scheduledAt);
+        if (isNaN(appointmentTime.getTime())) {
+          // Invalid date, consider it past if completed/cancelled
+          return a.status === "completed" || a.status === "cancelled";
+        }
+        // Past if: completed/cancelled OR (scheduled/card_on_file/paid but in the past)
+        return a.status === "completed" || a.status === "cancelled" || appointmentTime < now;
+      } catch {
+        return false;
+      }
+    });
+    return { upcoming: upcomingList, past: pastList };
+  }, [appointments]);
 
   if (loading) {
     return <p className="text-gray-500">Loading appointments…</p>;
@@ -58,25 +145,63 @@ export default function PatientAppointments() {
         <section>
           <h3 className="text-sm font-medium text-gray-600">Upcoming</h3>
           <ul className="mt-2 space-y-3">
-            {upcoming.map((a) => (
-              <li key={a.id} className="card flex flex-wrap items-center justify-between gap-4">
-                <div>
-                  <p className="font-medium text-gray-900">
-                    {new Date(a.scheduledAt).toLocaleString(undefined, {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    })}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    {a.durationMinutes} min · {a.type}
-                    {a.doctor?.name && ` · ${a.doctor.name}`}
-                  </p>
-                </div>
-                <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-800">
-                  {a.status}
-                </span>
-              </li>
-            ))}
+            {upcoming.map((a) => {
+              const formattedDateTime = formatAppointmentDateTime(a.scheduledAt);
+              return (
+                <li
+                  key={a.id}
+                  className="card flex flex-wrap items-center justify-between gap-4"
+                  onClickCapture={(e) => {
+                    const now = Date.now();
+                    const last = lastInteractionAtRef.current[a.id] ?? 0;
+                    if (now - last < 1200) {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      return;
+                    }
+                    lastInteractionAtRef.current[a.id] = now;
+                  }}
+                >
+                  <div>
+                    <p className="font-medium text-gray-900">
+                      {formattedDateTime} {tzLabel}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {a.durationMinutes} min · {a.type}
+                      {a.doctor?.name && ` · ${a.doctor.name}`}
+                    </p>
+                    {a.meetLink &&
+                      (a.status === "scheduled" ||
+                        a.status === "card_on_file" ||
+                        a.status === "paid") && (
+                        <a
+                          href={a.meetLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-2 inline-flex items-center text-xs font-medium text-warm-brown hover:underline"
+                        >
+                          Join video visit
+                        </a>
+                      )}
+                  </div>
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-xs ${
+                      a.status === "scheduled"
+                        ? "bg-green-100 text-green-800"
+                        : a.status === "card_on_file"
+                          ? "bg-amber-100 text-amber-800"
+                          : a.status === "paid"
+                            ? "bg-blue-100 text-blue-800"
+                            : a.status === "completed"
+                              ? "bg-purple-100 text-purple-800"
+                              : "bg-gray-100 text-gray-600"
+                    }`}
+                  >
+                    {a.status === "card_on_file" ? "Card on file" : a.status === "paid" ? "Paid" : a.status}
+                  </span>
+                </li>
+              );
+            })}
           </ul>
         </section>
       )}
@@ -87,17 +212,30 @@ export default function PatientAppointments() {
         <section>
           <h3 className="text-sm font-medium text-gray-600">Past</h3>
           <ul className="mt-2 space-y-2">
-            {past.slice(0, 10).map((a) => (
-              <li key={a.id} className="rounded-lg border border-cream-200 bg-white p-4 text-sm">
+            {past.slice(0, 10).map((a) => {
+              const formattedDateTime = formatAppointmentDateTime(a.scheduledAt);
+              return (
+              <li
+                key={a.id}
+                className="rounded-lg border border-cream-200 bg-white p-4 text-sm"
+                onClickCapture={(e) => {
+                  const now = Date.now();
+                  const last = lastInteractionAtRef.current[a.id] ?? 0;
+                  if (now - last < 1200) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return;
+                  }
+                  lastInteractionAtRef.current[a.id] = now;
+                }}
+              >
                 <span className="text-gray-900">
-                  {new Date(a.scheduledAt).toLocaleString(undefined, {
-                    dateStyle: "medium",
-                    timeStyle: "short",
-                  })}
+                  {formattedDateTime} {tzLabel}
                 </span>
                 <span className="ml-2 text-gray-500">· {a.status}</span>
               </li>
-            ))}
+            );
+            })}
           </ul>
         </section>
       )}

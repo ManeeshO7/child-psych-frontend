@@ -3,7 +3,27 @@
  * Used on the doctor portal to display responses as "Question: Answer".
  */
 export const QUESTIONNAIRE_LABELS: Record<string, string> = {
-  childAge: "1. Child/patient age",
+  // New questionnaire (eligibility + safety screen + additional + financial)
+  childAge: "Child/patient age",
+  childResidenceAddress: "Child's California address",
+  primaryReasons: "Primary reasons for seeking care",
+  primaryReasonOther: "Other primary reason (specify)",
+  activeSuicidalThoughts: "In the past 60 days — Active suicidal thoughts or self-harm behaviors?",
+  psychiatricHospitalization: "In the past 60 days — Psychiatric hospitalization or ER visit?",
+  psychoticSymptoms: "In the past 60 days — Psychotic symptoms (hallucinations or delusions)?",
+  severeAggression: "In the past 60 days — Severe aggression toward others?",
+  legalCustodyCourt: "Ongoing legal, custody, or court involvement?",
+  childProtectiveServices: "Active child protective services involvement?",
+  substanceUseConcerns: "Substance use concerns?",
+  currentlyReceivingCarePsychiatrist: "Currently seeing a psychiatrist?",
+  currentlyReceivingCareTherapist: "Currently seeing a therapist/counselor?",
+  seekingOngoingCare: "Seeking ongoing care?",
+  seekingConsultation: "Seeking consultation only?",
+  understandNonUrgentCare: "I understand this practice is for non-urgent care.",
+  comfortableConciergeFee: "I am comfortable with the concierge fee structure.",
+  understandStructuredCommunication: "I understand structured communication (e.g. portal) is required.",
+  additionalInfo: "Anything else important for us to know?",
+  // Legacy questionnaire keys (for older submissions)
   childLocation: "2. Child's current location (state/country where visits will occur)",
   legalGuardian: "3. Are you the child's legal guardian authorized to consent to psychiatric care?",
   primaryConcerns: "4. What are the primary concerns you are seeking help for? (Select all that apply)",
@@ -31,12 +51,29 @@ export const QUESTIONNAIRE_LABELS: Record<string, string> = {
     "15. I understand that completion of this form does not guarantee acceptance into the practice.",
   understandOtherCare:
     "16. I understand that this practice may determine that another level or type of care is more appropriate.",
-  additionalInfo: "17. Anything else important for us to know when determining fit?",
 };
 
-/** Order of keys for consistent display (section order). */
+/** Order of keys for consistent display (section order). New questionnaire first, then legacy. */
 export const QUESTIONNAIRE_KEY_ORDER = [
   "childAge",
+  "childResidenceAddress",
+  "primaryReasons",
+  "primaryReasonOther",
+  "activeSuicidalThoughts",
+  "psychiatricHospitalization",
+  "psychoticSymptoms",
+  "severeAggression",
+  "legalCustodyCourt",
+  "childProtectiveServices",
+  "substanceUseConcerns",
+  "currentlyReceivingCarePsychiatrist",
+  "currentlyReceivingCareTherapist",
+  "seekingOngoingCare",
+  "seekingConsultation",
+  "understandNonUrgentCare",
+  "comfortableConciergeFee",
+  "understandStructuredCommunication",
+  "additionalInfo",
   "childLocation",
   "legalGuardian",
   "primaryConcerns",
@@ -59,7 +96,6 @@ export const QUESTIONNAIRE_KEY_ORDER = [
   "understandFeeForService",
   "understandNoGuarantee",
   "understandOtherCare",
-  "additionalInfo",
 ];
 
 function formatAnswer(value: unknown): string {

@@ -111,13 +111,13 @@ export default function RequestAccessPage() {
               </div>
               <div>
                 <label htmlFor="notes" className="block text-sm font-medium text-gray-700">
-                  Notes
+                  Why do you need access?
                 </label>
                 <textarea
                   id="notes"
                   name="notes"
                   rows={4}
-                  placeholder="Any additional information you'd like to share"
+                  placeholder="Briefly describe what you’re looking for help with (e.g., anxiety, ADHD evaluation, medication management)."
                   className="mt-1 block w-full rounded-lg border border-cream-200 bg-white px-3 py-2 text-gray-900 shadow-sm focus:border-warm-brown focus:outline-none focus:ring-1 focus:ring-warm-brown"
                 />
               </div>

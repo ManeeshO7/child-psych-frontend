@@ -9,9 +9,22 @@ function ConsentContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const requestId = searchParams.get("requestId");
-  const [agreed, setAgreed] = useState(false);
+  const [acks, setAcks] = useState({
+    noEmergency: false,
+    notInCrisis: false,
+    privatePay: false,
+    noGuarantee: false,
+    noRelationship: false,
+  });
   const [status, setStatus] = useState<"idle" | "submitting" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
+
+  const allAcked =
+    acks.noEmergency &&
+    acks.notInCrisis &&
+    acks.privatePay &&
+    acks.noGuarantee &&
+    acks.noRelationship;
 
   useEffect(() => {
     if (!requestId || !requestId.trim()) {
@@ -22,6 +35,13 @@ function ConsentContent() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!requestId?.trim()) return;
+    
+    // Validate that user has acknowledged all required items
+    if (!allAcked) {
+      setErrorMessage("Please check all required acknowledgements to continue.");
+      return;
+    }
+    
     setStatus("submitting");
     setErrorMessage("");
     try {
@@ -47,63 +67,133 @@ function ConsentContent() {
     return null;
   }
 
+  const checkedCount = [
+    acks.noEmergency,
+    acks.notInCrisis,
+    acks.privatePay,
+    acks.noGuarantee,
+    acks.noRelationship,
+  ].filter(Boolean).length;
+
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-cream-50 py-16">
-        <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
-          <h1 className="section-heading">Privacy & Use of Information Notice</h1>
-          <p className="mt-2 text-sm font-medium uppercase tracking-wider text-warm-brown">
-            Consent to Review
-          </p>
+      <main className="min-h-screen bg-cream-50 py-12 sm:py-16">
+        <div className="mx-auto max-w-xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-warm-brown/80">
+              Consent to review
+            </p>
+            <h1 className="mt-2 section-heading">Required Acknowledgements</h1>
+            <p className="mt-3 text-sm text-gray-600 max-w-md mx-auto">
+              Please read and confirm each statement below. All five must be checked to continue.
+            </p>
+          </div>
 
-          <div className="card mt-10 space-y-6">
-            <section className="space-y-4 text-warm-brown">
-              <h2 className="text-lg font-semibold text-warm-brown">Privacy & Use of Information Notice</h2>
-              <p>
-                This questionnaire is used to determine clinical fit for our practice. Information you submit is{" "}
-                <strong>protected health information (PHI)</strong> and is handled in accordance with federal and
-                state privacy laws, including HIPAA.
-              </p>
-              <p>
-                Submission of this questionnaire <strong>does not establish a physician–patient relationship</strong>.
-                A clinical relationship is established only after you are accepted and have completed the required
-                consent documents.
-              </p>
-              <p>
-                This practice <strong>does not provide emergency, crisis, or after-hours urgent care services</strong>.
-                If you or your child are experiencing a psychiatric emergency, please call 911.
-              </p>
-            </section>
-
-            <section className="space-y-3 border-t border-cream-200 pt-6">
-              <h2 className="text-lg font-semibold text-warm-brown">Consent to Review</h2>
-              <p className="text-warm-brown">
-                By submitting this questionnaire, I confirm that I am the child&apos;s legal guardian authorized to
-                provide health information and consent to its review for care determination purposes.
-              </p>
-              <label className="flex cursor-pointer items-center gap-3">
-                <input
-                  type="checkbox"
-                  checked={agreed}
-                  onChange={(e) => setAgreed(e.target.checked)}
-                  className="h-4 w-4 rounded border-cream-300 text-warm-brown focus:ring-warm-brown"
-                />
-                <span className="text-sm font-medium text-warm-brown">I agree</span>
-              </label>
-            </section>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {errorMessage && (
-                <p className="text-sm text-red-600">{errorMessage}</p>
+          <div className="card mt-8 sm:mt-10 p-6 sm:p-8">
+            <div className="mb-5 flex items-center justify-between">
+              <span className="text-sm font-medium text-gray-500">
+                {checkedCount} of 5 selected
+              </span>
+              {allAcked && (
+                <span className="text-sm font-medium text-green-700">Ready to continue</span>
               )}
-              <button
-                type="submit"
-                disabled={!agreed || status === "submitting"}
-                className="btn-primary w-full"
-              >
-                {status === "submitting" ? "Continuing…" : "Continue"}
-              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-1">
+              <div className="space-y-0 divide-y divide-gray-100">
+                <label className="flex cursor-pointer items-start gap-4 py-4 first:pt-0 last:pb-0 transition-colors hover:bg-gray-50/50 -mx-2 px-2 rounded-lg">
+                  <input
+                    type="checkbox"
+                    checked={acks.noEmergency}
+                    onChange={(e) => {
+                      setAcks((p) => ({ ...p, noEmergency: e.target.checked }));
+                      if (e.target.checked) setErrorMessage("");
+                    }}
+                    className="mt-0.5 h-5 w-5 shrink-0 rounded border-gray-300 text-warm-brown focus:ring-warm-brown focus:ring-offset-0"
+                  />
+                  <span className="text-[15px] text-gray-800 leading-snug">
+                    I understand this practice does not provide emergency or crisis care
+                  </span>
+                </label>
+
+                <label className="flex cursor-pointer items-start gap-4 py-4 first:pt-0 last:pb-0 transition-colors hover:bg-gray-50/50 -mx-2 px-2 rounded-lg">
+                  <input
+                    type="checkbox"
+                    checked={acks.notInCrisis}
+                    onChange={(e) => {
+                      setAcks((p) => ({ ...p, notInCrisis: e.target.checked }));
+                      if (e.target.checked) setErrorMessage("");
+                    }}
+                    className="mt-0.5 h-5 w-5 shrink-0 rounded border-gray-300 text-warm-brown focus:ring-warm-brown focus:ring-offset-0"
+                  />
+                  <span className="text-[15px] text-gray-800 leading-snug">
+                    My child is not currently in psychiatric crisis
+                  </span>
+                </label>
+
+                <label className="flex cursor-pointer items-start gap-4 py-4 first:pt-0 last:pb-0 transition-colors hover:bg-gray-50/50 -mx-2 px-2 rounded-lg">
+                  <input
+                    type="checkbox"
+                    checked={acks.privatePay}
+                    onChange={(e) => {
+                      setAcks((p) => ({ ...p, privatePay: e.target.checked }));
+                      if (e.target.checked) setErrorMessage("");
+                    }}
+                    className="mt-0.5 h-5 w-5 shrink-0 rounded border-gray-300 text-warm-brown focus:ring-warm-brown focus:ring-offset-0"
+                  />
+                  <span className="text-[15px] text-gray-800 leading-snug">
+                    I understand this is a private, fee-for-service practice and does not bill insurance
+                  </span>
+                </label>
+
+                <label className="flex cursor-pointer items-start gap-4 py-4 first:pt-0 last:pb-0 transition-colors hover:bg-gray-50/50 -mx-2 px-2 rounded-lg">
+                  <input
+                    type="checkbox"
+                    checked={acks.noGuarantee}
+                    onChange={(e) => {
+                      setAcks((p) => ({ ...p, noGuarantee: e.target.checked }));
+                      if (e.target.checked) setErrorMessage("");
+                    }}
+                    className="mt-0.5 h-5 w-5 shrink-0 rounded border-gray-300 text-warm-brown focus:ring-warm-brown focus:ring-offset-0"
+                  />
+                  <span className="text-[15px] text-gray-800 leading-snug">
+                    I understand that submitting this form does not guarantee acceptance
+                  </span>
+                </label>
+
+                <label className="flex cursor-pointer items-start gap-4 py-4 first:pt-0 last:pb-0 transition-colors hover:bg-gray-50/50 -mx-2 px-2 rounded-lg">
+                  <input
+                    type="checkbox"
+                    checked={acks.noRelationship}
+                    onChange={(e) => {
+                      setAcks((p) => ({ ...p, noRelationship: e.target.checked }));
+                      if (e.target.checked) setErrorMessage("");
+                    }}
+                    className="mt-0.5 h-5 w-5 shrink-0 rounded border-gray-300 text-warm-brown focus:ring-warm-brown focus:ring-offset-0"
+                  />
+                  <span className="text-[15px] text-gray-800 leading-snug">
+                    I understand that no doctor-patient relationship is created by submitting this form
+                  </span>
+                </label>
+              </div>
+
+              {errorMessage && !allAcked && (
+                <p className="mt-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+                  {errorMessage}
+                </p>
+              )}
+
+              <div className="mt-6 pt-6 border-t border-gray-100">
+                <button
+                  type="submit"
+                  disabled={!allAcked || status === "submitting"}
+                  className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed py-4 text-base"
+                  title={!allAcked ? "Please check all required acknowledgements to continue" : ""}
+                >
+                  {status === "submitting" ? "Continuing…" : "Continue"}
+                </button>
+              </div>
             </form>
           </div>
         </div>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 type PatientRequest = {
   id: string;
@@ -12,19 +12,22 @@ type PatientRequest = {
 
 export default function DoctorDashboardOverview() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [pendingCount, setPendingCount] = useState<number | null>(null);
   const [intakeCount, setIntakeCount] = useState<number | null>(null);
   const [appointmentCount, setAppointmentCount] = useState<number | null>(null);
+  const [calendarConnected, setCalendarConnected] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
       try {
-        const [reqRes, intRes, appRes] = await Promise.all([
+        const [reqRes, intRes, appRes, calRes] = await Promise.all([
           fetch("/api/patient-requests/", { credentials: "include" }),
           fetch("/api/intake/all", { credentials: "include" }),
           fetch("/api/appointments/", { credentials: "include" }),
+          fetch("/api/auth/calendar-status", { credentials: "include" }),
         ]);
         if (reqRes.status === 401 || intRes.status === 401 || appRes.status === 401) {
           router.push("/doctor/login");
@@ -43,6 +46,12 @@ export default function DoctorDashboardOverview() {
         setPendingCount(pending.length);
         setIntakeCount(Array.isArray(intakes) ? intakes.length : 0);
         setAppointmentCount(Array.isArray(appointments) ? appointments.length : 0);
+        if (calRes.ok) {
+          const cal = await calRes.json();
+          setCalendarConnected(cal.connected === true);
+        } else {
+          setCalendarConnected(false);
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -67,6 +76,35 @@ export default function DoctorDashboardOverview() {
       <p className="mt-2 text-gray-600">
         Review patient requests, intake forms, and appointments.
       </p>
+
+      {searchParams.get("calendar") === "connected" && (
+        <div className="mt-6 rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-800">
+          Google Calendar connected. New bookings will get a unique Meet link.
+        </div>
+      )}
+      {searchParams.get("calendar") === "error" && (
+        <div className="mt-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+          Could not connect Google Calendar. Please try again or set DEFAULT_MEET_LINK in the server environment.
+        </div>
+      )}
+
+      {calendarConnected === false && (
+        <div className="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4">
+          <p className="text-sm font-medium text-amber-800">Connect Google Calendar</p>
+          <p className="mt-1 text-sm text-amber-700">
+            When patients book, they get a unique video meeting link. Connect your Google account to create a new Meet link for each appointment.
+          </p>
+          <a
+            href="/api/auth/google"
+            className="mt-3 inline-block rounded bg-warm-brown px-3 py-1.5 text-sm font-medium text-white hover:opacity-90"
+          >
+            Connect Google Calendar
+          </a>
+        </div>
+      )}
+      {calendarConnected === true && (
+        <p className="mt-4 text-sm text-green-700">Google Calendar connected — new Meet links are created for each booking.</p>
+      )}
 
       <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         <Link
@@ -109,6 +147,16 @@ export default function DoctorDashboardOverview() {
             {appointmentCount === null ? "—" : appointmentCount}
           </p>
           <p className="text-xs text-gray-500">appointments</p>
+        </Link>
+
+        <Link
+          href="/doctor/availability"
+          className="card flex flex-col gap-2 transition hover:border-warm-brown/40 hover:shadow-md"
+        >
+          <h2 className="text-lg font-semibold text-warm-brown">Manage availability</h2>
+          <p className="text-sm text-gray-600">
+            Set your available blocks for the next 7 days. Patients book 30-minute slots within these times.
+          </p>
         </Link>
       </div>
     </main>

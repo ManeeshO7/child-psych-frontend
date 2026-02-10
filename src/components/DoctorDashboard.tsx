@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -36,6 +36,7 @@ type Appointment = {
   status: string;
   type: string;
   notes: string | null;
+  meetLink?: string | null;
   patient?: { id: string; email: string; name: string };
 };
 
@@ -53,6 +54,19 @@ export default function DoctorDashboard() {
   const [reviewingId, setReviewingId] = useState<string | null>(null);
   const [selectedIntake, setSelectedIntake] = useState<{ id: string; formData: Record<string, unknown>; patientName: string } | null>(null);
   const [expandedPrescreen, setExpandedPrescreen] = useState<Set<string>>(new Set());
+  const [chargingAppointmentId, setChargingAppointmentId] = useState<string | null>(null);
+  const [completingAppointmentId, setCompletingAppointmentId] = useState<string | null>(null);
+  const [notice, setNotice] = useState<{
+    type: "success" | "error" | "info";
+    message: string;
+  } | null>(null);
+
+  function showNotice(type: "success" | "error" | "info", message: string) {
+    setNotice({ type, message });
+    window.setTimeout(() => {
+      setNotice((curr) => (curr?.message === message ? null : curr));
+    }, 4000);
+  }
 
   async function load() {
     const res = await fetch("/api/patient-requests/", { credentials: "include" });
@@ -77,21 +91,204 @@ export default function DoctorDashboard() {
   }
 
   async function loadAppointments() {
-    const res = await fetch("/api/appointments/", { credentials: "include" });
-    if (res.status === 401) {
-      router.push("/doctor/login");
-      return;
+    try {
+      const res = await fetch("/api/appointments/paged?limit=50", { credentials: "include" });
+      if (res.status === 401) {
+        router.push("/doctor/login");
+        return;
+      }
+      if (!res.ok) {
+        console.error("Failed to load appointments:", res.status);
+        setAppointmentsLoading(false);
+        return;
+      }
+      const data = await res.json();
+      setAppointments(Array.isArray(data?.items) ? data.items : []);
+    } catch (err) {
+      console.error("Error loading appointments:", err);
+      setAppointments([]);
+    } finally {
+      setAppointmentsLoading(false);
     }
-    const data = await res.json();
-    setAppointments(Array.isArray(data) ? data : []);
-    setAppointmentsLoading(false);
   }
 
+  // Cache timezone label to avoid recalculating in render loop
+  const [tzLabel, setTzLabel] = useState("PT");
+  
   useEffect(() => {
-    load();
-    loadIntakes();
-    loadAppointments();
+    try {
+      const d = new Date();
+      const tzName = d.toLocaleTimeString("en-US", {
+        timeZone: "America/Los_Angeles",
+        timeZoneName: "short",
+      });
+      const match = tzName.match(/\s([A-Z]{3,4})$/);
+      setTzLabel(match ? match[1] : "PT");
+    } catch {
+      setTzLabel("PT");
+    }
   }, []);
+
+  // Memoize formatted appointments to prevent recalculation on every render
+  const formattedAppointments = useMemo(() => {
+    return appointments.map((a) => {
+      let formattedDate = "Date TBD";
+      try {
+        if (a.scheduledAt) {
+          const date = new Date(a.scheduledAt);
+          if (!isNaN(date.getTime())) {
+            formattedDate = date.toLocaleString("en-US", {
+              timeZone: "America/Los_Angeles",
+              dateStyle: "medium",
+              timeStyle: "short",
+              hour12: true,
+            }) + ` ${tzLabel}`;
+          }
+        }
+      } catch {
+        formattedDate = "Date error";
+      }
+      return { ...a, formattedDate };
+    });
+  }, [appointments, tzLabel]);
+
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([
+      load(),
+      loadIntakes(),
+      loadAppointments(),
+    ]).catch(() => {
+      // Errors already handled in individual functions
+    });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function chargeAppointment(id: string) {
+    // Prevent multiple simultaneous charges
+    if (chargingAppointmentId !== null) {
+      return;
+    }
+    
+    setChargingAppointmentId(id);
+    
+    try {
+      const res = await fetch(`/api/appointments/${id}/charge`, {
+        method: "POST",
+        credentials: "include",
+      });
+      
+      if (res.status === 401) {
+        setChargingAppointmentId(null);
+        router.push("/doctor/login");
+        return;
+      }
+      
+      if (!res.ok) {
+        let errorMessage = "Charge failed";
+        try {
+          const err = await res.json();
+          errorMessage = err.detail || errorMessage;
+        } catch {
+          // If JSON parsing fails, use default message
+        }
+        setChargingAppointmentId(null);
+        showNotice("error", errorMessage);
+        return;
+      }
+      
+      // Parse response to check if it succeeded
+      try {
+        const result = await res.json();
+        if (result.ok) {
+          // Show success message
+          const successMessage = result.message || "Payment successful! Receipt sent by Stripe.";
+          showNotice("success", successMessage);
+          // Small delay before reloading to ensure backend has updated
+          await new Promise(resolve => setTimeout(resolve, 500));
+          // Reload appointments to show updated status
+          await loadAppointments();
+        } else {
+          showNotice("info", "Charge completed but status unclear. Please refresh the page.");
+        }
+      } catch (parseErr) {
+        console.error("Failed to parse charge response:", parseErr);
+        // Still try to reload appointments
+        await new Promise(resolve => setTimeout(resolve, 500));
+        await loadAppointments();
+        showNotice("info", "Charge may have succeeded. Please check the appointment status.");
+      }
+    } catch (err) {
+      console.error("Charge error:", err);
+      showNotice("error", "Network error while charging. Please try again.");
+    } finally {
+      // Always reset charging state
+      setChargingAppointmentId(null);
+    }
+  }
+
+  async function completeAppointment(id: string) {
+    // Prevent multiple simultaneous completions
+    if (completingAppointmentId !== null) {
+      return;
+    }
+    
+    setCompletingAppointmentId(id);
+    
+    try {
+      const res = await fetch(`/api/appointments/${id}/complete`, {
+        method: "POST",
+        credentials: "include",
+      });
+      
+      if (res.status === 401) {
+        setCompletingAppointmentId(null);
+        router.push("/doctor/login");
+        return;
+      }
+      
+      if (!res.ok) {
+        let errorMessage = "Failed to mark as completed";
+        try {
+          const err = await res.json();
+          errorMessage = err.detail || errorMessage;
+        } catch {
+          // If JSON parsing fails, use default message
+        }
+        setCompletingAppointmentId(null);
+        showNotice("error", errorMessage);
+        return;
+      }
+      
+      // Parse response to check if it succeeded
+      try {
+        const result = await res.json();
+        if (result.ok) {
+          // Show success message
+          const successMessage = result.message || "Appointment marked as completed.";
+          showNotice("success", successMessage);
+          // Small delay before reloading to ensure backend has updated
+          await new Promise(resolve => setTimeout(resolve, 300));
+          // Reload appointments to show updated status
+          await loadAppointments();
+        }
+      } catch (parseErr) {
+        console.error("Failed to parse complete response:", parseErr);
+        // Still try to reload appointments
+        await new Promise(resolve => setTimeout(resolve, 300));
+        await loadAppointments();
+      }
+    } catch (err) {
+      console.error("Complete error:", err);
+      showNotice("error", "Network error while marking as completed. Please try again.");
+    } finally {
+      // Always reset completing state
+      setCompletingAppointmentId(null);
+    }
+  }
 
   async function markIntakeReviewed(id: string) {
     setReviewingId(id);
@@ -106,7 +303,7 @@ export default function DoctorDashboard() {
       }
       if (!res.ok) {
         const err = await res.json();
-        alert(err.detail || "Failed to mark reviewed");
+        showNotice("error", err.detail || "Failed to mark reviewed");
         return;
       }
       await loadIntakes();
@@ -136,7 +333,7 @@ export default function DoctorDashboard() {
       }
       if (!res.ok) {
         const data = await res.json();
-        alert(data.error || "Failed to approve");
+        showNotice("error", data.error || "Failed to approve");
         return;
       }
       await load();
@@ -160,7 +357,7 @@ export default function DoctorDashboard() {
       }
       if (!res.ok) {
         const data = await res.json();
-        alert(data.error || "Failed to reject");
+        showNotice("error", data.error || "Failed to reject");
         return;
       }
       setRejectNote((prev) => ({ ...prev, [id]: "" }));
@@ -186,6 +383,33 @@ export default function DoctorDashboard() {
 
   return (
     <div className="min-h-screen bg-cream-50">
+      {notice && (
+        <div className="fixed inset-x-0 top-4 z-50 flex justify-center px-4">
+          <div
+            className={`w-full max-w-xl rounded-lg border px-4 py-3 shadow-lg ${
+              notice.type === "success"
+                ? "border-green-200 bg-green-50 text-green-900"
+                : notice.type === "error"
+                  ? "border-red-200 bg-red-50 text-red-900"
+                  : "border-cream-200 bg-white text-gray-900"
+            }`}
+            role="status"
+            aria-live="polite"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <p className="text-sm font-medium">{notice.message}</p>
+              <button
+                type="button"
+                onClick={() => setNotice(null)}
+                className="text-sm opacity-70 hover:opacity-100"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <header className="sticky top-0 z-40 border-b border-cream-200 bg-white">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="font-semibold text-warm-brown">
@@ -376,30 +600,81 @@ export default function DoctorDashboard() {
                 <p className="mt-4 text-gray-500">No appointments yet.</p>
               ) : (
                 <ul className="mt-4 space-y-3">
-                  {appointments.slice(0, 20).map((a) => (
+                  {formattedAppointments.slice(0, 20).map((a) => (
                     <li key={a.id} className="card flex flex-wrap items-center justify-between gap-4">
-                      <div>
+                      <div className="min-w-0 flex-1">
                         <p className="font-medium text-gray-900">
-                          {new Date(a.scheduledAt).toLocaleString(undefined, {
-                            dateStyle: "medium",
-                            timeStyle: "short",
-                          })}
+                          {a.formattedDate}
                         </p>
                         <p className="text-sm text-gray-600">
                           {a.durationMinutes} min · {a.type}
                           {a.patient?.name && ` · ${a.patient.name}`}
                         </p>
+                        {a.meetLink && (a.status === "scheduled" || a.status === "card_on_file" || a.status === "paid") && (
+                          <p className="mt-1.5">
+                            <a
+                              href={a.meetLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm font-medium text-warm-brown hover:underline"
+                            >
+                              Join video call →
+                            </a>
+                          </p>
+                        )}
+                        {a.status === "card_on_file" && (
+                          <p className="mt-1.5">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                if (chargingAppointmentId === null) {
+                                  chargeAppointment(a.id);
+                                }
+                              }}
+                              disabled={chargingAppointmentId !== null}
+                              className="text-sm font-medium text-warm-brown hover:underline disabled:opacity-50"
+                            >
+                              {chargingAppointmentId === a.id ? "Charging…" : "Charge now"}
+                            </button>
+                          </p>
+                        )}
+                        {a.status === "paid" && (
+                          <p className="mt-1.5">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                if (completingAppointmentId === null) {
+                                  completeAppointment(a.id);
+                                }
+                              }}
+                              disabled={completingAppointmentId !== null}
+                              className="text-sm font-medium text-green-700 hover:underline disabled:opacity-50"
+                            >
+                              {completingAppointmentId === a.id ? "Marking…" : "Mark as complete"}
+                            </button>
+                          </p>
+                        )}
                       </div>
                       <span
                         className={`rounded-full px-2 py-0.5 text-xs ${
                           a.status === "scheduled"
                             ? "bg-green-100 text-green-800"
-                            : a.status === "cancelled"
-                              ? "bg-gray-100 text-gray-600"
-                              : "bg-blue-100 text-blue-800"
+                            : a.status === "card_on_file"
+                              ? "bg-amber-100 text-amber-800"
+                              : a.status === "paid"
+                                ? "bg-blue-100 text-blue-800"
+                                : a.status === "completed"
+                                  ? "bg-purple-100 text-purple-800"
+                                  : a.status === "cancelled"
+                                    ? "bg-gray-100 text-gray-600"
+                                    : "bg-gray-100 text-gray-600"
                         }`}
                       >
-                        {a.status}
+                        {a.status === "card_on_file" ? "Card on file" : a.status === "paid" ? "Paid" : a.status}
                       </span>
                     </li>
                   ))}
