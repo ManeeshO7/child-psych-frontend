@@ -16,6 +16,7 @@ export default function DoctorDashboardOverview() {
   const [pendingCount, setPendingCount] = useState<number | null>(null);
   const [intakeCount, setIntakeCount] = useState<number | null>(null);
   const [appointmentCount, setAppointmentCount] = useState<number | null>(null);
+  const [patientCount, setPatientCount] = useState<number | null>(null);
   const [calendarConnected, setCalendarConnected] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -23,11 +24,12 @@ export default function DoctorDashboardOverview() {
     let cancelled = false;
     async function load() {
       try {
-        const [reqRes, intRes, appRes, calRes] = await Promise.all([
+        const [reqRes, intRes, appRes, calRes, patientsRes] = await Promise.all([
           fetch("/api/patient-requests/", { credentials: "include" }),
           fetch("/api/intake/all", { credentials: "include" }),
           fetch("/api/appointments/", { credentials: "include" }),
           fetch("/api/auth/calendar-status", { credentials: "include" }),
+          fetch("/api/patient-forms/patients", { credentials: "include" }),
         ]);
         if (reqRes.status === 401 || intRes.status === 401 || appRes.status === 401) {
           router.push("/doctor/login");
@@ -37,6 +39,7 @@ export default function DoctorDashboardOverview() {
         const requests: PatientRequest[] = await reqRes.json();
         const intakes = await intRes.json();
         const appointments = await appRes.json();
+        const patients = patientsRes.ok ? await patientsRes.json() : [];
         const pending = requests.filter(
           (r) =>
             r.status === "pending" &&
@@ -46,6 +49,7 @@ export default function DoctorDashboardOverview() {
         setPendingCount(pending.length);
         setIntakeCount(Array.isArray(intakes) ? intakes.length : 0);
         setAppointmentCount(Array.isArray(appointments) ? appointments.length : 0);
+        setPatientCount(Array.isArray(patients) ? patients.length : 0);
         if (calRes.ok) {
           const cal = await calRes.json();
           setCalendarConnected(cal.connected === true);
@@ -147,6 +151,20 @@ export default function DoctorDashboardOverview() {
             {appointmentCount === null ? "—" : appointmentCount}
           </p>
           <p className="text-xs text-gray-500">appointments</p>
+        </Link>
+
+        <Link
+          href="/doctor/patients"
+          className="card flex flex-col gap-2 transition hover:border-warm-brown/40 hover:shadow-md"
+        >
+          <h2 className="text-lg font-semibold text-warm-brown">Patients</h2>
+          <p className="text-sm text-gray-600">
+            View all patients, their details, appointments, and form submissions.
+          </p>
+          <p className="mt-auto text-2xl font-bold text-gray-900">
+            {patientCount === null ? "—" : patientCount}
+          </p>
+          <p className="text-xs text-gray-500">patients</p>
         </Link>
 
         <Link

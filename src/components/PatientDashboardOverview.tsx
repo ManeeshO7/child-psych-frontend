@@ -36,17 +36,19 @@ export default function PatientDashboardOverview() {
     expMonth?: number | null;
     expYear?: number | null;
   } | null>(null);
+  const [hasAssignedForms, setHasAssignedForms] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
       try {
-        const [intRes, appRes, cardRes, meRes] = await Promise.all([
+        const [intRes, appRes, cardRes, meRes, formsRes] = await Promise.all([
           fetch("/api/intake", { credentials: "include" }),
           fetch("/api/appointments/", { credentials: "include" }),
           fetch("/api/payments/payment-method", { credentials: "include" }),
           fetch("/api/auth/me", { credentials: "include" }),
+          fetch("/api/patient-forms/my-forms", { credentials: "include" }),
         ]);
         if (intRes.status === 401 || appRes.status === 401 || cardRes.status === 401 || meRes.status === 401) {
           router.push("/login");
@@ -57,10 +59,12 @@ export default function PatientDashboardOverview() {
         const apps = await appRes.json();
         const card = await cardRes.json().catch(() => null);
         const me = await meRes.json().catch(() => null);
+        const forms = formsRes.ok ? await formsRes.json().catch(() => []) : [];
         setIntakeStatus(intake?.status ?? "not_started");
         setAppointmentCount(Array.isArray(apps) ? apps.length : 0);
         setCardSummary(card && typeof card === "object" ? card : null);
         setProfile(me && typeof me === "object" ? me : null);
+        setHasAssignedForms(Array.isArray(forms) && forms.length > 0);
         if (me && typeof me === "object") {
           setProfileDraft({
             firstName: (me.firstName ?? "").toString(),
@@ -273,6 +277,19 @@ export default function PatientDashboardOverview() {
           </p>
           <p className="text-xs text-gray-500">appointments</p>
         </Link>
+
+        {hasAssignedForms && (
+          <Link
+            href="/patient/forms"
+            className="card flex flex-col gap-2 transition hover:border-warm-brown/40 hover:shadow-md"
+          >
+            <h2 className="text-lg font-semibold text-warm-brown">Forms & Documents</h2>
+            <p className="text-sm text-gray-600">
+              Complete forms assigned by your doctor.
+            </p>
+            <p className="mt-auto text-sm font-medium text-warm-brown">View forms →</p>
+          </Link>
+        )}
 
         <Link
           href="/patient/book"

@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import AssignFormsModal from "@/components/AssignFormsModal";
 
 type Appointment = {
   id: string;
@@ -28,10 +29,13 @@ export default function DoctorAppointmentsList() {
   const [pageCursor, setPageCursor] = useState<string | null>(null);
   const [prevStack, setPrevStack] = useState<(string | null)[]>([]);
   const [view, setView] = useState<"active" | "completed">("active");
+  const [filterDate, setFilterDate] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [chargingId, setChargingId] = useState<string | null>(null);
   const [completingId, setCompletingId] = useState<string | null>(null);
   const [openingMeetId, setOpeningMeetId] = useState<string | null>(null);
+  const [assignFormsModalOpen, setAssignFormsModalOpen] = useState(false);
+  const [assignFormsAppointment, setAssignFormsAppointment] = useState<{ id: string; patientId: string } | null>(null);
   const [notice, setNotice] = useState<{
     type: "success" | "error" | "info";
     message: string;
@@ -74,6 +78,7 @@ export default function DoctorAppointmentsList() {
       qs.set("limit", "10");
       qs.set("view", nextView ?? view);
       if (cursor) qs.set("cursor", cursor);
+      if (filterDate) qs.set("date_str", filterDate);
       const res = await fetch(`/api/appointments/paged?${qs.toString()}`, {
         credentials: "include",
       });
@@ -133,7 +138,7 @@ export default function DoctorAppointmentsList() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // When switching tabs, reset pagination and reload.
+  // When switching tabs or date filter, reset pagination and reload.
   useEffect(() => {
     setLoading(true);
     setPageCursor(null);
@@ -142,7 +147,7 @@ export default function DoctorAppointmentsList() {
     setHasMore(false);
     load(null, view).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [view]);
+  }, [view, filterDate]);
 
   const formattedAppointments: FormattedAppointment[] = useMemo(() => {
     if (!appointments || appointments.length === 0) return [];
@@ -326,25 +331,48 @@ export default function DoctorAppointmentsList() {
       </p>
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-        <div className="inline-flex rounded-lg border border-cream-200 bg-white p-1 text-sm">
-          <button
-            type="button"
-            onClick={() => setView("active")}
-            className={`rounded-md px-3 py-1.5 ${
-              view === "active" ? "bg-cream-100 text-warm-brown" : "text-gray-700 hover:bg-cream-50"
-            }`}
-          >
-            Active
-          </button>
-          <button
-            type="button"
-            onClick={() => setView("completed")}
-            className={`rounded-md px-3 py-1.5 ${
-              view === "completed" ? "bg-cream-100 text-warm-brown" : "text-gray-700 hover:bg-cream-50"
-            }`}
-          >
-            Completed
-          </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="inline-flex rounded-lg border border-cream-200 bg-white p-1 text-sm">
+            <button
+              type="button"
+              onClick={() => setView("active")}
+              className={`rounded-md px-3 py-1.5 ${
+                view === "active" ? "bg-cream-100 text-warm-brown" : "text-gray-700 hover:bg-cream-50"
+              }`}
+            >
+              Active
+            </button>
+            <button
+              type="button"
+              onClick={() => setView("completed")}
+              className={`rounded-md px-3 py-1.5 ${
+                view === "completed" ? "bg-cream-100 text-warm-brown" : "text-gray-700 hover:bg-cream-50"
+              }`}
+            >
+              Completed
+            </button>
+          </div>
+          <div className="flex items-center gap-2">
+            <label htmlFor="appt-date-filter" className="text-sm text-gray-600 whitespace-nowrap">
+              Filter by date:
+            </label>
+            <input
+              id="appt-date-filter"
+              type="date"
+              value={filterDate ?? ""}
+              onChange={(e) => setFilterDate(e.target.value ? e.target.value : null)}
+              className="rounded-lg border border-cream-200 bg-white px-3 py-1.5 text-sm text-gray-900"
+            />
+            {filterDate && (
+              <button
+                type="button"
+                onClick={() => setFilterDate(null)}
+                className="text-sm text-warm-brown hover:underline"
+              >
+                Clear
+              </button>
+            )}
+          </div>
         </div>
         <div className="text-sm text-gray-600">
           Showing <span className="font-medium text-gray-900">{appointments.length}</span> appointments
@@ -354,7 +382,17 @@ export default function DoctorAppointmentsList() {
       {loading ? (
         <p className="mt-10 text-gray-500">Loading…</p>
       ) : appointments.length === 0 ? (
-        <p className="mt-10 text-gray-500">No appointments yet.</p>
+        <p className="mt-10 text-gray-500">
+          {filterDate
+            ? `No appointments on ${new Date(filterDate + "T12:00:00").toLocaleDateString("en-US", {
+                timeZone: "America/Los_Angeles",
+                weekday: "short",
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })}.`
+            : "No appointments yet."}
+        </p>
       ) : (
         <div className="mt-10 space-y-6">
           <ul className="space-y-3">
@@ -421,6 +459,30 @@ export default function DoctorAppointmentsList() {
                       </button>
                     </p>
                   )}
+                  {a.status === "completed" && a.type === "intake" && a.patient && (
+                    <p className="mt-1.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAssignFormsAppointment({ id: a.id, patientId: a.patient!.id });
+                          setAssignFormsModalOpen(true);
+                        }}
+                        className="text-sm font-medium text-warm-brown hover:underline"
+                      >
+                        Assign forms →
+                      </button>
+                    </p>
+                  )}
+                  {a.patient && (
+                    <p className="mt-1.5">
+                      <Link
+                        href={`/doctor/patients/${a.patient.id}`}
+                        className="text-sm font-medium text-gray-700 hover:underline"
+                      >
+                        View patient →
+                      </Link>
+                    </p>
+                  )}
                 </div>
                 <span
                   className={`rounded-full px-2 py-0.5 text-xs ${
@@ -463,6 +525,20 @@ export default function DoctorAppointmentsList() {
           </div>
         </div>
       )}
+
+      <AssignFormsModal
+        isOpen={assignFormsModalOpen}
+        onClose={() => {
+          setAssignFormsModalOpen(false);
+          setAssignFormsAppointment(null);
+        }}
+        patientId={assignFormsAppointment?.patientId || ""}
+        appointmentId={assignFormsAppointment?.id || null}
+        onSuccess={() => {
+          showNotice("success", "Forms assigned successfully!");
+          load(pageCursor);
+        }}
+      />
     </main>
   );
 }

@@ -54,6 +54,8 @@ export default function ConfirmAppointmentPage() {
   const slotStart = searchParams.get("slotStart");
   const slotEnd = searchParams.get("slotEnd");
   const visitType = searchParams.get("type") || "intake";
+  const durationParam = searchParams.get("durationMinutes");
+  const durationMinutes = durationParam ? parseInt(durationParam, 10) || 30 : 30;
   const [pricing, setPricing] = useState<Pricing | null>(null);
   const [loading, setLoading] = useState(true);
   const [confirming, setConfirming] = useState(false);
@@ -88,7 +90,7 @@ export default function ConfirmAppointmentPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           scheduledAt: slotStart,
-          durationMinutes: 30,
+          durationMinutes,
           type: visitType,
           notes: undefined,
         }),
@@ -142,7 +144,8 @@ export default function ConfirmAppointmentPage() {
   }
 
   const tzLabel = getTimezoneLabel();
-  const visitPrice = pricing?.pricing?.[visitType];
+  const visitPrice =
+    pricing?.pricing?.[visitType] ?? pricing?.pricing?.[String(durationMinutes)];
 
   return (
     <main className="mx-auto max-w-xl px-4 py-10 sm:px-6 lg:px-8">
@@ -164,12 +167,14 @@ export default function ConfirmAppointmentPage() {
 
           <div>
             <p className="text-sm text-gray-600">Duration</p>
-            <p className="text-base font-medium text-gray-900">30 minutes</p>
+            <p className="text-base font-medium text-gray-900">
+              {durationMinutes} minute{durationMinutes === 1 ? "" : "s"}
+            </p>
           </div>
 
           <div>
             <p className="text-sm text-gray-600">Appointment Type</p>
-            <p className="text-base font-medium text-gray-900 capitalize">{visitType.replace("_", " ")}</p>
+            <p className="text-base font-medium text-gray-900 capitalize">{visitType.replace(/_/g, " ")}</p>
           </div>
 
           {visitPrice && (

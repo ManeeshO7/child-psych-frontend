@@ -3,7 +3,15 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 
-type Block = { id: string; date: string; startTime: string; endTime: string };
+const DURATION_OPTIONS = [30, 45, 60] as const;
+
+type Block = {
+  id: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  allowedDurationsMinutes?: number[] | null;
+};
 
 // Practice timezone (California) used for storing availability and generating slots
 const PRACTICE_TZ = "America/Los_Angeles";
@@ -32,8 +40,101 @@ export default function DoctorAvailabilityManager() {
   const [calendarConnected, setCalendarConnected] = useState<boolean | null>(null);
   const [saveMessage, setSaveMessage] = useState<"saved" | "error" | null>(null);
   const [currentMonthIndex, setCurrentMonthIndex] = useState(0);
-  const [activeTab, setActiveTab] = useState<"day" | "all">("day");
+  const [activeTab, setActiveTab] = useState<"offer" | "blocks">("offer");
+  const [blocksTabView, setBlocksTabView] = useState<"day" | "all">("day");
   const [allBlocksFilterDate, setAllBlocksFilterDate] = useState<string | "all">("all");
+
+  // Offer-slots flow: duration → date → pick slots
+  const [selectedDuration, setSelectedDuration] = useState<30 | 45 | 60>(30);
+  const [selectedDateForSlots, setSelectedDateForSlots] = useState<string>(NEXT_DAYS[0]);
+  const [candidateSlots, setCandidateSlots] = useState<{ startTime: string; endTime: string }[]>([]);
+  const [offeredStartTimes, setOfferedStartTimes] = useState<string[]>([]);
+  const [slotsLoading, setSlotsLoading] = useState(false);
+  const [slotsSaving, setSlotsSaving] = useState(false);
+  const [slotsSaveMessage, setSlotsSaveMessage] = useState<"saved" | "error" | null>(null);
+  const [offeredSlotsMonthIndex, setOfferedSlotsMonthIndex] = useState(0);
+  const [selectedStartTimes, setSelectedStartTimes] = useState<string[]>([]);
+
+  async function loadCandidateAndOfferedSlots() {
+    setSlotsLoading(true);
+    try {
+      const [candRes, offRes] = await Promise.all([
+        fetch(
+          `/api/availability/candidate-slots?date=${encodeURIComponent(selectedDateForSlots)}&durationMinutes=${selectedDuration}`,
+          { credentials: "include" }
+        ),
+        fetch(
+          `/api/availability/offered-slots?date=${encodeURIComponent(selectedDateForSlots)}&durationMinutes=${selectedDuration}`,
+          { credentials: "include" }
+        ),
+      ]);
+      if (candRes.ok) {
+        const d = await candRes.json();
+        setCandidateSlots(d.slots || []);
+      } else {
+        setCandidateSlots([]);
+      }
+      if (offRes.ok) {
+        const d = await offRes.json();
+        const offered = (d.startTimes || []) as string[];
+        setOfferedStartTimes(offered);
+        setSelectedStartTimes(offered);
+      } else {
+        setOfferedStartTimes([]);
+        setSelectedStartTimes([]);
+      }
+    } finally {
+      setSlotsLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    if (activeTab !== "offer") return;
+    loadCandidateAndOfferedSlots();
+  }, [activeTab, selectedDateForSlots, selectedDuration]);
+
+  function toggleSlotOffered(startTime: string) {
+    setSelectedStartTimes((prev) =>
+      prev.includes(startTime) ? prev.filter((t) => t !== startTime) : [...prev, startTime].sort()
+    );
+  }
+
+  async function saveOfferedSlots() {
+    setSlotsSaveMessage(null);
+    setSlotsSaving(true);
+    try {
+      const res = await fetch("/api/availability/offered-slots", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          date: selectedDateForSlots.includes("T") ? selectedDateForSlots.slice(0, 10) : selectedDateForSlots,
+          durationMinutes: selectedDuration,
+          startTimes: selectedStartTimes,
+        }),
+      });
+      if (res.status === 401) {
+        window.location.href = "/doctor/login";
+        return;
+      }
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setSlotsSaveMessage("error");
+        alert(err.detail || "Failed to save slots");
+        return;
+      }
+      const data = await res.json();
+      setOfferedStartTimes(data.startTimes || []);
+      setSelectedStartTimes(data.startTimes || []);
+      setSlotsSaveMessage("saved");
+      setTimeout(() => setSlotsSaveMessage(null), 3000);
+    } catch (e) {
+      setSlotsSaveMessage("error");
+      alert("Could not save. Is the backend running?");
+    } finally {
+      setSlotsSaving(false);
+    }
+  }
 
   async function load() {
     setLoading(true);
@@ -61,23 +162,14 @@ export default function DoctorAvailabilityManager() {
     load();
   }, []);
 
-  // Convert a local (doctor browser) time to practice time ("HH:MM" in America/Los_Angeles)
-  function toPracticeTime(dateStr: string, localTime: string): string {
-    const dateOnly = dateStr.includes("T") ? dateStr.slice(0, 10) : dateStr;
-    const [h, m] = localTime.split(":").map(Number);
-    if (Number.isNaN(h) || Number.isNaN(m)) return localTime;
-    // Local datetime in the doctor's timezone
-    const local = new Date(`${dateOnly}T00:00:00`);
-    local.setHours(h, m ?? 0, 0, 0);
-    // Represent that instant in the practice timezone and extract HH:MM (24h)
-    const practiceStr = local.toLocaleTimeString("en-US", {
-      timeZone: PRACTICE_TZ,
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
-    const [ph, pm] = practiceStr.split(":");
-    return `${ph}:${pm}`;
+  // Normalize time input to "HH:MM" (24h). Input is treated as PST per the form labels.
+  function normalizeTimeToHHMM(timeStr: string): string {
+    const parts = timeStr.trim().split(":");
+    if (parts.length < 2) return timeStr;
+    const h = parseInt(parts[0], 10);
+    const m = parseInt(parts[1], 10) || 0;
+    if (Number.isNaN(h) || Number.isNaN(m)) return timeStr;
+    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
   }
 
   function addBlock() {
@@ -85,13 +177,18 @@ export default function DoctorAvailabilityManager() {
       alert("Start time must be before end time.");
       return;
     }
-    // Store times in practice timezone so backend stays consistent,
-    // but we'll display them back in the doctor's local timezone below.
-    const practiceStart = toPracticeTime(addDate, addStart);
-    const practiceEnd = toPracticeTime(addDate, addEnd);
+    // Use the entered times as PST (per "From (PST)" / "To (PST)" labels). No conversion.
+    const practiceStart = normalizeTimeToHHMM(addStart);
+    const practiceEnd = normalizeTimeToHHMM(addEnd);
     setBlocks((prev) => [
       ...prev,
-      { id: `new-${Date.now()}`, date: addDate, startTime: practiceStart, endTime: practiceEnd },
+      {
+        id: `new-${Date.now()}`,
+        date: addDate,
+        startTime: practiceStart,
+        endTime: practiceEnd,
+        allowedDurationsMinutes: [...DURATION_OPTIONS],
+      },
     ]);
   }
 
@@ -99,12 +196,30 @@ export default function DoctorAvailabilityManager() {
     setBlocks((prev) => prev.filter((b) => b.id !== id));
   }
 
+  function getAllowedForBlock(b: Block): number[] {
+    const a = b.allowedDurationsMinutes;
+    if (a != null && Array.isArray(a) && a.length > 0) return a;
+    return [...DURATION_OPTIONS];
+  }
+
+  function setAllowedForBlock(blockId: string, durations: number[]) {
+    setBlocks((prev) =>
+      prev.map((b) =>
+        b.id === blockId ? { ...b, allowedDurationsMinutes: durations } : b,
+      ),
+    );
+  }
+
   async function save() {
-    const payload = blocks.map((b) => ({
-      date: b.date.includes("T") ? b.date.slice(0, 10) : b.date,
-      startTime: b.startTime,
-      endTime: b.endTime,
-    }));
+    const payload = blocks.map((b) => {
+      const allowed = getAllowedForBlock(b);
+      return {
+        date: b.date.includes("T") ? b.date.slice(0, 10) : b.date,
+        startTime: b.startTime,
+        endTime: b.endTime,
+        allowedDurationsMinutes: allowed.length === DURATION_OPTIONS.length ? null : allowed,
+      };
+    });
     if (payload.length === 0) {
       alert("Add at least one block using the \"Add block\" button above, then click Save.");
       return;
@@ -152,39 +267,13 @@ export default function DoctorAvailabilityManager() {
     return date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" });
   };
 
-  // Convert time stored in practice timezone to doctor's local timezone for display.
-  const formatTimeAmPm = (dateStr: string, time: string) => {
-    const dateOnly = dateStr.includes("T") ? dateStr.slice(0, 10) : dateStr;
+  // Display time (stored as HH:MM in PST) as 12h AM/PM. All times are Pacific.
+  const formatTimeAmPm = (_dateStr: string, time: string) => {
     const [h, m] = time.split(":").map(Number);
     if (Number.isNaN(h) || Number.isNaN(m)) return time;
-
-    // Step 1: Create a reference UTC date (noon UTC on the target date)
-    const utcNoon = new Date(`${dateOnly}T12:00:00Z`);
-
-    // Step 2: Figure out what time noon UTC is in the practice timezone
-    const practiceNoonStr = utcNoon.toLocaleString("en-US", {
-      timeZone: PRACTICE_TZ,
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
-    const [practiceNoonH] = practiceNoonStr.split(":").map(Number);
-
-    // Step 3: Calculate offset between UTC noon and practice noon (in hours)
-    const offsetHours = 12 - practiceNoonH;
-
-    // Step 4: Build a UTC date that corresponds to the given practice time
-    const utcDate = new Date(
-      `${dateOnly}T${String(h).padStart(2, "0")}:${String(m ?? 0).padStart(2, "0")}:00Z`,
-    );
-    utcDate.setUTCHours(utcDate.getUTCHours() + offsetHours);
-
-    // Step 5: Format in the doctor's local (browser) timezone
-    return utcDate.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    });
+    const hour12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+    const ampm = h < 12 ? "AM" : "PM";
+    return `${hour12}:${String(m ?? 0).padStart(2, "0")} ${ampm}`;
   };
 
   const normalizeDate = (d: string) => (d.includes("T") ? d.slice(0, 10) : d);
@@ -261,7 +350,10 @@ export default function DoctorAvailabilityManager() {
       </div>
       <h1 className="section-heading">Manage availability</h1>
       <p className="mt-2 text-gray-600">
-        Set your available blocks for the next {AVAILABILITY_DAYS_AHEAD} days. Patients will see 30-minute slots within these blocks.
+        Choose an appointment length (30, 45, or 60 min), pick a date, then select which slots to offer. Only those slots are visible to patients for that appointment type. Set &quot;When I&apos;m available&quot; first so you have slots to offer.
+      </p>
+      <p className="mt-1 text-sm font-medium text-gray-700">
+        All times are in Pacific Time (PST).
       </p>
 
       {calendarConnected === false && (
@@ -286,12 +378,12 @@ export default function DoctorAvailabilityManager() {
         <p className="mt-8 text-gray-500">Loading…</p>
       ) : (
         <>
-          {/* View toggle */}
+          {/* Main tabs: Offer slots | When I'm available */}
           <div className="mt-8 rounded-xl border border-cream-200 bg-white p-1.5 shadow-sm">
             <div className="flex gap-1">
               {[
-                { id: "day" as const, label: "Day view" },
-                { id: "all" as const, label: `All blocks (${blocks.length})` },
+                { id: "offer" as const, label: "Offer slots" },
+                { id: "blocks" as const, label: `When I'm available (${blocks.length})` },
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -309,8 +401,226 @@ export default function DoctorAvailabilityManager() {
             </div>
           </div>
 
-          {activeTab === "day" ? (
+          {activeTab === "offer" ? (
+            /* --- Offer slots: duration → date → pick slots --- */
+            <div className="mt-6 space-y-6">
+              {/* Duration selector (like screenshot 2) */}
+              <div className="rounded-lg border border-cream-200 bg-white p-4">
+                <h2 className="text-sm font-semibold text-gray-700">Appointment length</h2>
+                <p className="mt-1 text-xs text-gray-500">Choose which duration you want to offer slots for.</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {([30, 45, 60] as const).map((d) => (
+                    <button
+                      key={d}
+                      type="button"
+                      onClick={() => setSelectedDuration(d)}
+                      className={`rounded-lg border px-4 py-2 text-sm font-medium transition ${
+                        selectedDuration === d
+                          ? "border-warm-brown bg-warm-brown text-white"
+                          : "border-cream-200 bg-white text-gray-700 hover:bg-cream-100"
+                      }`}
+                    >
+                      {d} min
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Calendar: select date */}
+              <div className="rounded-lg border border-cream-200 bg-white p-4">
+                <h2 className="text-sm font-semibold text-gray-700">Select a date</h2>
+                <p className="mt-1 text-xs text-gray-500">Pick a day to choose which {selectedDuration}-min slots to offer.</p>
+                {(() => {
+                  const offerMonth = months[offeredSlotsMonthIndex] ?? null;
+                  return offerMonth && (
+                  <>
+                    <div className="mt-4 flex items-center justify-between">
+                      <button
+                        type="button"
+                        onClick={() => setOfferedSlotsMonthIndex((i) => Math.max(i - 1, 0))}
+                        disabled={offeredSlotsMonthIndex === 0}
+                        className="rounded-full border border-cream-200 px-2 py-1 text-xs text-gray-600 disabled:opacity-40"
+                        aria-label="Previous month"
+                      >
+                        ‹
+                      </button>
+                      <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                        {offerMonth.label}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setOfferedSlotsMonthIndex((i) =>
+                            Math.min(i + 1, Math.max(months.length - 1, 0))
+                          )
+                        }
+                        disabled={offeredSlotsMonthIndex >= Math.max(months.length - 1, 0)}
+                        className="rounded-full border border-cream-200 px-2 py-1 text-xs text-gray-600 disabled:opacity-40"
+                        aria-label="Next month"
+                      >
+                        ›
+                      </button>
+                    </div>
+                    <div className="mt-2 grid grid-cols-7 gap-1 text-xs">
+                      {["S", "M", "T", "W", "T", "F", "S"].map((d, idx) => (
+                        <div key={`${d}-${idx}`} className="flex h-8 w-full min-w-0 items-center justify-center text-gray-500 font-medium">
+                          {d}
+                        </div>
+                      ))}
+                      {(() => {
+                        const cells: (CalendarDay | null)[] = [];
+                        if (offerMonth.days.length > 0) {
+                          const firstDow = offerMonth.days[0].dow;
+                          for (let i = 0; i < firstDow; i++) cells.push(null);
+                          for (const d of offerMonth.days) cells.push(d);
+                          while (cells.length % 7 !== 0) cells.push(null);
+                        }
+                        return cells.map((cell, idx) => {
+                          if (!cell) return <div key={`pad-${idx}`} className="h-8 min-w-0" />;
+                          const iso = cell.iso;
+                          const isSelected = iso === selectedDateForSlots;
+                          const isToday = iso === NEXT_DAYS[0];
+                          const hasBlocks = datesWithBlocks.has(iso);
+                          return (
+                            <button
+                              key={iso}
+                              type="button"
+                              onClick={() => setSelectedDateForSlots(iso)}
+                              title={hasBlocks ? `${iso}: has availability` : `${iso}: add a block in When I'm available`}
+                              className={[
+                                "flex h-8 w-full min-w-0 items-center justify-center rounded-full border text-xs font-medium transition",
+                                isSelected
+                                  ? "border-warm-brown bg-warm-brown text-white"
+                                  : hasBlocks
+                                    ? "border-warm-brown/40 bg-warm-brown/10 text-warm-brown hover:bg-warm-brown/20"
+                                    : "border-cream-200 text-gray-500 hover:bg-cream-100",
+                                isToday && !isSelected ? "ring-1 ring-warm-brown/40" : "",
+                              ]
+                                .filter(Boolean)
+                                .join(" ")}
+                            >
+                              {cell.dom}
+                            </button>
+                          );
+                        });
+                      })()}
+                    </div>
+                  </>
+                  );
+                })()}
+              </div>
+
+              {/* Slots for selected date: offer checkboxes */}
+              <div className="rounded-lg border border-cream-200 bg-white p-4">
+                <h2 className="text-sm font-semibold text-gray-700">
+                  {selectedDuration} min slots for {formatDate(selectedDateForSlots)}
+                </h2>
+                <p className="mt-1 text-xs text-gray-500">
+                  Check the slots you want to offer to patients. Only these will be bookable for {selectedDuration}-min appointments.
+                </p>
+                {selectedStartTimes.length > 0 && !slotsLoading && (
+                  <p className="mt-2 text-xs font-medium text-warm-brown">
+                    Offered for this day: {selectedStartTimes.map((t) => formatTimeAmPm(selectedDateForSlots, t)).join(", ")}
+                  </p>
+                )}
+                {slotsLoading ? (
+                  <p className="mt-4 text-sm text-gray-500">Loading slots…</p>
+                ) : candidateSlots.length === 0 ? (
+                  <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4">
+                    <p className="text-sm font-medium text-amber-900">
+                      No slots to offer on this day.
+                    </p>
+                    <p className="mt-1 text-sm text-amber-800">
+                      {datesWithBlocks.has(normalizeDate(selectedDateForSlots))
+                        ? <>You have availability blocks on this day, but none allow this duration, or times are already booked. In &quot;When I&apos;m available&quot; ensure the block allows {selectedDuration} min for that day.</>
+                        : "Add an availability block for this day first (e.g. 9:00–12:00), then return here to choose which times to offer."}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveTab("blocks");
+                        setAddDate(selectedDateForSlots.includes("T") ? selectedDateForSlots.slice(0, 10) : selectedDateForSlots);
+                      }}
+                      className="mt-3 rounded bg-warm-brown px-3 py-1.5 text-sm font-medium text-white hover:opacity-90"
+                    >
+                      When I&apos;m available → add block for {formatDate(selectedDateForSlots)}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {candidateSlots.map((slot) => {
+                      const offered = selectedStartTimes.includes(slot.startTime);
+                      return (
+                        <label
+                          key={slot.startTime}
+                          className={`inline-flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm transition ${
+                            offered
+                              ? "border-warm-brown bg-warm-brown/10 text-warm-brown"
+                              : "border-cream-200 bg-white text-gray-700 hover:bg-cream-50"
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={offered}
+                            onChange={() => toggleSlotOffered(slot.startTime)}
+                            className="rounded border-cream-300"
+                          />
+                          <span>
+                            {formatTimeAmPm(selectedDateForSlots, slot.startTime)} –{" "}
+                            {formatTimeAmPm(selectedDateForSlots, slot.endTime)}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
+                {candidateSlots.length > 0 && (
+                  <div className="mt-4 flex flex-wrap items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={saveOfferedSlots}
+                      disabled={slotsSaving}
+                      className="btn-primary"
+                    >
+                      {slotsSaving ? "Saving…" : "Save slots"}
+                    </button>
+                    {slotsSaveMessage === "saved" && (
+                      <span className="text-sm font-medium text-green-700">Saved!</span>
+                    )}
+                    {slotsSaveMessage === "error" && (
+                      <span className="text-sm font-medium text-red-700">Save failed.</span>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            /* --- When I'm available: blocks --- */
             <>
+              <div className="mt-6 rounded-xl border border-cream-200 bg-white p-1.5">
+                <div className="flex gap-1">
+                  {[
+                    { id: "day" as const, label: "Day view" },
+                    { id: "all" as const, label: `All blocks (${blocks.length})` },
+                  ].map((tab) => (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setBlocksTabView(tab.id)}
+                      className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition ${
+                        blocksTabView === tab.id
+                          ? "bg-warm-brown text-white"
+                          : "bg-transparent text-gray-600 hover:bg-cream-100"
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {blocksTabView === "day" ? (
+              <>
               <div className="mt-6 grid gap-6 md:grid-cols-[minmax(0,260px)_minmax(0,1fr)]">
                 {/* Calendar (60-day window) */}
                 <div className="rounded-lg border border-cream-200 bg-white p-4">
@@ -348,9 +658,9 @@ export default function DoctorAvailabilityManager() {
                       </div>
 
                       {/* Day-of-week header */}
-                      <div className="mt-2 text-xs font-medium text-gray-500 grid grid-cols-7 gap-1">
+                      <div className="mt-2 grid grid-cols-7 gap-1 text-xs font-medium text-gray-500">
                         {dayLabels.map((d, idx) => (
-                          <div key={`${d}-${idx}`} className="flex h-6 items-center justify-center">
+                          <div key={`${d}-${idx}`} className="flex h-8 min-w-0 w-full items-center justify-center">
                             {d}
                           </div>
                         ))}
@@ -374,7 +684,7 @@ export default function DoctorAvailabilityManager() {
                           }
                           return cells.map((cell, idx) => {
                             if (!cell) {
-                              return <div key={idx} className="h-8" />;
+                              return <div key={idx} className="h-8 min-w-0" />;
                             }
                             const iso = cell.iso;
                             const isSelected = iso === selectedDate;
@@ -386,7 +696,7 @@ export default function DoctorAvailabilityManager() {
                                 type="button"
                                 onClick={() => setAddDate(iso)}
                                 className={[
-                                  "flex h-8 w-8 items-center justify-center rounded-full border text-xs font-medium transition",
+                                  "flex h-8 w-full min-w-0 items-center justify-center rounded-full border text-xs font-medium transition",
                                   isSelected
                                     ? "border-warm-brown bg-warm-brown text-white shadow-sm"
                                     : hasBlocks
@@ -417,7 +727,7 @@ export default function DoctorAvailabilityManager() {
                   </p>
                   <div className="mt-3 flex flex-wrap items-end gap-3">
                     <div>
-                      <label className="block text-xs text-gray-500">From</label>
+                      <label className="block text-xs text-gray-500">From (PST)</label>
                       <input
                         type="time"
                         value={addStart}
@@ -426,7 +736,7 @@ export default function DoctorAvailabilityManager() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-gray-500">To</label>
+                      <label className="block text-xs text-gray-500">To (PST)</label>
                       <input
                         type="time"
                         value={addEnd}
@@ -449,7 +759,7 @@ export default function DoctorAvailabilityManager() {
                 <h2 className="text-sm font-semibold text-gray-700">
                   Blocks for {formatDate(selectedDate)}
                 </h2>
-                <p className="mt-1 text-xs text-gray-500">Times are shown in your browser's timezone.</p>
+                <p className="mt-1 text-xs text-gray-500">Times are in Pacific Time (PST).</p>
                 {blocksForSelected.length === 0 ? (
                   <p className="mt-2 text-sm text-gray-500">
                     No blocks for this day yet. Use the form above to add one, then click Save.
@@ -459,12 +769,35 @@ export default function DoctorAvailabilityManager() {
                     {blocksForSelected.map((b) => (
                       <li
                         key={b.id}
-                        className="flex items-center justify-between rounded-lg border border-cream-200 bg-white shadow-sm px-4 py-3 text-sm"
+                        className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-cream-200 bg-white shadow-sm px-4 py-3 text-sm"
                       >
-                        <div className="flex flex-col gap-0.5">
+                        <div className="flex flex-col gap-1">
                           <span className="font-medium text-gray-800">
                             {formatTimeAmPm(b.date, b.startTime)} – {formatTimeAmPm(b.date, b.endTime)}
                           </span>
+                          <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600">
+                            <span className="text-gray-500">Allow:</span>
+                            {DURATION_OPTIONS.map((dur) => {
+                              const allowed = getAllowedForBlock(b);
+                              const checked = allowed.includes(dur);
+                              return (
+                                <label key={dur} className="inline-flex items-center gap-1 cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={checked}
+                                    onChange={() => {
+                                      const next = checked
+                                        ? allowed.filter((x) => x !== dur)
+                                        : [...allowed, dur].sort((a, b) => a - b);
+                                      setAllowedForBlock(b.id, next.length ? next : [...DURATION_OPTIONS]);
+                                    }}
+                                    className="rounded border-cream-300"
+                                  />
+                                  {dur} min
+                                </label>
+                              );
+                            })}
+                          </div>
                         </div>
                         <button
                           type="button"
@@ -479,13 +812,16 @@ export default function DoctorAvailabilityManager() {
                 )}
               </div>
             </>
-          ) : (
+              ) : (
             <div className="mt-6">
               <h2 className="text-sm font-semibold text-gray-700">
                 All blocks (next {AVAILABILITY_DAYS_AHEAD} days)
               </h2>
               <p className="mt-1 text-xs text-gray-500">
-                Times are shown in your browser's timezone. Use the filter to focus on a specific day.
+                Times are in Pacific Time (PST). Use the filter to focus on a specific day.
+              </p>
+              <p className="mt-1 text-xs text-gray-600">
+                These blocks define when you&apos;re free. The specific 30/45/60 min slots that patients can book are set in the <strong>Offer slots</strong> tab.
               </p>
 
               <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -526,15 +862,38 @@ export default function DoctorAvailabilityManager() {
                   ).map((b) => (
                     <li
                       key={b.id}
-                      className="flex items-center justify-between rounded-lg border border-cream-200 bg-white shadow-sm px-4 py-3 text-sm"
+                      className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-cream-200 bg-white shadow-sm px-4 py-3 text-sm"
                     >
-                      <div className="flex flex-col gap-0.5">
+                      <div className="flex flex-col gap-1">
                         <span className="font-medium text-gray-800">
                           {formatDate(b.date)}
                         </span>
                         <span className="text-gray-600">
                           {formatTimeAmPm(b.date, b.startTime)} – {formatTimeAmPm(b.date, b.endTime)}
                         </span>
+                        <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600">
+                          <span className="text-gray-500">Allow:</span>
+                          {DURATION_OPTIONS.map((dur) => {
+                            const allowed = getAllowedForBlock(b);
+                            const checked = allowed.includes(dur);
+                            return (
+                              <label key={dur} className="inline-flex items-center gap-1 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={checked}
+                                  onChange={() => {
+                                    const next = checked
+                                      ? allowed.filter((x) => x !== dur)
+                                      : [...allowed, dur].sort((a, b) => a - b);
+                                    setAllowedForBlock(b.id, next.length ? next : [...DURATION_OPTIONS]);
+                                  }}
+                                  className="rounded border-cream-300"
+                                />
+                                {dur} min
+                              </label>
+                            );
+                          })}
+                        </div>
                       </div>
                       <button
                         type="button"
@@ -548,8 +907,11 @@ export default function DoctorAvailabilityManager() {
                 </ul>
               )}
             </div>
+              )}
+            </>
           )}
 
+          {activeTab === "blocks" && (
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <button
               type="button"
@@ -569,6 +931,7 @@ export default function DoctorAvailabilityManager() {
               <span className="text-sm font-medium text-red-700">Save failed. See alert.</span>
             )}
           </div>
+          )}
         </>
       )}
     </main>

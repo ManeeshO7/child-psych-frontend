@@ -17,6 +17,7 @@ function SaveCardForm({
   slotStart,
   slotEnd,
   visitType,
+  durationMinutes,
 }: {
   appointmentId?: string | null;
   clientSecret: string;
@@ -24,6 +25,7 @@ function SaveCardForm({
   slotStart?: string | null;
   slotEnd?: string | null;
   visitType?: string;
+  durationMinutes?: number;
 }) {
   const stripe = useStripe();
   const elements = useElements();
@@ -42,6 +44,7 @@ function SaveCardForm({
           slotStart,
           slotEnd,
           visitType,
+          durationMinutes,
         }));
       }
       const { error: submitError, setupIntent } = await stripe.confirmSetup({
@@ -136,6 +139,8 @@ export default function PatientSaveCardPage() {
   const slotStart = searchParams.get("slotStart");
   const slotEnd = searchParams.get("slotEnd");
   const visitType = searchParams.get("type") || "post_intake";
+  const durationMinutesParam = searchParams.get("durationMinutes");
+  const durationMinutes = durationMinutesParam ? parseInt(durationMinutesParam, 10) || 30 : 30;
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -159,12 +164,16 @@ export default function PatientSaveCardPage() {
           let slotStartToUse = slotStart;
           let slotEndToUse = slotEnd;
           let visitTypeToUse = visitType;
+          let durationMinutesToUse: number | null = durationMinutes;
           if (pendingSlotStr) {
             try {
               const pendingSlot = JSON.parse(pendingSlotStr);
               slotStartToUse = pendingSlot.slotStart;
               slotEndToUse = pendingSlot.slotEnd;
               visitTypeToUse = pendingSlot.visitType;
+              if (typeof pendingSlot.durationMinutes === "number") {
+                durationMinutesToUse = pendingSlot.durationMinutes;
+              }
               sessionStorage.removeItem("pendingAppointmentSlot");
             } catch {
               // Ignore parse errors
@@ -202,7 +211,11 @@ export default function PatientSaveCardPage() {
             router.push(
               `/patient/confirm-appointment?slotStart=${encodeURIComponent(
                 slotStartToUse,
-              )}&slotEnd=${encodeURIComponent(slotEndToUse || "")}&type=${encodeURIComponent(visitTypeToUse)}`,
+              )}&slotEnd=${encodeURIComponent(
+                slotEndToUse || "",
+              )}&type=${encodeURIComponent(visitTypeToUse)}&durationMinutes=${encodeURIComponent(
+                String(durationMinutesToUse ?? 30),
+              )}`,
             );
             return;
           }
@@ -262,7 +275,11 @@ export default function PatientSaveCardPage() {
       router.push(
         `/patient/confirm-appointment?slotStart=${encodeURIComponent(
           slotStart,
-        )}&slotEnd=${encodeURIComponent(slotEnd || "")}&type=${encodeURIComponent(visitType)}`,
+        )}&slotEnd=${encodeURIComponent(
+          slotEnd || "",
+        )}&type=${encodeURIComponent(visitType)}&durationMinutes=${encodeURIComponent(
+          String(durationMinutes),
+        )}`,
       );
       return;
     }
@@ -325,6 +342,7 @@ export default function PatientSaveCardPage() {
               slotStart={slotStart}
               slotEnd={slotEnd}
               visitType={visitType}
+              durationMinutes={durationMinutes}
             />
           </Elements>
         </div>
