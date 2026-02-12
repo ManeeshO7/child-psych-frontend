@@ -10,8 +10,6 @@ const CA_BOUNDS = {
   north: 42.01,
 };
 
-const PLACES_READY_EVENT = "google-places-ready";
-
 declare global {
   interface Window {
     google?: {
@@ -77,7 +75,7 @@ export function CaliforniaAddressAutocomplete({
   const widgetRef = useRef<PlaceAutocompleteElementInstance | null>(null);
   const apiKey = (process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "").trim();
 
-  // Load Maps JavaScript API with loading=async (new loader), then importLibrary('places')
+  // Load Maps JavaScript API with loading=async, then importLibrary('places') for Place Autocomplete (New)
   useEffect(() => {
     if (!apiKey) {
       setLoadError("Google Maps API key is not configured.");
@@ -92,20 +90,36 @@ export function CaliforniaAddressAutocomplete({
       const existing = document.querySelector('script[src*="maps.googleapis.com"]');
       if (existing) {
         if (window.google?.maps?.importLibrary) {
-          window.google.maps.importLibrary("places").then(onPlacesReady).catch(() => setLoadError("Failed to load Places library."));
+          window.google.maps
+            .importLibrary("places")
+            .then(onPlacesReady)
+            .catch((err: unknown) => {
+              const msg = err instanceof Error ? err.message : String(err);
+              setLoadError(`Failed to load Places library: ${msg}`);
+            });
+        } else {
+          setLoadError("Maps script loaded but importLibrary not available.");
         }
         return;
       }
 
       window.initCaliforniaAddressAutocomplete = function () {
-        window.google?.maps?.importLibrary("places").then(onPlacesReady).catch(() => setLoadError("Failed to load Places library."));
+        window.google?.maps?.importLibrary("places")
+          .then(onPlacesReady)
+          .catch((err: unknown) => {
+            const msg = err instanceof Error ? err.message : String(err);
+            setLoadError(`Failed to load Places library: ${msg}`);
+          });
       };
 
       const script = document.createElement("script");
       script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&loading=async&callback=initCaliforniaAddressAutocomplete`;
       script.async = true;
       script.defer = true;
-      script.onerror = () => setLoadError("Failed to load Google Maps.");
+      script.onerror = () =>
+        setLoadError(
+          "Failed to load Google Maps script. Check API key, Maps JavaScript API, Places API (New), and HTTP referrer restrictions."
+        );
       document.head.appendChild(script);
 
       return () => {
@@ -136,7 +150,9 @@ export function CaliforniaAddressAutocomplete({
     }) => PlaceAutocompleteElementInstance) | undefined;
 
     if (!PlaceAutocompleteElement) {
-      setLoadError("Place Autocomplete (New) is not available.");
+      setLoadError(
+        "PlaceAutocompleteElement not found. Ensure Places API (New) is enabled in Google Cloud Console."
+      );
       return;
     }
 
@@ -175,7 +191,6 @@ export function CaliforniaAddressAutocomplete({
         state: "California",
         isCalifornia: true,
       });
-      // Show the selected address in the widget's input (otherwise it stays empty)
       if (typeof (widget as { value?: string }).value !== "undefined") {
         (widget as { value: string }).value = formatted;
       }
@@ -191,7 +206,6 @@ export function CaliforniaAddressAutocomplete({
     };
   }, [scriptLoaded, placeholder, onChange]);
 
-  // Keep widget input in sync when value is set from parent (e.g. after selection or re-render)
   useEffect(() => {
     const w = widgetRef.current as { value?: string } | null;
     if (w && typeof w.value !== "undefined" && value) {
@@ -199,7 +213,6 @@ export function CaliforniaAddressAutocomplete({
     }
   }, [value]);
 
-  // Inject style to remove blue outline from Google widget (must run unconditionally for Rules of Hooks)
   useEffect(() => {
     const styleId = "california-address-autocomplete-no-outline";
     if (document.getElementById(styleId)) return;
@@ -244,20 +257,20 @@ export function CaliforniaAddressAutocomplete({
     };
   }, []);
 
-  // Fallback input when no API key, or while Places script is loading (so user always sees a box)
   const fallbackInput = (
     <input
       type="text"
       id={id}
       value={value}
       onChange={(e) => onChange(e.target.value, null)}
-      placeholder={scriptLoaded ? "Start typing a California address…" : "Loading address search…"}
+      placeholder={
+        scriptLoaded ? "Start typing a California address…" : "Loading address search… (you can type manually)"
+      }
       required={required}
       disabled={disabled}
       className={className}
       aria-label={ariaLabel ?? "California address"}
       aria-invalid={!!loadError}
-      readOnly={!!apiKey && !scriptLoaded}
       autoComplete="off"
     />
   );
@@ -266,37 +279,43 @@ export function CaliforniaAddressAutocomplete({
     return (
       <div className="space-y-1">
         {fallbackInput}
-        {loadError && (
-          <p className="text-xs text-amber-700">
-            {loadError} Add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to enable autocomplete.
-          </p>
-        )}
-        <p className="text-xs italic text-warm-brown">Only California addresses are accepted. Visits must occur from California.</p>
+        <p className="text-xs text-amber-700">
+          Add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to .env to enable autocomplete.
+        </p>
+        <p className="text-xs italic text-warm-brown">
+          Only California addresses are accepted. Visits must occur from California.
+        </p>
       </div>
     );
   }
 
-  // While script is loading, show a visible input so the user always sees an address box
   if (!scriptLoaded) {
     return (
       <div className="space-y-1">
         {fallbackInput}
-        <p className="text-xs italic text-warm-brown">Only California addresses are accepted. Visits must occur from California.</p>
+        <p className="text-xs italic text-warm-brown">
+          Only California addresses are accepted. Visits must occur from California.
+        </p>
       </div>
     );
   }
 
   return (
     <div className="space-y-1">
-      {/* Wrapper with min-height so the address box is always visible */}
       <div
         ref={containerRef}
         className="mt-1 flex w-full min-w-0 min-h-[2.75rem] items-center overflow-visible rounded-lg border border-gray-300 bg-white focus-within:border-warm-brown focus-within:ring-1 focus-within:ring-warm-brown [&_*]:outline-none [&_input]:min-h-[2.5rem] [&_input]:min-w-0 [&_input]:w-full [&_input]:flex-1 [&_input]:border-0 [&_input]:bg-transparent [&_input]:py-2 [&_input]:px-3 [&_input]:text-sm [&_input]:leading-normal [&_input]:outline-none [&_input]:ring-0 [&_input]:focus:outline-none [&_input]:focus:ring-0 [&_input]:placeholder:text-gray-400 [&_gmp-place-autocomplete]:w-full"
         style={{ boxSizing: "border-box" }}
       />
       <input type="hidden" id={id} value={value} readOnly aria-hidden="true" tabIndex={-1} />
-      {loadError && <p className="text-xs text-amber-700">{loadError}</p>}
-      <p className="text-xs italic text-warm-brown">Only California addresses are accepted. Visits must occur from California.</p>
+      {loadError && (
+        <p className="text-xs text-amber-700">
+          {loadError} Check API key restrictions allow your domain (e.g. localhost).
+        </p>
+      )}
+      <p className="text-xs italic text-warm-brown">
+        Only California addresses are accepted. Visits must occur from California.
+      </p>
     </div>
   );
 }

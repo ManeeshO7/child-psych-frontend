@@ -4,6 +4,8 @@ import { useEffect, useState, useMemo, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AssignFormsModal from "@/components/AssignFormsModal";
+import SetAllowedFollowupModal from "@/components/SetAllowedFollowupModal";
+import ScheduleFollowupModal from "@/components/ScheduleFollowupModal";
 
 type Appointment = {
   id: string;
@@ -36,6 +38,14 @@ export default function DoctorAppointmentsList() {
   const [openingMeetId, setOpeningMeetId] = useState<string | null>(null);
   const [assignFormsModalOpen, setAssignFormsModalOpen] = useState(false);
   const [assignFormsAppointment, setAssignFormsAppointment] = useState<{ id: string; patientId: string } | null>(null);
+  const [setFollowupModalOpen, setSetFollowupModalOpen] = useState(false);
+  const [setFollowupPatient, setSetFollowupPatient] = useState<{ patientId: string; patientName: string } | null>(null);
+  const [scheduleFollowupOpen, setScheduleFollowupOpen] = useState(false);
+  const [scheduleFollowupPatient, setScheduleFollowupPatient] = useState<{
+    patientId: string;
+    patientName: string;
+    allowedTypes: string[];
+  } | null>(null);
   const [notice, setNotice] = useState<{
     type: "success" | "error" | "info";
     message: string;
@@ -459,7 +469,7 @@ export default function DoctorAppointmentsList() {
                       </button>
                     </p>
                   )}
-                  {a.status === "completed" && a.type === "intake" && a.patient && (
+                  {a.status === "completed" && (a.type === "intake" || a.type === "clinical_intake") && a.patient && (
                     <p className="mt-1.5">
                       <button
                         type="button"
@@ -494,7 +504,9 @@ export default function DoctorAppointmentsList() {
                           ? "bg-blue-100 text-blue-800"
                           : a.status === "completed"
                             ? "bg-purple-100 text-purple-800"
-                            : a.status === "cancelled"
+                            : a.status === "pending_confirmation"
+                              ? "bg-amber-100 text-amber-800"
+                              : a.status === "cancelled"
                               ? "bg-gray-100 text-gray-600"
                               : "bg-gray-100 text-gray-600"
                   }`}
@@ -536,6 +548,33 @@ export default function DoctorAppointmentsList() {
         appointmentId={assignFormsAppointment?.id || null}
         onSuccess={() => {
           showNotice("success", "Forms assigned successfully!");
+          load(pageCursor);
+        }}
+      />
+      <SetAllowedFollowupModal
+        isOpen={setFollowupModalOpen}
+        onClose={() => {
+          setSetFollowupModalOpen(false);
+          setSetFollowupPatient(null);
+        }}
+        patientId={setFollowupPatient?.patientId || ""}
+        patientName={setFollowupPatient?.patientName}
+        onSuccess={() => {
+          showNotice("success", "Follow-up type saved.");
+          load(pageCursor);
+        }}
+      />
+      <ScheduleFollowupModal
+        isOpen={scheduleFollowupOpen}
+        onClose={() => {
+          setScheduleFollowupOpen(false);
+          setScheduleFollowupPatient(null);
+        }}
+        patientId={scheduleFollowupPatient?.patientId || ""}
+        patientName={scheduleFollowupPatient?.patientName}
+        allowedTypes={scheduleFollowupPatient?.allowedTypes}
+        onSuccess={() => {
+          showNotice("success", "Follow-up scheduled. Patient will confirm and add card.");
           load(pageCursor);
         }}
       />

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { BOOK_TYPE_SLUGS, slugToType } from "./types";
+import { typeToSlug } from "./types";
 
 type AllowedType = { type: string; durationMinutes: number; label: string };
 
@@ -15,7 +15,6 @@ const SLUG_LABELS: Record<string, string> = {
 
 export default function PatientBookPage() {
   const [allowedTypes, setAllowedTypes] = useState<AllowedType[]>([]);
-  const [notAllowedReasons, setNotAllowedReasons] = useState<Record<string, string>>({});
   const [pendingForms, setPendingForms] = useState<{ hasPendingForms: boolean; pendingCount: number } | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -31,7 +30,6 @@ export default function PatientBookPage() {
         if (allowedRes.ok) {
           const data = await allowedRes.json();
           setAllowedTypes((data.allowedTypes || []) as AllowedType[]);
-          setNotAllowedReasons((data.notAllowedReasons || {}) as Record<string, string>);
         }
         if (formsRes.ok) {
           const formsData = await formsRes.json();
@@ -72,36 +70,37 @@ export default function PatientBookPage() {
 
       {loading ? (
         <p className="mt-6 text-gray-500">Loading…</p>
+      ) : allowedTypes.length === 0 ? (
+        <div className="mt-8 rounded-lg border border-cream-200 bg-cream-50 p-6">
+          <p className="text-gray-600">
+            You don&apos;t have any bookable appointment types at this time.
+          </p>
+          <p className="mt-2 text-sm text-gray-500">
+            New patients: request access first. After orientation, you can book clinical intake. After intake, your doctor will assign your follow-up type.
+          </p>
+          <Link href="/patient" className="mt-4 inline-block text-warm-brown hover:underline">
+            ← Back to dashboard
+          </Link>
+        </div>
       ) : (
         <div className="mt-8 flex flex-col gap-4">
-          {BOOK_TYPE_SLUGS.map((slug) => {
-            const backendType = slugToType(slug);
-            const isAllowed = backendType ? allowedTypes.some((a) => a.type === backendType) : false;
-            const reason = backendType ? notAllowedReasons[backendType] : "";
-            const label = SLUG_LABELS[slug] ?? slug;
-
+          {allowedTypes.map((opt) => {
+            const slug = typeToSlug(opt.type);
+            if (!slug) return null;
+            const labelAlreadyHasDuration = /\d+\s*min/i.test(opt.label);
+            const label = labelAlreadyHasDuration ? opt.label : `${opt.label} (${opt.durationMinutes} min)`;
             return (
               <div
-                key={slug}
-                className={`rounded-xl border p-5 shadow-sm transition ${
-                  isAllowed
-                    ? "border-cream-200 bg-white hover:border-warm-brown/50 hover:shadow-md"
-                    : "border-gray-200 bg-gray-50"
-                }`}
+                key={opt.type}
+                className="rounded-xl border border-cream-200 bg-white p-5 shadow-sm transition hover:border-warm-brown/50 hover:shadow-md"
               >
                 <h2 className="text-base font-semibold text-gray-900">{label}</h2>
-                {isAllowed ? (
-                  <Link
-                    href={`/patient/book/${slug}`}
-                    className="mt-3 inline-block rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90"
-                  >
-                    Book this appointment →
-                  </Link>
-                ) : (
-                  <p className="mt-3 text-sm text-gray-500" title={reason}>
-                    {reason || "Not available for you at this time."}
-                  </p>
-                )}
+                <Link
+                  href={`/patient/book/${slug}`}
+                  className="mt-3 inline-block rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90"
+                >
+                  Book this appointment →
+                </Link>
               </div>
             );
           })}

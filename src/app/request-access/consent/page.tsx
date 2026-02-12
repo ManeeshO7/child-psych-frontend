@@ -81,12 +81,14 @@ function ConsentContent() {
       <main className="min-h-screen bg-cream-50 py-12 sm:py-16">
         <div className="mx-auto max-w-xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-warm-brown/80">
+            <p className="text-lg sm:text-xl font-semibold uppercase tracking-[0.15em] text-warm-brown/90">
               Consent to review
             </p>
-            <h1 className="mt-2 section-heading">Required Acknowledgements</h1>
+            <h1 className="mt-2 section-heading text-red-600">
+              Required Acknowledgements
+            </h1>
             <p className="mt-3 text-sm text-gray-600 max-w-md mx-auto">
-              Please read and confirm each statement below. All five must be checked to continue.
+              <span className="text-red-600 font-medium">*</span> All acknowledgements below are required to proceed. Please read and confirm each statement.
             </p>
           </div>
 
@@ -113,7 +115,7 @@ function ConsentContent() {
                     className="mt-0.5 h-5 w-5 shrink-0 rounded border-gray-300 text-warm-brown focus:ring-warm-brown focus:ring-offset-0"
                   />
                   <span className="text-[15px] text-gray-800 leading-snug">
-                    I understand this practice does not provide emergency or crisis care
+                    <span className="text-red-600">*</span> I understand this practice does not provide emergency or crisis care
                   </span>
                 </label>
 
@@ -128,7 +130,7 @@ function ConsentContent() {
                     className="mt-0.5 h-5 w-5 shrink-0 rounded border-gray-300 text-warm-brown focus:ring-warm-brown focus:ring-offset-0"
                   />
                   <span className="text-[15px] text-gray-800 leading-snug">
-                    My child is not currently in psychiatric crisis
+                    <span className="text-red-600">*</span> My child is not currently in psychiatric crisis
                   </span>
                 </label>
 
@@ -143,7 +145,7 @@ function ConsentContent() {
                     className="mt-0.5 h-5 w-5 shrink-0 rounded border-gray-300 text-warm-brown focus:ring-warm-brown focus:ring-offset-0"
                   />
                   <span className="text-[15px] text-gray-800 leading-snug">
-                    I understand this is a private, fee-for-service practice and does not bill insurance
+                    <span className="text-red-600">*</span> I understand this is a private, fee-for-service practice and does not bill insurance
                   </span>
                 </label>
 
@@ -158,7 +160,7 @@ function ConsentContent() {
                     className="mt-0.5 h-5 w-5 shrink-0 rounded border-gray-300 text-warm-brown focus:ring-warm-brown focus:ring-offset-0"
                   />
                   <span className="text-[15px] text-gray-800 leading-snug">
-                    I understand that submitting this form does not guarantee acceptance
+                    <span className="text-red-600">*</span> I understand that submitting this form does not guarantee acceptance
                   </span>
                 </label>
 
@@ -173,7 +175,7 @@ function ConsentContent() {
                     className="mt-0.5 h-5 w-5 shrink-0 rounded border-gray-300 text-warm-brown focus:ring-warm-brown focus:ring-offset-0"
                   />
                   <span className="text-[15px] text-gray-800 leading-snug">
-                    I understand that no doctor-patient relationship is created by submitting this form
+                    <span className="text-red-600">*</span> I understand that no doctor-patient relationship is created by submitting this form
                   </span>
                 </label>
               </div>

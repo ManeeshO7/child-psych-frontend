@@ -103,7 +103,11 @@ export default function PatientAppointments() {
         if (isNaN(appointmentTime.getTime())) return false;
         // Include scheduled, card_on_file, and paid status as upcoming if in the future
         const isFuture = appointmentTime >= now;
-        const isUpcomingStatus = a.status === "scheduled" || a.status === "card_on_file" || a.status === "paid";
+        const isUpcomingStatus =
+          a.status === "scheduled" ||
+          a.status === "card_on_file" ||
+          a.status === "paid" ||
+          a.status === "pending_confirmation";
         return isUpcomingStatus && isFuture;
       } catch {
         return false;
@@ -170,18 +174,27 @@ export default function PatientAppointments() {
                       {a.durationMinutes} min · {a.type}
                       {a.doctor?.name && ` · ${a.doctor.name}`}
                     </p>
-                    {a.meetLink &&
-                      (a.status === "scheduled" ||
-                        a.status === "card_on_file" ||
-                        a.status === "paid") && (
-                        <a
-                          href={a.meetLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                    {a.status === "pending_confirmation" ? (
+                        <Link
+                          href={`/patient/confirm-scheduled?appointmentId=${encodeURIComponent(a.id)}`}
                           className="mt-2 inline-flex items-center text-xs font-medium text-warm-brown hover:underline"
                         >
-                          Join video visit
-                        </a>
+                          Confirm & add payment →
+                        </Link>
+                      ) : (
+                        a.meetLink &&
+                        (a.status === "scheduled" ||
+                          a.status === "card_on_file" ||
+                          a.status === "paid") && (
+                          <a
+                            href={a.meetLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-2 inline-flex items-center text-xs font-medium text-warm-brown hover:underline"
+                          >
+                            Join video visit
+                          </a>
+                        )
                       )}
                   </div>
                   <span
@@ -192,12 +205,20 @@ export default function PatientAppointments() {
                           ? "bg-amber-100 text-amber-800"
                           : a.status === "paid"
                             ? "bg-blue-100 text-blue-800"
-                            : a.status === "completed"
-                              ? "bg-purple-100 text-purple-800"
-                              : "bg-gray-100 text-gray-600"
+                            : a.status === "pending_confirmation"
+                              ? "bg-amber-100 text-amber-800"
+                              : a.status === "completed"
+                                ? "bg-purple-100 text-purple-800"
+                                : "bg-gray-100 text-gray-600"
                     }`}
                   >
-                    {a.status === "card_on_file" ? "Card on file" : a.status === "paid" ? "Paid" : a.status}
+                    {a.status === "card_on_file"
+                      ? "Card on file"
+                      : a.status === "paid"
+                        ? "Paid"
+                        : a.status === "pending_confirmation"
+                          ? "Confirm required"
+                          : a.status}
                   </span>
                 </li>
               );

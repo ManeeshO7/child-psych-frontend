@@ -136,6 +136,7 @@ export default function PatientSaveCardPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const appointmentId = searchParams.get("appointmentId");
+  const returnTo = searchParams.get("returnTo");
   const slotStart = searchParams.get("slotStart");
   const slotEnd = searchParams.get("slotEnd");
   const visitType = searchParams.get("type") || "post_intake";
@@ -283,8 +284,12 @@ export default function PatientSaveCardPage() {
       );
       return;
     }
-    // If we already have an appointment, just go to dashboard
-    router.push("/patient");
+    // If we have returnTo (e.g. confirm-scheduled), go there; else dashboard
+    if (returnTo) {
+      router.push(returnTo);
+    } else {
+      router.push("/patient");
+    }
     router.refresh();
   };
 
