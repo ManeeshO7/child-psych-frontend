@@ -39,6 +39,7 @@ export default function PatientAppointments() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [tzLabel, setTzLabel] = useState("PT");
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
   const lastInteractionAtRef = useRef<Record<string, number>>({});
 
   // Cache timezone label to avoid recalculating on every render
@@ -92,6 +93,34 @@ export default function PatientAppointments() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  async function cancelAppointment(id: string) {
+    if (cancellingId !== null) return;
+    if (!confirm("Cancel this appointment? You can book a different time instead.")) return;
+    setCancellingId(id);
+    try {
+      const res = await fetch(`/api/appointments/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ status: "cancelled" }),
+      });
+      if (res.status === 401) {
+        router.push("/login");
+        return;
+      }
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        alert(err.detail || "Failed to cancel");
+        return;
+      }
+      await load();
+    } catch {
+      alert("Network error. Please try again.");
+    } finally {
+      setCancellingId(null);
+    }
+  }
 
   // Memoize filtered appointments to prevent recalculation on every render
   const { upcoming, past } = useMemo(() => {
@@ -175,12 +204,26 @@ export default function PatientAppointments() {
                       {a.doctor?.name && ` · ${a.doctor.name}`}
                     </p>
                     {a.status === "pending_confirmation" ? (
-                        <Link
-                          href={`/patient/confirm-scheduled?appointmentId=${encodeURIComponent(a.id)}`}
-                          className="mt-2 inline-flex items-center text-xs font-medium text-warm-brown hover:underline"
-                        >
-                          Confirm & add payment →
-                        </Link>
+                        <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1">
+                          <Link
+                            href={`/patient/confirm-scheduled?appointmentId=${encodeURIComponent(a.id)}`}
+                            className="inline-flex items-center text-xs font-medium text-warm-brown hover:underline"
+                          >
+                            Confirm & add payment →
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              cancelAppointment(a.id);
+                            }}
+                            disabled={cancellingId !== null}
+                            className="text-xs font-medium text-gray-600 hover:underline disabled:opacity-50"
+                          >
+                            {cancellingId === a.id ? "Cancelling…" : "Change time"}
+                          </button>
+                        </p>
                       ) : (
                         a.meetLink &&
                         (a.status === "scheduled" ||

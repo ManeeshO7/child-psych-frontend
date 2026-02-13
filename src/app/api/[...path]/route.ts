@@ -75,9 +75,11 @@ async function proxy(
     headers.set("Cookie", `${SESSION_COOKIE}=${sessionCookie.value}`);
   }
 
-  let body: string | undefined;
+  // Use arrayBuffer for body to preserve binary data (e.g. PDF uploads via multipart/form-data).
+  // request.text() corrupts binary content in file uploads.
+  let body: ArrayBuffer | undefined;
   try {
-    body = await request.text();
+    body = await request.arrayBuffer();
   } catch {
     body = undefined;
   }
@@ -85,7 +87,7 @@ async function proxy(
   let res = await fetch(url, {
     method,
     headers,
-    body: body && body.length > 0 ? body : undefined,
+    body: body && body.byteLength > 0 ? body : undefined,
     redirect: "manual",
   });
 
@@ -96,7 +98,7 @@ async function proxy(
       res = await fetch(location, {
         method,
         headers,
-        body: body && body.length > 0 ? body : undefined,
+        body: body && body.byteLength > 0 ? body : undefined,
         redirect: "manual",
       });
     }

@@ -289,7 +289,7 @@ export default function PatientFormsPage() {
         <div className="mt-10 rounded-lg border border-gray-200 bg-white p-8 text-center">
           <p className="text-gray-600">No forms have been assigned to you yet.</p>
           <p className="mt-2 text-sm text-gray-500">
-            Forms will appear here once your doctor assigns them to you.
+            After your orientation consult, your doctor will assign forms for you to complete. They will appear here.
           </p>
           <Link
             href="/patient"

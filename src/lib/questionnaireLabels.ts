@@ -23,6 +23,9 @@ export const QUESTIONNAIRE_LABELS: Record<string, string> = {
   comfortableConciergeFee: "I am comfortable with the concierge fee structure.",
   understandStructuredCommunication: "I understand structured communication (e.g. portal) is required.",
   additionalInfo: "Anything else important for us to know?",
+  // Form assignment questionnaires (Mood Tracking, etc.)
+  moodToday: "How are you feeling today?",
+  concerns: "Any concerns or questions?",
   // Legacy questionnaire keys (for older submissions)
   childLocation: "2. Child's current location (state/country where visits will occur)",
   legalGuardian: "3. Are you the child's legal guardian authorized to consent to psychiatric care?",
@@ -105,6 +108,13 @@ function formatAnswer(value: unknown): string {
   return String(value);
 }
 
+/** Convert camelCase to "Title case" for unknown keys */
+function keyToLabel(key: string): string {
+  const label = QUESTIONNAIRE_LABELS[key];
+  if (label) return label;
+  return key.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase()).trim();
+}
+
 /**
  * Convert questionnaire data object into an array of { question, answer } for display.
  */
@@ -115,14 +125,15 @@ export function questionnaireToQandA(
   const out: { question: string; answer: string }[] = [];
   const keys = QUESTIONNAIRE_KEY_ORDER.filter((k) => data[k] !== undefined && data[k] !== "");
   for (const key of keys) {
-    const question = QUESTIONNAIRE_LABELS[key] || key;
+    const question = keyToLabel(key);
     const answer = formatAnswer(data[key]);
     out.push({ question, answer });
   }
-  // Include any keys not in the order (e.g. from older forms)
+  // Include any keys not in the order (e.g. from form assignments)
   for (const key of Object.keys(data)) {
     if (QUESTIONNAIRE_KEY_ORDER.includes(key)) continue;
-    out.push({ question: QUESTIONNAIRE_LABELS[key] || key, answer: formatAnswer(data[key]) });
+    if (data[key] === undefined || data[key] === "") continue;
+    out.push({ question: keyToLabel(key), answer: formatAnswer(data[key]) });
   }
   return out;
 }

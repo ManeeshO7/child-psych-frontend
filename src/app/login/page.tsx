@@ -82,7 +82,7 @@ export default function LoginPage() {
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? (
-                    // Eye-off icon
+                    // Eye with slash = password visible, click to hide
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M3 3l18 18" strokeLinecap="round" strokeLinejoin="round" />
                       <path
@@ -92,7 +92,7 @@ export default function LoginPage() {
                       />
                     </svg>
                   ) : (
-                    // Eye icon
+                    // Plain eye = password hidden, click to show
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path
                         d="M1.5 12C2.67 9.33 5.64 5 12 5s9.33-4.33 10.5 7c-1.17 2.67-4.14 7-10.5 7S2.67 14.67 1.5 12z"

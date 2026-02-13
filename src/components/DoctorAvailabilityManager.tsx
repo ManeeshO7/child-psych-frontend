@@ -214,9 +214,9 @@ export default function DoctorAvailabilityManager() {
     const payload = blocks.map((b) => {
       const allowed = getAllowedForBlock(b);
       return {
-        date: b.date.includes("T") ? b.date.slice(0, 10) : b.date,
-        startTime: b.startTime,
-        endTime: b.endTime,
+      date: b.date.includes("T") ? b.date.slice(0, 10) : b.date,
+      startTime: b.startTime,
+      endTime: b.endTime,
         allowedDurationsMinutes: allowed.length === DURATION_OPTIONS.length ? null : allowed,
       };
     });
@@ -726,36 +726,36 @@ export default function DoctorAvailabilityManager() {
                     Choose a start and end time to add a new availability block for this day.
                   </p>
                   <div className="mt-3 flex flex-wrap items-end gap-3">
-                    <div>
+              <div>
                       <label className="block text-xs text-gray-500">From (PST)</label>
-                      <input
-                        type="time"
-                        value={addStart}
-                        onChange={(e) => setAddStart(e.target.value)}
-                        className="mt-0.5 rounded border border-cream-200 px-2 py-1.5 text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-gray-500">To (PST)</label>
-                      <input
-                        type="time"
-                        value={addEnd}
-                        onChange={(e) => setAddEnd(e.target.value)}
-                        className="mt-0.5 rounded border border-cream-200 px-2 py-1.5 text-sm"
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={addBlock}
-                      className="rounded bg-warm-brown px-3 py-1.5 text-sm font-medium text-white hover:opacity-90"
-                    >
-                      Add block
-                    </button>
-                  </div>
-                </div>
+                <input
+                  type="time"
+                  value={addStart}
+                  onChange={(e) => setAddStart(e.target.value)}
+                  className="mt-0.5 rounded border border-cream-200 px-2 py-1.5 text-sm"
+                />
               </div>
+              <div>
+                      <label className="block text-xs text-gray-500">To (PST)</label>
+                <input
+                  type="time"
+                  value={addEnd}
+                  onChange={(e) => setAddEnd(e.target.value)}
+                  className="mt-0.5 rounded border border-cream-200 px-2 py-1.5 text-sm"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={addBlock}
+                className="rounded bg-warm-brown px-3 py-1.5 text-sm font-medium text-white hover:opacity-90"
+              >
+                Add block
+              </button>
+                  </div>
+            </div>
+          </div>
 
-              <div className="mt-6">
+          <div className="mt-6">
                 <h2 className="text-sm font-semibold text-gray-700">
                   Blocks for {formatDate(selectedDate)}
                 </h2>
@@ -854,8 +854,8 @@ export default function DoctorAvailabilityManager() {
                 <p className="mt-2 text-sm text-gray-500">
                   No availability blocks saved yet. Use the Day view to add blocks, then click Save.
                 </p>
-              ) : (
-                <ul className="mt-3 space-y-3 list-none p-0">
+            ) : (
+              <ul className="mt-3 space-y-3 list-none p-0">
                   {(allBlocksFilterDate === "all"
                     ? allBlocksSorted
                     : allBlocksSorted.filter((b) => normalizeDate(b.date) === allBlocksFilterDate)
@@ -904,9 +904,9 @@ export default function DoctorAvailabilityManager() {
                       </button>
                     </li>
                   ))}
-                </ul>
-              )}
-            </div>
+              </ul>
+            )}
+          </div>
               )}
             </>
           )}

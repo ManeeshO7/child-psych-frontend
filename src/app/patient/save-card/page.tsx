@@ -18,6 +18,7 @@ function SaveCardForm({
   slotEnd,
   visitType,
   durationMinutes,
+  returnTo,
 }: {
   appointmentId?: string | null;
   clientSecret: string;
@@ -26,6 +27,7 @@ function SaveCardForm({
   slotEnd?: string | null;
   visitType?: string;
   durationMinutes?: number;
+  returnTo?: string | null;
 }) {
   const stripe = useStripe();
   const elements = useElements();
@@ -38,7 +40,7 @@ function SaveCardForm({
     setLoading(true);
     setError(null);
     try {
-      // Store slot info in sessionStorage in case Stripe redirects (for 3D Secure, etc.)
+      // Store slot/return info in sessionStorage in case Stripe redirects (for 3D Secure, etc.)
       if (slotStart && !appointmentId) {
         sessionStorage.setItem("pendingAppointmentSlot", JSON.stringify({
           slotStart,
@@ -46,6 +48,9 @@ function SaveCardForm({
           visitType,
           durationMinutes,
         }));
+      }
+      if (appointmentId && returnTo) {
+        sessionStorage.setItem("saveCardReturnTo", returnTo);
       }
       const { error: submitError, setupIntent } = await stripe.confirmSetup({
         elements,
@@ -207,7 +212,7 @@ export default function PatientSaveCardPage() {
             setLoading(false);
             return;
           }
-          // Redirect to confirmation page if we have slot info
+          // Redirect to confirmation page if we have slot info (orientation/self-book flow)
           if (!appointmentId && slotStartToUse) {
             router.push(
               `/patient/confirm-appointment?slotStart=${encodeURIComponent(
@@ -220,8 +225,15 @@ export default function PatientSaveCardPage() {
             );
             return;
           }
-          // If we already have an appointment, go to dashboard
-          router.push("/patient");
+          // If we have an appointment (doctor-scheduled flow), go to confirm-scheduled or returnTo
+          const returnToParam =
+            searchParams.get("returnTo") || sessionStorage.getItem("saveCardReturnTo");
+          if (returnToParam) {
+            sessionStorage.removeItem("saveCardReturnTo");
+            router.push(returnToParam);
+          } else {
+            router.push("/patient");
+          }
           router.refresh();
         } catch (err) {
           setError("Failed to complete card save after redirect");
@@ -348,6 +360,7 @@ export default function PatientSaveCardPage() {
               slotEnd={slotEnd}
               visitType={visitType}
               durationMinutes={durationMinutes}
+              returnTo={returnTo}
             />
           </Elements>
         </div>

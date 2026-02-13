@@ -34,12 +34,14 @@ export default function Disclaimers() {
         <div className="absolute inset-0 bg-white/55" aria-hidden />
       </div>
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <h2 className="section-heading section-heading-accent mx-auto text-center text-3xl md:text-4xl after:left-1/2 after:-translate-x-1/2">
-          California Telepsychiatry Disclaimers
-        </h2>
-        <p className="mt-4 text-center text-sm text-gray-500">
-          Child & Adolescent Care
-        </p>
+        <div className="text-center">
+          <h2 className="section-heading section-heading-accent mx-auto inline-block text-3xl md:text-4xl after:left-1/2 after:-translate-x-1/2">
+            California Telepsychiatry Disclaimers
+          </h2>
+          <h3 className="mt-4 text-2xl font-semibold text-warm-brown md:text-3xl">
+            Child & Adolescent Care
+          </h3>
+        </div>
         <div className="mt-12 grid gap-8 sm:grid-cols-2">
           {items.map((item) => (
             <div key={item.title} className="rounded-2xl bg-white/90 p-6 shadow-[0_2px_12px_rgba(0,0,0,0.08)] backdrop-blur-sm transition-shadow duration-300 hover:shadow-[0_4px_20px_rgba(0,0,0,0.1)]">

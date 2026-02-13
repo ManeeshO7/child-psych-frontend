@@ -75,6 +75,9 @@ export function CaliforniaAddressAutocomplete({
   const widgetRef = useRef<PlaceAutocompleteElementInstance | null>(null);
   const apiKey = (process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "").trim();
 
+  // Custom event for Places ready - survives React Strict Mode cleanup and SPA navigation
+  const PLACES_READY_EVENT = "google-maps-places-ready";
+
   // Load Maps JavaScript API with loading=async, then importLibrary('places') for Place Autocomplete (New)
   useEffect(() => {
     if (!apiKey) {
@@ -82,8 +85,21 @@ export function CaliforniaAddressAutocomplete({
       return;
     }
 
-    function onPlacesReady() {
+    const handlePlacesReady = () => setScriptLoaded(true);
+    const handlePlacesError = (e: Event) => {
+      const ce = e as CustomEvent<string>;
+      setLoadError(ce.detail ?? "Failed to load Places library.");
+    };
+
+    window.addEventListener(PLACES_READY_EVENT, handlePlacesReady);
+    window.addEventListener(`${PLACES_READY_EVENT}-error`, handlePlacesError as EventListener);
+
+    if (window.google?.maps?.places) {
       setScriptLoaded(true);
+      return () => {
+        window.removeEventListener(PLACES_READY_EVENT, handlePlacesReady);
+        window.removeEventListener(`${PLACES_READY_EVENT}-error`, handlePlacesError as EventListener);
+      };
     }
 
     function doLoad() {
@@ -92,26 +108,19 @@ export function CaliforniaAddressAutocomplete({
         if (window.google?.maps?.importLibrary) {
           window.google.maps
             .importLibrary("places")
-            .then(onPlacesReady)
+            .then(() => window.dispatchEvent(new CustomEvent(PLACES_READY_EVENT)))
             .catch((err: unknown) => {
               const msg = err instanceof Error ? err.message : String(err);
-              setLoadError(`Failed to load Places library: ${msg}`);
+              window.dispatchEvent(new CustomEvent(`${PLACES_READY_EVENT}-error`, { detail: msg }));
             });
         } else {
-          setLoadError("Maps script loaded but importLibrary not available.");
+          // Script in DOM but not ready yet: ensure callback exists so we get notified when it loads
+          ensureCallback();
         }
         return;
       }
 
-      window.initCaliforniaAddressAutocomplete = function () {
-        window.google?.maps?.importLibrary("places")
-          .then(onPlacesReady)
-          .catch((err: unknown) => {
-            const msg = err instanceof Error ? err.message : String(err);
-            setLoadError(`Failed to load Places library: ${msg}`);
-          });
-      };
-
+      ensureCallback();
       const script = document.createElement("script");
       script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&loading=async&callback=initCaliforniaAddressAutocomplete`;
       script.async = true;
@@ -121,20 +130,27 @@ export function CaliforniaAddressAutocomplete({
           "Failed to load Google Maps script. Check API key, Maps JavaScript API, Places API (New), and HTTP referrer restrictions."
         );
       document.head.appendChild(script);
+    }
 
-      return () => {
-        delete window.initCaliforniaAddressAutocomplete;
+    // Do NOT delete the callback on cleanup - script may load after unmount (e.g. React Strict Mode).
+    // The callback dispatches a custom event so any mounted instance can respond.
+    function ensureCallback() {
+      if (typeof window.initCaliforniaAddressAutocomplete === "function") return;
+      window.initCaliforniaAddressAutocomplete = function () {
+        window.google?.maps?.importLibrary("places")
+          .then(() => window.dispatchEvent(new CustomEvent(PLACES_READY_EVENT)))
+          .catch((err: unknown) => {
+            const msg = err instanceof Error ? err.message : String(err);
+            window.dispatchEvent(new CustomEvent(`${PLACES_READY_EVENT}-error`, { detail: msg }));
+          });
       };
     }
 
-    if (window.google?.maps?.places) {
-      setScriptLoaded(true);
-      return;
-    }
+    doLoad();
 
-    const cleanup = doLoad();
     return () => {
-      cleanup?.();
+      window.removeEventListener(PLACES_READY_EVENT, handlePlacesReady);
+      window.removeEventListener(`${PLACES_READY_EVENT}-error`, handlePlacesError as EventListener);
     };
   }, [apiKey]);
 
@@ -191,8 +207,17 @@ export function CaliforniaAddressAutocomplete({
         state: "California",
         isCalifornia: true,
       });
-      if (typeof (widget as { value?: string }).value !== "undefined") {
-        (widget as { value: string }).value = formatted;
+      // Google's Place Autocomplete clears the input on selection by design.
+      // Set the internal input value via shadow DOM so the address stays visible.
+      const w = widget as HTMLElement & { value?: string };
+      if (w.shadowRoot) {
+        const input = w.shadowRoot.querySelector("input");
+        if (input) {
+          input.value = formatted;
+          input.dispatchEvent(new Event("input", { bubbles: true }));
+        }
+      } else if (typeof w.value !== "undefined") {
+        w.value = formatted;
       }
     });
 
@@ -207,8 +232,15 @@ export function CaliforniaAddressAutocomplete({
   }, [scriptLoaded, placeholder, onChange]);
 
   useEffect(() => {
-    const w = widgetRef.current as { value?: string } | null;
-    if (w && typeof w.value !== "undefined" && value) {
+    const w = widgetRef.current as (HTMLElement & { value?: string }) | null;
+    if (!w || !value) return;
+    if (w.shadowRoot) {
+      const input = w.shadowRoot.querySelector("input");
+      if (input && input.value !== value) {
+        input.value = value;
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+    } else if (typeof w.value !== "undefined") {
       w.value = value;
     }
   }, [value]);
@@ -302,10 +334,33 @@ export function CaliforniaAddressAutocomplete({
 
   return (
     <div className="space-y-1">
+      {value ? (
+        <input
+          type="text"
+          readOnly
+          value={value}
+          onKeyDown={(e) => {
+            if (e.key === "Backspace" || e.key === "Delete") {
+              const target = e.target as HTMLInputElement;
+              const { selectionStart, selectionEnd, value: val } = target;
+              const allSelected =
+                (selectionStart === 0 && selectionEnd === val.length) ||
+                (selectionStart !== null && selectionEnd !== null && selectionEnd - selectionStart === val.length);
+              if (allSelected || val.length === 0) {
+                e.preventDefault();
+                onChange("", null);
+              }
+            }
+          }}
+          className="mt-1 min-h-[2.75rem] w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-warm-brown shadow-sm focus:border-warm-brown focus:outline-none focus:ring-1 focus:ring-warm-brown"
+          aria-label="California address (select all and press Delete or Backspace to clear)"
+          title="Select the address and press Delete or Backspace to clear"
+        />
+      ) : null}
       <div
         ref={containerRef}
         className="mt-1 flex w-full min-w-0 min-h-[2.75rem] items-center overflow-visible rounded-lg border border-gray-300 bg-white focus-within:border-warm-brown focus-within:ring-1 focus-within:ring-warm-brown [&_*]:outline-none [&_input]:min-h-[2.5rem] [&_input]:min-w-0 [&_input]:w-full [&_input]:flex-1 [&_input]:border-0 [&_input]:bg-transparent [&_input]:py-2 [&_input]:px-3 [&_input]:text-sm [&_input]:leading-normal [&_input]:outline-none [&_input]:ring-0 [&_input]:focus:outline-none [&_input]:focus:ring-0 [&_input]:placeholder:text-gray-400 [&_gmp-place-autocomplete]:w-full"
-        style={{ boxSizing: "border-box" }}
+        style={{ boxSizing: "border-box", display: value ? "none" : undefined }}
       />
       <input type="hidden" id={id} value={value} readOnly aria-hidden="true" tabIndex={-1} />
       {loadError && (

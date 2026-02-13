@@ -210,12 +210,15 @@ function QuestionnaireContent() {
         <Header />
         <main className="flex-1 flex flex-col justify-center bg-cream-50 py-16">
           <div className="mx-auto max-w-xl px-4 sm:px-6 lg:px-8 w-full">
-            <div className="card border-green-200 bg-green-50">
-              <p className="font-medium text-green-800">Thank you — we received your request.</p>
-              <p className="mt-2 text-sm text-green-700">
-                We will let you know about the decision in 1–2 working days.
+            <div className="rounded-md border border-cream-200 bg-white p-8 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+              <p className="font-medium text-warm-brown">Thank you — we received your request.</p>
+              <p className="mt-3 text-sm leading-relaxed text-warm-brown/90">
+                We have received your pre-screening questionnaire and will review it shortly.
               </p>
-              <Link href="/" className="mt-6 inline-block btn-primary">
+              <p className="mt-2 text-sm leading-relaxed text-warm-brown/90">
+                We will let you know about the decision within 1–2 working days. If approved, we will email you with next steps to complete registration.
+              </p>
+              <Link href="/" className="mt-8 inline-block btn-primary">
                 Back to Home
               </Link>
             </div>
@@ -349,7 +352,7 @@ function QuestionnaireContent() {
                       }}
                       className="h-4 w-4 rounded border-cream-300 text-warm-brown focus:ring-warm-brown"
                     />
-                    <span className="text-sm text-warm-brown">Other (briefly):</span>
+                    <span className="text-sm text-warm-brown">Other (briefly):<span className="text-red-500" aria-hidden="true"> *</span></span>
                     <input
                       type="text"
                       value={formData.primaryReasonOther ?? ""}
@@ -372,7 +375,7 @@ function QuestionnaireContent() {
               </p>
               <div className="space-y-4">
                 <div className="flex flex-wrap items-center gap-4">
-                  <span className="text-sm text-warm-brown">Active suicidal thoughts or self-harm behaviors?</span>
+                  <span className="text-sm text-warm-brown">Active suicidal thoughts or self-harm behaviors?<span className="text-red-500" aria-hidden="true"> *</span></span>
                   <div className="flex gap-4">
                     <label className="flex cursor-pointer items-center gap-2">
                       <input
@@ -400,7 +403,7 @@ function QuestionnaireContent() {
                   </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-4">
-                  <span className="text-sm text-warm-brown">A psychiatric hospitalization or emergency room visit?</span>
+                  <span className="text-sm text-warm-brown">A psychiatric hospitalization or emergency room visit?<span className="text-red-500" aria-hidden="true"> *</span></span>
                   <div className="flex gap-4">
                     <label className="flex cursor-pointer items-center gap-2">
                       <input
@@ -428,7 +431,7 @@ function QuestionnaireContent() {
                   </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-4">
-                  <span className="text-sm text-warm-brown">Psychotic symptoms (hallucinations or delusions)?</span>
+                  <span className="text-sm text-warm-brown">Psychotic symptoms (hallucinations or delusions)?<span className="text-red-500" aria-hidden="true"> *</span></span>
                   <div className="flex gap-4">
                     <label className="flex cursor-pointer items-center gap-2">
                       <input
@@ -456,7 +459,7 @@ function QuestionnaireContent() {
                   </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-4">
-                  <span className="text-sm text-warm-brown">Severe aggression toward others?</span>
+                  <span className="text-sm text-warm-brown">Severe aggression toward others?<span className="text-red-500" aria-hidden="true"> *</span></span>
                   <div className="flex gap-4">
                     <label className="flex cursor-pointer items-center gap-2">
                       <input
@@ -491,7 +494,7 @@ function QuestionnaireContent() {
               <h2 className="text-lg font-semibold text-warm-brown">Additional Questions</h2>
               <div className="space-y-4">
                 <div className="flex flex-wrap items-center gap-4">
-                  <span className="text-sm text-warm-brown">Ongoing legal, custody, or court involvement?</span>
+                  <span className="text-sm text-warm-brown">Ongoing legal, custody, or court involvement?<span className="text-red-500" aria-hidden="true"> *</span></span>
                   <div className="flex gap-4">
                     <label className="flex cursor-pointer items-center gap-2">
                       <input
@@ -519,7 +522,7 @@ function QuestionnaireContent() {
                   </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-4">
-                  <span className="text-sm text-warm-brown">Active child protective services involvement?</span>
+                  <span className="text-sm text-warm-brown">Active child protective services involvement?<span className="text-red-500" aria-hidden="true"> *</span></span>
                   <div className="flex gap-4">
                     <label className="flex cursor-pointer items-center gap-2">
                       <input
@@ -547,7 +550,7 @@ function QuestionnaireContent() {
                   </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-4">
-                  <span className="text-sm text-warm-brown">Current substance use concerns?</span>
+                  <span className="text-sm text-warm-brown">Current substance use concerns?<span className="text-red-500" aria-hidden="true"> *</span></span>
                   <div className="flex gap-4">
                     <label className="flex cursor-pointer items-center gap-2">
                       <input
@@ -579,7 +582,7 @@ function QuestionnaireContent() {
                 <p className={labelClass}>Is your child currently receiving care from:</p>
                 <div className="mt-2 space-y-2">
                   <div className="flex items-center gap-4">
-                    <span className="text-sm text-warm-brown">A psychiatrist?</span>
+                    <span className="text-sm text-warm-brown">A psychiatrist?<span className="text-red-500" aria-hidden="true"> *</span></span>
                     <div className="flex gap-4">
                       <label className="flex cursor-pointer items-center gap-2">
                         <input
@@ -607,7 +610,7 @@ function QuestionnaireContent() {
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
-                    <span className="text-sm text-warm-brown">A therapist?</span>
+                    <span className="text-sm text-warm-brown">A therapist?<span className="text-red-500" aria-hidden="true"> *</span></span>
                     <div className="flex gap-4">
                       <label className="flex cursor-pointer items-center gap-2">
                         <input
@@ -640,7 +643,7 @@ function QuestionnaireContent() {
 
             {/* Are you seeking */}
             <div className="card space-y-4 py-4">
-              <h2 className="text-lg font-semibold text-warm-brown">Are you seeking:</h2>
+              <h2 className="text-lg font-semibold text-warm-brown">Are you seeking:<span className="text-red-500" aria-hidden="true"> *</span></h2>
               <div className="space-y-2">
                 <label className="flex cursor-pointer items-center gap-2">
                   <input
@@ -675,7 +678,7 @@ function QuestionnaireContent() {
                     className="mt-1 h-4 w-4 rounded border-cream-300 text-warm-brown focus:ring-warm-brown"
                   />
                   <span className="text-sm italic text-warm-brown">
-                    I understand this practice provides non-urgent, scheduled care only
+                    I understand this practice provides non-urgent, scheduled care only<span className="text-red-500" aria-hidden="true"> *</span>
                   </span>
                 </label>
                 <label className="flex cursor-pointer items-start gap-3">
@@ -686,7 +689,7 @@ function QuestionnaireContent() {
                     className="mt-1 h-4 w-4 rounded border-cream-300 text-warm-brown focus:ring-warm-brown"
                   />
                   <span className="text-sm italic text-warm-brown">
-                    I am comfortable with a concierge / retainer-based fee structure
+                    I am comfortable with a concierge / retainer-based fee structure<span className="text-red-500" aria-hidden="true"> *</span>
                   </span>
                 </label>
                 <label className="flex cursor-pointer items-start gap-3">
@@ -697,7 +700,7 @@ function QuestionnaireContent() {
                     className="mt-1 h-4 w-4 rounded border-cream-300 text-warm-brown focus:ring-warm-brown"
                   />
                   <span className="text-sm italic text-warm-brown">
-                    I understand communication is structured and not on-demand
+                    I understand communication is structured and not on-demand<span className="text-red-500" aria-hidden="true"> *</span>
                   </span>
                 </label>
               </div>

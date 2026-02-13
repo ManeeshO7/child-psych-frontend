@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import AssignFormsModal from "@/components/AssignFormsModal";
 import SetAllowedFollowupModal from "@/components/SetAllowedFollowupModal";
 import ScheduleFollowupModal from "@/components/ScheduleFollowupModal";
+import ScheduleClinicalIntakeModal from "@/components/ScheduleClinicalIntakeModal";
 
 type Appointment = {
   id: string;
@@ -16,6 +17,10 @@ type Appointment = {
   notes: string | null;
   meetLink?: string | null;
   patient?: { id: string; email: string; name: string };
+  /** Present for orientation_consult: true when patient already has form assignments */
+  patientHasAssignedForms?: boolean;
+  /** Present for orientation_consult: true when patient already has a clinical intake (pending/scheduled/paid) */
+  patientHasPendingClinicalIntake?: boolean;
 };
 
 type FormattedAppointment = {
@@ -46,6 +51,13 @@ export default function DoctorAppointmentsList() {
     patientName: string;
     allowedTypes: string[];
   } | null>(null);
+  const [scheduleClinicalIntakeOpen, setScheduleClinicalIntakeOpen] = useState(false);
+  const [scheduleClinicalIntakeAppointment, setScheduleClinicalIntakeAppointment] = useState<{
+    id: string;
+    patientId: string;
+    patientName: string;
+  } | null>(null);
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [notice, setNotice] = useState<{
     type: "success" | "error" | "info";
     message: string;
@@ -287,6 +299,35 @@ export default function DoctorAppointmentsList() {
     }
   }
 
+  async function rejectAfterOrientation(appointmentId: string) {
+    if (rejectingId !== null) return;
+    if (!confirm("Reject this patient? They will no longer see the option to book clinical intake.")) return;
+    setRejectingId(appointmentId);
+    try {
+      const res = await fetch(`/api/appointments/${appointmentId}/reject-after-orientation`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({}),
+      });
+      if (res.status === 401) {
+        router.push("/doctor/login");
+        return;
+      }
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        showNotice("error", err.detail || "Failed to reject");
+        return;
+      }
+      showNotice("success", "Patient will no longer see clinical intake option.");
+      await load(pageCursor);
+    } catch {
+      showNotice("error", "Network error. Please try again.");
+    } finally {
+      setRejectingId(null);
+    }
+  }
+
   function handleTileClickCapture(appointmentId: string, e: React.MouseEvent) {
     // If the user double/triple-clicks rapidly, browsers can spawn multiple navigations/tabs
     // (via nested <a> / <button> elements), which can crash Chrome.
@@ -469,17 +510,74 @@ export default function DoctorAppointmentsList() {
                       </button>
                     </p>
                   )}
-                  {a.status === "completed" && (a.type === "intake" || a.type === "clinical_intake") && a.patient && (
-                    <p className="mt-1.5">
+                  {a.status === "completed" && a.type === "orientation_consult" && a.patient && (
+                    <p className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1">
+                      {!a.patientHasAssignedForms && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAssignFormsAppointment({ id: a.id, patientId: a.patient!.id });
+                            setAssignFormsModalOpen(true);
+                          }}
+                          className="text-sm font-medium text-warm-brown hover:underline"
+                        >
+                          Assign forms →
+                        </button>
+                      )}
+                      {!a.patientHasPendingClinicalIntake && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setScheduleClinicalIntakeAppointment({
+                              id: a.id,
+                              patientId: a.patient!.id,
+                              patientName: a.patient!.name || "",
+                            });
+                            setScheduleClinicalIntakeOpen(true);
+                          }}
+                          className="text-sm font-medium text-warm-brown hover:underline"
+                        >
+                          Schedule clinical intake →
+                        </button>
+                      )}
                       <button
                         type="button"
-                        onClick={() => {
-                          setAssignFormsAppointment({ id: a.id, patientId: a.patient!.id });
-                          setAssignFormsModalOpen(true);
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          rejectAfterOrientation(a.id);
+                        }}
+                        disabled={rejectingId !== null}
+                        className="text-sm font-medium text-red-600 hover:underline disabled:opacity-50"
+                      >
+                        {rejectingId === a.id ? "Rejecting…" : "Reject patient"}
+                      </button>
+                    </p>
+                  )}
+                  {a.status === "completed" && (a.type === "intake" || a.type === "clinical_intake") && a.patient && (
+                    <p className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1">
+                      <button
+                        type="button"
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          const patientId = a.patient!.id;
+                          const patientName = a.patient!.name || "";
+                          try {
+                            const res = await fetch(`/api/appointments/patient/${patientId}/allowed-followup-types`, {
+                              credentials: "include",
+                            });
+                            const data = res.ok ? await res.json() : {};
+                            const allowedTypes = data.allowedTypes ?? ["followup_med_30", "followup_med_therapy_45"];
+                            setScheduleFollowupPatient({ patientId, patientName, allowedTypes });
+                            setScheduleFollowupOpen(true);
+                          } catch {
+                            setScheduleFollowupPatient({ patientId, patientName, allowedTypes: ["followup_med_30", "followup_med_therapy_45"] });
+                            setScheduleFollowupOpen(true);
+                          }
                         }}
                         className="text-sm font-medium text-warm-brown hover:underline"
                       >
-                        Assign forms →
+                        Schedule follow-up →
                       </button>
                     </p>
                   )}
@@ -548,6 +646,19 @@ export default function DoctorAppointmentsList() {
         appointmentId={assignFormsAppointment?.id || null}
         onSuccess={() => {
           showNotice("success", "Forms assigned successfully!");
+          load(pageCursor);
+        }}
+      />
+      <ScheduleClinicalIntakeModal
+        isOpen={scheduleClinicalIntakeOpen}
+        onClose={() => {
+          setScheduleClinicalIntakeOpen(false);
+          setScheduleClinicalIntakeAppointment(null);
+        }}
+        patientId={scheduleClinicalIntakeAppointment?.patientId || ""}
+        patientName={scheduleClinicalIntakeAppointment?.patientName}
+        onSuccess={() => {
+          showNotice("success", "Clinical intake scheduled. Patient will confirm and add card.");
           load(pageCursor);
         }}
       />

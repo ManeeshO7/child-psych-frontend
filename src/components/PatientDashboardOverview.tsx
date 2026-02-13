@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -10,9 +10,42 @@ type IntakeResponse =
       status?: "draft" | "submitted" | "reviewed" | string;
     };
 
+type PendingAppointment = {
+  id: string;
+  scheduledAt: string;
+  durationMinutes: number;
+  type: string;
+  status: string;
+};
+
+const PRACTICE_TZ = "America/Los_Angeles";
+
+function formatAppointmentDateTime(iso: string): string {
+  try {
+    if (!iso) return "Date TBD";
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return "Invalid date";
+    return d.toLocaleString("en-US", {
+      timeZone: PRACTICE_TZ,
+      dateStyle: "medium",
+      timeStyle: "short",
+      hour12: true,
+    });
+  } catch {
+    return "Date error";
+  }
+}
+
+function typeLabel(type: string): string {
+  if (type === "clinical_intake") return "Clinical intake";
+  if (type === "orientation_consult") return "Orientation consult";
+  if (type === "followup_med_30") return "Follow-up (30 min)";
+  if (type === "followup_med_therapy_45") return "Follow-up (45 min)";
+  return type;
+}
+
 export default function PatientDashboardOverview() {
   const router = useRouter();
-  const [intakeStatus, setIntakeStatus] = useState<string | null>(null);
   const [appointmentCount, setAppointmentCount] = useState<number | null>(null);
   const [profile, setProfile] = useState<{
     firstName?: string;
@@ -37,34 +70,47 @@ export default function PatientDashboardOverview() {
     expYear?: number | null;
   } | null>(null);
   const [hasAssignedForms, setHasAssignedForms] = useState<boolean>(false);
+  const [pendingAppointments, setPendingAppointments] = useState<PendingAppointment[]>([]);
+  const [pendingFormsCheck, setPendingFormsCheck] = useState<{
+    hasPendingForms: boolean;
+    pendingCount: number;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
       try {
-        const [intRes, appRes, cardRes, meRes, formsRes] = await Promise.all([
-          fetch("/api/intake", { credentials: "include" }),
+        const [appRes, cardRes, meRes, formsRes, pendingRes] = await Promise.all([
           fetch("/api/appointments/", { credentials: "include" }),
           fetch("/api/payments/payment-method", { credentials: "include" }),
           fetch("/api/auth/me", { credentials: "include" }),
           fetch("/api/patient-forms/my-forms", { credentials: "include" }),
+          fetch("/api/patient-forms/check-pending", { credentials: "include" }),
         ]);
-        if (intRes.status === 401 || appRes.status === 401 || cardRes.status === 401 || meRes.status === 401) {
+        if (appRes.status === 401 || cardRes.status === 401 || meRes.status === 401) {
           router.push("/login");
           return;
         }
         if (cancelled) return;
-        const intake: IntakeResponse = await intRes.json();
         const apps = await appRes.json();
         const card = await cardRes.json().catch(() => null);
         const me = await meRes.json().catch(() => null);
         const forms = formsRes.ok ? await formsRes.json().catch(() => []) : [];
-        setIntakeStatus(intake?.status ?? "not_started");
-        setAppointmentCount(Array.isArray(apps) ? apps.length : 0);
+        const appList = Array.isArray(apps) ? apps : [];
+        setAppointmentCount(appList.length);
+        setPendingAppointments(
+          appList.filter(
+            (a: { status?: string }) => a.status === "pending_confirmation"
+          ) as PendingAppointment[]
+        );
         setCardSummary(card && typeof card === "object" ? card : null);
         setProfile(me && typeof me === "object" ? me : null);
         setHasAssignedForms(Array.isArray(forms) && forms.length > 0);
+        if (pendingRes.ok) {
+          const pendingData = await pendingRes.json().catch(() => null);
+          setPendingFormsCheck(pendingData);
+        }
         if (me && typeof me === "object") {
           setProfileDraft({
             firstName: (me.firstName ?? "").toString(),
@@ -121,14 +167,6 @@ export default function PatientDashboardOverview() {
     }
   }
 
-  const intakeLabel = useMemo(() => {
-    if (!intakeStatus || intakeStatus === "not_started") return "Not started";
-    if (intakeStatus === "draft") return "Draft";
-    if (intakeStatus === "submitted") return "Submitted";
-    if (intakeStatus === "reviewed") return "Reviewed";
-    return intakeStatus;
-  }, [intakeStatus]);
-
   if (loading) {
     return (
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
@@ -141,8 +179,76 @@ export default function PatientDashboardOverview() {
     <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
       <h1 className="section-heading">Dashboard</h1>
       <p className="mt-2 text-gray-600">
-        Manage your intake form and appointments.
+        Manage your profile and appointments.
       </p>
+
+      {pendingAppointments.length > 0 && (
+        <div className="mt-8 rounded-xl border-2 border-amber-200 bg-amber-50 p-5 shadow-sm">
+          <div className="flex items-start gap-3">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-200 text-amber-800" aria-hidden>
+              !
+            </span>
+            <div className="min-w-0 flex-1">
+              <h2 className="text-lg font-semibold text-amber-900">
+                Action required — Confirm your appointment
+              </h2>
+              <p className="mt-1 text-sm text-amber-800">
+                Your doctor has scheduled an appointment for you. Please confirm or choose a different time.
+              </p>
+              <ul className="mt-4 space-y-3">
+                {pendingAppointments.map((a) => {
+                  const isClinicalIntake = a.type === "clinical_intake";
+                  const mustCompleteForms =
+                    isClinicalIntake && pendingFormsCheck?.hasPendingForms;
+                  return (
+                    <li
+                      key={a.id}
+                      className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200 bg-white p-4"
+                    >
+                      <div>
+                        <p className="font-medium text-gray-900">
+                          {formatAppointmentDateTime(a.scheduledAt)} · {typeLabel(a.type)}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          {a.durationMinutes} minutes
+                        </p>
+                        {mustCompleteForms && (
+                          <p className="mt-2 text-sm font-medium text-amber-800">
+                            Complete your assigned forms before confirming.
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        {mustCompleteForms ? (
+                          <Link
+                            href="/patient/forms"
+                            className="inline-flex items-center rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90"
+                          >
+                            Complete forms first
+                          </Link>
+                        ) : (
+                          <Link
+                            href={`/patient/confirm-scheduled?appointmentId=${encodeURIComponent(a.id)}`}
+                            className="inline-flex items-center rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90"
+                          >
+                            Confirm & add payment
+                          </Link>
+                        )}
+                        <Link
+                          href="/patient/appointments"
+                          className="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                        >
+                          Change time
+                        </Link>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         <div className="card flex flex-col gap-2">
@@ -251,18 +357,6 @@ export default function PatientDashboardOverview() {
             </div>
           )}
         </div>
-
-        <Link
-          href="/patient/intake"
-          className="card flex flex-col gap-2 transition hover:border-warm-brown/40 hover:shadow-md"
-        >
-          <h2 className="text-lg font-semibold text-warm-brown">Intake form</h2>
-          <p className="text-sm text-gray-600">
-            Complete your clinical intake. You can save a draft and return later.
-          </p>
-          <p className="mt-auto text-2xl font-bold text-gray-900">{intakeLabel}</p>
-          <p className="text-xs text-gray-500">status</p>
-        </Link>
 
         <Link
           href="/patient/appointments"
