@@ -14,7 +14,6 @@ export default function DoctorDashboardOverview() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [pendingCount, setPendingCount] = useState<number | null>(null);
-  const [intakeCount, setIntakeCount] = useState<number | null>(null);
   const [appointmentCount, setAppointmentCount] = useState<number | null>(null);
   const [patientCount, setPatientCount] = useState<number | null>(null);
   const [calendarConnected, setCalendarConnected] = useState<boolean | null>(null);
@@ -24,20 +23,18 @@ export default function DoctorDashboardOverview() {
     let cancelled = false;
     async function load() {
       try {
-        const [reqRes, intRes, appRes, calRes, patientsRes] = await Promise.all([
+        const [reqRes, appRes, calRes, patientsRes] = await Promise.all([
           fetch("/api/patient-requests/", { credentials: "include" }),
-          fetch("/api/intake/all", { credentials: "include" }),
           fetch("/api/appointments/", { credentials: "include" }),
           fetch("/api/auth/calendar-status", { credentials: "include" }),
           fetch("/api/patient-forms/patients", { credentials: "include" }),
         ]);
-        if (reqRes.status === 401 || intRes.status === 401 || appRes.status === 401) {
+        if (reqRes.status === 401 || appRes.status === 401) {
           router.push("/doctor/login");
           return;
         }
         if (cancelled) return;
         const requests: PatientRequest[] = await reqRes.json();
-        const intakes = await intRes.json();
         const appointments = await appRes.json();
         const patients = patientsRes.ok ? await patientsRes.json() : [];
         const pending = requests.filter(
@@ -47,7 +44,6 @@ export default function DoctorDashboardOverview() {
             Object.keys(r.questionnaireData).length > 0
         );
         setPendingCount(pending.length);
-        setIntakeCount(Array.isArray(intakes) ? intakes.length : 0);
         setAppointmentCount(Array.isArray(appointments) ? appointments.length : 0);
         setPatientCount(Array.isArray(patients) ? patients.length : 0);
         if (calRes.ok) {
@@ -78,7 +74,7 @@ export default function DoctorDashboardOverview() {
     <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
       <h1 className="section-heading">Dashboard</h1>
       <p className="mt-2 text-gray-600">
-        Review patient requests, intake forms, and appointments.
+        Review patient requests and appointments.
       </p>
 
       {searchParams.get("calendar") === "connected" && (
@@ -123,20 +119,6 @@ export default function DoctorDashboardOverview() {
             {pendingCount === null ? "—" : pendingCount}
           </p>
           <p className="text-xs text-gray-500">pending</p>
-        </Link>
-
-        <Link
-          href="/doctor/intakes"
-          className="card flex flex-col gap-2 transition hover:border-warm-brown/40 hover:shadow-md"
-        >
-          <h2 className="text-lg font-semibold text-warm-brown">Intake submissions</h2>
-          <p className="text-sm text-gray-600">
-            Review patient intake forms. Mark as reviewed when done.
-          </p>
-          <p className="mt-auto text-2xl font-bold text-gray-900">
-            {intakeCount === null ? "—" : intakeCount}
-          </p>
-          <p className="text-xs text-gray-500">submissions</p>
         </Link>
 
         <Link

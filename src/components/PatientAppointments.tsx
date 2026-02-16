@@ -3,9 +3,26 @@
 import { useEffect, useState, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import RescheduleModal from "@/components/RescheduleModal";
 
 // Practice timezone (California) – always show appointments in Pacific time
 const PRACTICE_TZ = "America/Los_Angeles";
+
+const RESCHEDULABLE_STATUSES = ["scheduled", "card_on_file", "paid"];
+const RESCHEDULE_MIN_HOURS = 48;
+
+function canReschedule(a: { scheduledAt: string; status: string }): boolean {
+  if (!RESCHEDULABLE_STATUSES.includes(a.status)) return false;
+  try {
+    const scheduledAt = new Date(a.scheduledAt);
+    if (isNaN(scheduledAt.getTime())) return false;
+    const now = new Date();
+    const hoursUntil = (scheduledAt.getTime() - now.getTime()) / (1000 * 60 * 60);
+    return hoursUntil >= RESCHEDULE_MIN_HOURS;
+  } catch {
+    return false;
+  }
+}
 
 type Appointment = {
   id: string;
@@ -39,7 +56,7 @@ export default function PatientAppointments() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [tzLabel, setTzLabel] = useState("PT");
-  const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [rescheduleAppointment, setRescheduleAppointment] = useState<Appointment | null>(null);
   const lastInteractionAtRef = useRef<Record<string, number>>({});
 
   // Cache timezone label to avoid recalculating on every render
@@ -93,34 +110,6 @@ export default function PatientAppointments() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  async function cancelAppointment(id: string) {
-    if (cancellingId !== null) return;
-    if (!confirm("Cancel this appointment? You can book a different time instead.")) return;
-    setCancellingId(id);
-    try {
-      const res = await fetch(`/api/appointments/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ status: "cancelled" }),
-      });
-      if (res.status === 401) {
-        router.push("/login");
-        return;
-      }
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        alert(err.detail || "Failed to cancel");
-        return;
-      }
-      await load();
-    } catch {
-      alert("Network error. Please try again.");
-    } finally {
-      setCancellingId(null);
-    }
-  }
 
   // Memoize filtered appointments to prevent recalculation on every render
   const { upcoming, past } = useMemo(() => {
@@ -216,28 +205,42 @@ export default function PatientAppointments() {
                             onClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
-                              cancelAppointment(a.id);
+                              setRescheduleAppointment(a);
                             }}
-                            disabled={cancellingId !== null}
-                            className="text-xs font-medium text-gray-600 hover:underline disabled:opacity-50"
+                            className="text-xs font-medium text-warm-brown hover:underline"
                           >
-                            {cancellingId === a.id ? "Cancelling…" : "Change time"}
+                            Change time
                           </button>
                         </p>
                       ) : (
-                        a.meetLink &&
-                        (a.status === "scheduled" ||
-                          a.status === "card_on_file" ||
-                          a.status === "paid") && (
-                          <a
-                            href={a.meetLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="mt-2 inline-flex items-center text-xs font-medium text-warm-brown hover:underline"
-                          >
-                            Join video visit
-                          </a>
-                        )
+                        <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1">
+                          {a.meetLink &&
+                            (a.status === "scheduled" ||
+                              a.status === "card_on_file" ||
+                              a.status === "paid") && (
+                              <a
+                                href={a.meetLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center text-xs font-medium text-warm-brown hover:underline"
+                              >
+                                Join video visit
+                              </a>
+                            )}
+                          {canReschedule(a) && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setRescheduleAppointment(a);
+                              }}
+                              className="text-xs font-medium text-warm-brown hover:underline"
+                            >
+                              Reschedule
+                            </button>
+                          )}
+                        </p>
                       )}
                   </div>
                   <span
@@ -269,6 +272,18 @@ export default function PatientAppointments() {
           </ul>
         </section>
       )}
+      <RescheduleModal
+        isOpen={!!rescheduleAppointment}
+        onClose={() => setRescheduleAppointment(null)}
+        appointmentId={rescheduleAppointment?.id ?? ""}
+        durationMinutes={rescheduleAppointment?.durationMinutes ?? 30}
+        appointmentType={rescheduleAppointment?.type}
+        variant={rescheduleAppointment?.status === "pending_confirmation" ? "change-proposed-time" : "reschedule"}
+        onSuccess={() => {
+          setRescheduleAppointment(null);
+          load();
+        }}
+      />
       {upcoming.length === 0 && appointments.length === 0 && (
         <p className="text-gray-500">No appointments yet. Book one when you’re ready.</p>
       )}

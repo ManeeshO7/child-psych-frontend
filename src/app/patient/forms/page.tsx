@@ -53,7 +53,7 @@ export default function PatientFormsPage() {
         throw new Error("Failed to load forms");
       }
       const data = await res.json();
-      setAssignments(data);
+      setAssignments(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error(err);
       showNotice("error", "Failed to load forms. Please refresh the page.");
@@ -128,7 +128,7 @@ export default function PatientFormsPage() {
       }
 
       showNotice("success", "PDF uploaded successfully!");
-      loadAssignments();
+      await loadAssignments();
     } catch (err) {
       showNotice("error", err instanceof Error ? err.message : "Failed to upload PDF.");
     } finally {
@@ -234,8 +234,8 @@ export default function PatientFormsPage() {
     );
   }
 
-  const pendingCount = assignments.filter((a) => a.status === "pending").length;
-  const completedCount = assignments.filter((a) => a.status === "completed").length;
+  const pendingCount = assignments.filter((a) => a.status === "pending" && a.form).length;
+  const completedCount = assignments.filter((a) => a.status === "completed" && a.form).length;
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
@@ -305,19 +305,19 @@ export default function PatientFormsPage() {
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Pending Forms</h2>
               <div className="space-y-4">
                 {assignments
-                  .filter((a) => a.status === "pending")
+                  .filter((a) => a.status === "pending" && a.form)
                   .map((assignment) => (
                     <div key={assignment.id} className="card">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
                           <h3 className="text-lg font-semibold text-gray-900">
-                            {assignment.form.title}
+                            {assignment.form?.title ?? "Untitled"}
                           </h3>
-                          {assignment.form.description && (
+                          {assignment.form?.description && (
                             <p className="mt-1 text-sm text-gray-600">{assignment.form.description}</p>
                           )}
                           <div className="mt-4">
-                            {assignment.form.type === "questionnaire"
+                            {assignment.form?.type === "questionnaire"
                               ? renderQuestionnaireForm(assignment)
                               : renderPdfForm(assignment)}
                           </div>
@@ -337,15 +337,15 @@ export default function PatientFormsPage() {
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Completed Forms</h2>
               <div className="space-y-4">
                 {assignments
-                  .filter((a) => a.status === "completed")
+                  .filter((a) => a.status === "completed" && a.form)
                   .map((assignment) => (
                     <div key={assignment.id} className="card">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
                           <h3 className="text-lg font-semibold text-gray-900">
-                            {assignment.form.title}
+                            {assignment.form?.title ?? "Untitled"}
                           </h3>
-                          {assignment.form.description && (
+                          {assignment.form?.description && (
                             <p className="mt-1 text-sm text-gray-600">{assignment.form.description}</p>
                           )}
                           {assignment.completedAt && (

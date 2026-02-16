@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
@@ -82,68 +80,37 @@ const faqs = [
   },
 ];
 
-export default function FAQPage() {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
+// Pre-render answers once at load
+const renderedAnswers = faqs.map((faq) => renderWithBold(faq.a));
 
+export default function FAQPage() {
   return (
     <>
       <Header />
-      <main className="relative min-h-screen overflow-hidden py-16">
-        <div className="absolute inset-0 z-0">
-          <Image
-            src="/4.jpeg"
-            alt=""
-            fill
-            className="object-cover object-center"
-            sizes="100vw"
-            priority={false}
-          />
-          <div className="absolute inset-0 bg-white/50" aria-hidden />
-        </div>
+      <main
+        className="relative min-h-screen py-16 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: "url(/4.jpeg)" }}
+      >
+        <div className="absolute inset-0 z-0 bg-white/50" aria-hidden />
         <div className="relative z-10 mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <h1 className="section-heading text-center">FAQs</h1>
           <p className="mt-2 text-center text-sm font-medium uppercase tracking-wider text-warm-brown">
             Frequently Asked Questions
           </p>
-          <div className="mt-12 space-y-3">
-            {faqs.map((faq, index) => {
-              const isOpen = openIndex === index;
-              return (
-                <div
-                  key={faq.q}
-                  className="overflow-hidden rounded-xl border border-cream-200/80 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
-                >
-                  <button
-                    type="button"
-                    onClick={() => setOpenIndex(isOpen ? null : index)}
-                    className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition-colors hover:bg-cream-50/50"
-                    aria-expanded={isOpen}
-                    aria-controls={`faq-answer-${index}`}
-                    id={`faq-question-${index}`}
-                  >
-                    <span className="font-semibold text-warm-brown">{faq.q}</span>
-                    <span
-                      className="flex shrink-0 items-center justify-center text-lg font-bold text-warm-brown transition-colors"
-                      aria-hidden
-                    >
-                      {isOpen ? "−" : "+"}
-                    </span>
-                  </button>
-                  {isOpen && (
-                    <div
-                      id={`faq-answer-${index}`}
-                      role="region"
-                      aria-labelledby={`faq-question-${index}`}
-                      className="border-t border-cream-200/80 bg-cream-50/30"
-                    >
-                      <p className="whitespace-pre-line px-5 py-4 text-sm leading-relaxed text-warm-brown">
-                        {renderWithBold(faq.a)}
-                      </p>
-                    </div>
-                  )}
+          <div className="mt-12 space-y-3 [&_details]:overflow-hidden [&_details]:rounded-xl [&_details]:border [&_details]:border-cream-200/80 [&_details]:bg-white [&_details]:shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+            {faqs.map((faq, index) => (
+              <details key={faq.q} className="group">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-left transition-colors hover:bg-cream-50/50 [&::-webkit-details-marker]:hidden">
+                  <span className="font-semibold text-warm-brown">{faq.q}</span>
+                  <span className="inline-flex w-6 shrink-0 items-center justify-center text-lg font-bold text-warm-brown after:content-['+'] group-open:after:content-['−']" />
+                </summary>
+                <div className="border-t border-cream-200/80 bg-cream-50/30">
+                  <p className="whitespace-pre-line px-5 py-4 text-sm leading-relaxed text-warm-brown">
+                    {renderedAnswers[index]}
+                  </p>
                 </div>
-              );
-            })}
+              </details>
+            ))}
           </div>
           <p className="mt-10 text-center">
             <a href="/#contact" className="btn-primary inline-flex">

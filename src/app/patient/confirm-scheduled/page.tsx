@@ -24,12 +24,20 @@ type Pricing = {
   };
 };
 
+type CardSummary = {
+  brand: string;
+  last4: string;
+  expMonth: number;
+  expYear: number;
+};
+
 export default function ConfirmScheduledPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const appointmentId = searchParams.get("appointmentId");
   const [appointment, setAppointment] = useState<Appointment | null>(null);
   const [hasCard, setHasCard] = useState(false);
+  const [cardSummary, setCardSummary] = useState<CardSummary | null>(null);
   const [pricing, setPricing] = useState<Pricing | null>(null);
   const [pendingForms, setPendingForms] = useState<{ hasPendingForms: boolean; pendingCount: number } | null>(null);
   const [loading, setLoading] = useState(true);
@@ -57,7 +65,18 @@ export default function ConfirmScheduledPage() {
         }
         if (pmRes.ok) {
           const pm = await pmRes.json();
-          setHasCard(Boolean(pm?.hasCard ?? pm?.last4));
+          const hasCardVal = Boolean(pm?.hasCard ?? pm?.last4);
+          setHasCard(hasCardVal);
+          if (hasCardVal && pm?.last4) {
+            setCardSummary({
+              brand: pm.brand ?? "Card",
+              last4: String(pm.last4),
+              expMonth: Number(pm.expMonth) || 0,
+              expYear: Number(pm.expYear) || 0,
+            });
+          } else {
+            setCardSummary(null);
+          }
         }
         if (pricingRes.ok) {
           const data = await pricingRes.json();
@@ -228,20 +247,36 @@ export default function ConfirmScheduledPage() {
           </Link>
         </div>
       ) : !mustCompleteForms && hasCard ? (
-        <>
-          <p className="mt-6 text-sm text-gray-600">Card on file. Click below to confirm.</p>
+        <div className="mt-6 rounded-lg border border-cream-200 bg-white p-6 shadow-sm">
+          <h2 className="text-lg font-semibold text-warm-brown mb-4">Payment method</h2>
+          <p className="text-sm text-gray-600 mb-3">
+            Review your payment method. You will be charged after your appointment.
+          </p>
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
+            <p className="font-medium text-gray-900">
+              {cardSummary
+                ? `${(cardSummary.brand || "Card").charAt(0).toUpperCase() + (cardSummary.brand || "card").slice(1)} **** ${cardSummary.last4} (exp ${cardSummary.expMonth}/${cardSummary.expYear})`
+                : "Card on file"}
+            </p>
+            <Link
+              href={`/patient/save-card?appointmentId=${encodeURIComponent(appointmentId!)}&returnTo=${encodeURIComponent(`/patient/confirm-scheduled?appointmentId=${appointmentId}`)}`}
+              className="text-sm font-medium text-warm-brown hover:underline"
+            >
+              Change card
+            </Link>
+          </div>
           <button
             type="button"
             onClick={handleConfirm}
             disabled={confirming}
             className="mt-4 rounded-lg bg-warm-brown px-6 py-3 text-sm font-medium text-white hover:bg-warm-brown/90 disabled:opacity-50"
           >
-            {confirming ? "Confirming…" : "Confirm appointment"}
+            {confirming ? "Confirming…" : "Keep this card & Confirm appointment"}
           </button>
           <p className="mt-4 text-xs text-gray-500">
             By confirming, you agree to attend this appointment at the scheduled time. Your card will be charged after the appointment is completed.
           </p>
-        </>
+        </div>
       ) : null}
 
       {error && (

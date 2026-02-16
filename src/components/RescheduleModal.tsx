@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from "react";
-import { createPortal } from "react-dom";
+import { useState, useEffect, useMemo } from "react";
 
 type Slot = { start: string; end: string };
 
@@ -28,28 +27,47 @@ function formatSlotDate(iso: string): string {
   });
 }
 
-type ScheduleFollowupModalProps = {
+function formatSlotDateLong(iso: string): string {
+  const d = new Date(iso);
+  return d.toLocaleDateString("en-US", {
+    timeZone: PRACTICE_TZ,
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function getTimezoneLabel(): string {
+  const d = new Date();
+  const tzName = d.toLocaleTimeString("en-US", {
+    timeZone: PRACTICE_TZ,
+    timeZoneName: "short",
+  });
+  const match = tzName.match(/\s([A-Z]{3,4})$/);
+  return match ? match[1] : "PT";
+}
+
+type RescheduleModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  patientId: string;
-  patientName?: string;
-  allowedTypes?: string[]; // ["followup_med_30", "followup_med_therapy_45"]
+  appointmentId: string;
+  durationMinutes: number;
+  appointmentType?: string;
+  /** When true, used for pending_confirmation — change proposed time (no calendar/Meet). When false, full reschedule. */
+  variant?: "reschedule" | "change-proposed-time";
   onSuccess?: () => void;
 };
 
-export default function ScheduleFollowupModal({
+export default function RescheduleModal({
   isOpen,
   onClose,
-  patientId,
-  patientName,
-  allowedTypes = ["followup_med_30", "followup_med_therapy_45"],
+  appointmentId,
+  durationMinutes,
+  appointmentType = "appointment",
+  variant = "reschedule",
   onSuccess,
-}: ScheduleFollowupModalProps) {
-  const effectiveTypes = useMemo(
-    () => (allowedTypes?.length ? allowedTypes : ["followup_med_30", "followup_med_therapy_45"]),
-    [allowedTypes]
-  );
-  const [type, setType] = useState(() => effectiveTypes[0]);
+}: RescheduleModalProps) {
   const [slots, setSlots] = useState<Slot[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -57,26 +75,7 @@ export default function ScheduleFollowupModal({
   const [currentMonthIndex, setCurrentMonthIndex] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const prevOpenRef = useRef(false);
-
-  const durationMinutes = type === "followup_med_therapy_45" ? 45 : 30;
-
-  useEffect(() => {
-    if (isOpen && !prevOpenRef.current && effectiveTypes.length > 0) {
-      setType(effectiveTypes[0]);
-    }
-    prevOpenRef.current = isOpen;
-  }, [isOpen, effectiveTypes]);
-
-  useEffect(() => {
-    if (isOpen) {
-      const prevOverflow = document.body.style.overflow;
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.overflow = prevOverflow;
-      };
-    }
-  }, [isOpen]);
+  const [showConfirmation, setShowConfirmation] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -86,35 +85,38 @@ export default function ScheduleFollowupModal({
     setSelectedSlot(null);
     setCurrentMonthIndex(0);
     setError(null);
-    // Defer slot fetch to next frame so overlay paints first (avoids Chrome hang)
-    const raf = requestAnimationFrame(() => {
-      if (cancelled) return;
-      async function loadSlots() {
-        try {
-          const res = await fetch(
-            `/api/availability/slots?durationMinutes=${durationMinutes}`,
-            { credentials: "include" }
-          );
-          if (cancelled) return;
-          if (res.ok) {
-            const data = await res.json();
-            if (!cancelled) setSlots(data.slots || []);
-          } else if (!cancelled) {
-            setSlots([]);
-          }
-        } catch {
-          if (!cancelled) setSlots([]);
-        } finally {
-          if (!cancelled) setSlotsLoading(false);
+    setShowConfirmation(false);
+    async function loadSlots() {
+      try {
+        const params = new URLSearchParams({
+          durationMinutes: String(durationMinutes),
+        });
+        // For reschedule: exclude current appointment so patient can keep same time
+        // For change-proposed-time: do NOT exclude — only show different slots
+        if (variant === "reschedule") {
+          params.set("excludeAppointmentId", appointmentId);
         }
+        const res = await fetch(`/api/availability/slots?${params}`, {
+          credentials: "include",
+        });
+        if (cancelled) return;
+        if (res.ok) {
+          const data = await res.json();
+          setSlots(data.slots || []);
+        } else {
+          setSlots([]);
+        }
+      } catch {
+        if (!cancelled) setSlots([]);
+      } finally {
+        if (!cancelled) setSlotsLoading(false);
       }
-      loadSlots();
-    });
+    }
+    loadSlots();
     return () => {
       cancelled = true;
-      cancelAnimationFrame(raf);
     };
-  }, [isOpen, durationMinutes]);
+  }, [isOpen, durationMinutes, appointmentId, variant]);
 
   const { byDate, sortedDates, months } = useMemo(() => {
     const by: Record<string, Slot[]> = {};
@@ -156,7 +158,12 @@ export default function ScheduleFollowupModal({
   const datesWithSlots = useMemo(() => new Set(sortedDates), [sortedDates]);
   const slotsForSelected = selectedDate ? (byDate[selectedDate] ?? []) : [];
 
-  async function handleSchedule() {
+  const endpoint =
+    variant === "change-proposed-time"
+      ? `/api/appointments/${appointmentId}/change-proposed-time`
+      : `/api/appointments/${appointmentId}/reschedule`;
+
+  async function handleReschedule() {
     if (!selectedSlot) {
       setError("Please select a time slot.");
       return;
@@ -164,62 +171,73 @@ export default function ScheduleFollowupModal({
     setSubmitting(true);
     setError(null);
     try {
-      const res = await fetch("/api/appointments/schedule-for-patient", {
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({
-          patientId,
-          scheduledAt: selectedSlot.start,
-          durationMinutes,
-          type,
-        }),
+        body: JSON.stringify({ scheduledAt: selectedSlot.start }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.detail || "Failed to schedule");
+        throw new Error(err.detail || (variant === "change-proposed-time" ? "Failed to change time" : "Failed to reschedule"));
       }
       onSuccess?.();
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to schedule");
+      setError(err instanceof Error ? err.message : variant === "change-proposed-time" ? "Failed to change time" : "Failed to reschedule");
     } finally {
       setSubmitting(false);
     }
   }
 
-  const typeLabel = type === "followup_med_therapy_45" ? "45 min – Med + therapy" : "30 min – Med management";
+  if (!isOpen) return null;
 
-  const modalContent = (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="schedule-followup-title">
-      <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-lg bg-white shadow-xl overscroll-contain">
+  const typeLabel = `${durationMinutes} min ${appointmentType}`;
+  const isChangeProposed = variant === "change-proposed-time";
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-lg bg-white shadow-xl">
         <div className="border-b border-gray-200 px-6 py-4">
-          <h2 id="schedule-followup-title" className="text-xl font-semibold text-gray-900">Schedule follow-up</h2>
+          <h2 className="text-xl font-semibold text-gray-900">
+            {isChangeProposed ? "Change proposed time" : "Reschedule appointment"}
+          </h2>
           <p className="mt-1 text-sm text-gray-600">
-            Schedule a follow-up for {patientName || "patient"}. They will be asked to add their card and confirm.
+            {isChangeProposed
+              ? "Pick a new date and time before confirming. You'll add payment and confirm the appointment after."
+              : "Choose a new date and time. Rescheduling is allowed until 48 hours before the appointment."}
           </p>
         </div>
         <div className="px-6 py-4 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Follow-up type</label>
-            <select
-              value={type}
-              onChange={(e) => {
-                setType(e.target.value);
-                setSelectedDate(null);
-                setSelectedSlot(null);
-              }}
-              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
-            >
-              {effectiveTypes.includes("followup_med_30") && (
-                <option value="followup_med_30">30 min – Med management</option>
-              )}
-              {effectiveTypes.includes("followup_med_therapy_45") && (
-                <option value="followup_med_therapy_45">45 min – Med + therapy</option>
-              )}
-            </select>
-          </div>
-
+          {showConfirmation && selectedSlot ? (
+            <div className="rounded-lg border border-cream-200 bg-white p-6 shadow-sm">
+              <h3 className="text-lg font-semibold text-warm-brown mb-4">
+                {isChangeProposed ? "Confirm new time" : "Confirm reschedule"}
+              </h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Please review your new appointment details below.
+              </p>
+              <div className="space-y-3">
+                <div>
+                  <p className="text-sm text-gray-600">New date & time</p>
+                  <p className="text-base font-medium text-gray-900">
+                    {formatSlotDateLong(selectedSlot.start)}, {formatSlotTime(selectedSlot.start)} {getTimezoneLabel()}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Duration</p>
+                  <p className="text-base font-medium text-gray-900">
+                    {durationMinutes} minute{durationMinutes === 1 ? "" : "s"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Appointment type</p>
+                  <p className="text-base font-medium text-gray-900 capitalize">{appointmentType.replace(/_/g, " ")}</p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <>
           <p className="text-sm text-gray-500">
             Times are shown in Pacific Time (America/Los_Angeles).
           </p>
@@ -229,7 +247,6 @@ export default function ScheduleFollowupModal({
           ) : sortedDates.length === 0 ? (
             <div className="rounded-lg border border-cream-200 bg-cream-50 p-4 text-center">
               <p className="text-gray-600">No available {durationMinutes}-min slots in the next 60 days.</p>
-              <p className="mt-1 text-sm text-gray-500">Add availability and offer {durationMinutes}-min slots in your calendar.</p>
             </div>
           ) : (
             <>
@@ -324,31 +341,58 @@ export default function ScheduleFollowupModal({
               )}
             </>
           )}
+            </>
+          )}
         </div>
         {error && <div className="px-6 pb-2 text-sm text-red-600">{error}</div>}
         <div className="border-t border-gray-200 px-6 py-4 flex justify-end gap-3">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={submitting}
-            className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={handleSchedule}
-            disabled={submitting || !selectedSlot}
-            className="rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90 disabled:opacity-50"
-          >
-            {submitting ? "Scheduling…" : "Schedule"}
-          </button>
+          {showConfirmation ? (
+            <>
+              <button
+                type="button"
+                onClick={() => setShowConfirmation(false)}
+                disabled={submitting}
+                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              >
+                Back
+              </button>
+              <button
+                type="button"
+                onClick={handleReschedule}
+                disabled={submitting}
+                className="rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90 disabled:opacity-50"
+              >
+                {submitting
+                  ? isChangeProposed
+                    ? "Updating…"
+                    : "Rescheduling…"
+                  : isChangeProposed
+                    ? "Confirm new time"
+                    : "Confirm reschedule"}
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={submitting}
+                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => selectedSlot && setShowConfirmation(true)}
+                disabled={submitting || !selectedSlot}
+                className="rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90 disabled:opacity-50"
+              >
+                Continue
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>
   );
-
-  if (!isOpen) return null;
-
-  return createPortal(modalContent, document.body);
 }

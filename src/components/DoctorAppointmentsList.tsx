@@ -1,12 +1,30 @@
 "use client";
 
-import { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState, useMemo, useRef, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AssignFormsModal from "@/components/AssignFormsModal";
 import SetAllowedFollowupModal from "@/components/SetAllowedFollowupModal";
 import ScheduleFollowupModal from "@/components/ScheduleFollowupModal";
 import ScheduleClinicalIntakeModal from "@/components/ScheduleClinicalIntakeModal";
+import RescheduleModal from "@/components/RescheduleModal";
+import ConfirmChargeModal from "@/components/ConfirmChargeModal";
+
+const RESCHEDULABLE_STATUSES = ["scheduled", "card_on_file", "paid"];
+const RESCHEDULE_MIN_HOURS = 48;
+
+function canReschedule(a: { scheduledAt: string; status: string }): boolean {
+  if (!RESCHEDULABLE_STATUSES.includes(a.status)) return false;
+  try {
+    const scheduledAt = new Date(a.scheduledAt);
+    if (isNaN(scheduledAt.getTime())) return false;
+    const now = new Date();
+    const hoursUntil = (scheduledAt.getTime() - now.getTime()) / (1000 * 60 * 60);
+    return hoursUntil >= RESCHEDULE_MIN_HOURS;
+  } catch {
+    return false;
+  }
+}
 
 type Appointment = {
   id: string;
@@ -21,6 +39,8 @@ type Appointment = {
   patientHasAssignedForms?: boolean;
   /** Present for orientation_consult: true when patient already has a clinical intake (pending/scheduled/paid) */
   patientHasPendingClinicalIntake?: boolean;
+  /** Present for completed clinical_intake/intake: true when patient already has a follow-up scheduled */
+  patientHasScheduledFollowup?: boolean;
 };
 
 type FormattedAppointment = {
@@ -57,12 +77,15 @@ export default function DoctorAppointmentsList() {
     patientId: string;
     patientName: string;
   } | null>(null);
+  const [rescheduleAppointment, setRescheduleAppointment] = useState<Appointment | null>(null);
+  const [chargeConfirmAppointment, setChargeConfirmAppointment] = useState<Appointment | null>(null);
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [notice, setNotice] = useState<{
     type: "success" | "error" | "info";
     message: string;
   } | null>(null);
   const [tzLabel, setTzLabel] = useState("PT");
+  const [, startTransition] = useTransition();
   const loadingRef = useRef(false); // Prevent concurrent load() calls
   const mountedRef = useRef(true); // Track if component is mounted
   const lastInteractionAtRef = useRef<Record<string, number>>({});
@@ -486,15 +509,45 @@ export default function DoctorAppointmentsList() {
                       </a>
                     </p>
                   )}
+                  {a.status === "pending_confirmation" && (
+                    <p className="mt-1.5">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setRescheduleAppointment(a);
+                        }}
+                        className="text-sm font-medium text-warm-brown hover:underline"
+                      >
+                        Change time
+                      </button>
+                    </p>
+                  )}
+                  {canReschedule(a) && (
+                    <p className="mt-1.5">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setRescheduleAppointment(a);
+                        }}
+                        className="text-sm font-medium text-warm-brown hover:underline"
+                      >
+                        Reschedule
+                      </button>
+                    </p>
+                  )}
                   {a.status === "card_on_file" && (
                     <p className="mt-1.5">
                       <button
                         type="button"
-                        onClick={() => chargeAppointment(a.id)}
-                        disabled={chargingId !== null}
-                        className="text-sm font-medium text-warm-brown hover:underline disabled:opacity-50"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setChargeConfirmAppointment(a);
+                        }}
+                        className="text-sm font-medium text-warm-brown hover:underline"
                       >
-                        {chargingId === a.id ? "Charging…" : "Charge now"}
+                        Charge now
                       </button>
                     </p>
                   )}
@@ -554,7 +607,7 @@ export default function DoctorAppointmentsList() {
                       </button>
                     </p>
                   )}
-                  {a.status === "completed" && (a.type === "intake" || a.type === "clinical_intake") && a.patient && (
+                  {a.status === "completed" && (a.type === "intake" || a.type === "clinical_intake") && a.patient && !a.patientHasScheduledFollowup && (
                     <p className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1">
                       <button
                         type="button"
@@ -568,11 +621,15 @@ export default function DoctorAppointmentsList() {
                             });
                             const data = res.ok ? await res.json() : {};
                             const allowedTypes = data.allowedTypes ?? ["followup_med_30", "followup_med_therapy_45"];
-                            setScheduleFollowupPatient({ patientId, patientName, allowedTypes });
-                            setScheduleFollowupOpen(true);
+                            startTransition(() => {
+                              setScheduleFollowupPatient({ patientId, patientName, allowedTypes });
+                              setScheduleFollowupOpen(true);
+                            });
                           } catch {
-                            setScheduleFollowupPatient({ patientId, patientName, allowedTypes: ["followup_med_30", "followup_med_therapy_45"] });
-                            setScheduleFollowupOpen(true);
+                            startTransition(() => {
+                              setScheduleFollowupPatient({ patientId, patientName, allowedTypes: ["followup_med_30", "followup_med_therapy_45"] });
+                              setScheduleFollowupOpen(true);
+                            });
                           }
                         }}
                         className="text-sm font-medium text-warm-brown hover:underline"
@@ -686,6 +743,32 @@ export default function DoctorAppointmentsList() {
         allowedTypes={scheduleFollowupPatient?.allowedTypes}
         onSuccess={() => {
           showNotice("success", "Follow-up scheduled. Patient will confirm and add card.");
+          load(pageCursor);
+        }}
+      />
+      <ConfirmChargeModal
+        isOpen={!!chargeConfirmAppointment}
+        onClose={() => setChargeConfirmAppointment(null)}
+        appointment={chargeConfirmAppointment}
+        onSuccess={() => {
+          setChargeConfirmAppointment(null);
+          showNotice("success", "Payment successful. Receipt sent by Stripe.");
+          load(pageCursor);
+        }}
+      />
+      <RescheduleModal
+        isOpen={!!rescheduleAppointment}
+        onClose={() => setRescheduleAppointment(null)}
+        appointmentId={rescheduleAppointment?.id ?? ""}
+        durationMinutes={rescheduleAppointment?.durationMinutes ?? 30}
+        appointmentType={rescheduleAppointment?.type}
+        variant={rescheduleAppointment?.status === "pending_confirmation" ? "change-proposed-time" : "reschedule"}
+        onSuccess={() => {
+          setRescheduleAppointment(null);
+          showNotice(
+            "success",
+            rescheduleAppointment?.status === "pending_confirmation" ? "Proposed time updated." : "Appointment rescheduled."
+          );
           load(pageCursor);
         }}
       />

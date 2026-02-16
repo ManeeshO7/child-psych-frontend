@@ -73,7 +73,7 @@ function ResetPasswordForm() {
         <h1 className="section-heading text-xl">Reset Password</h1>
         <p className="mt-2 font-medium text-warm-brown">Password updated</p>
         <p className="mt-1 text-sm leading-relaxed text-warm-brown/90">
-          You can now sign in with your new password.
+          Use your email and the password you just set to sign in.
         </p>
         <Link href={backHref} className="mt-6 inline-block btn-primary">
           Sign In

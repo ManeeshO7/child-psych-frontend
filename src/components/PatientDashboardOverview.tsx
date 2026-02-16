@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import RescheduleModal from "@/components/RescheduleModal";
 
 type IntakeResponse =
   | null
@@ -76,6 +77,50 @@ export default function PatientDashboardOverview() {
     pendingCount: number;
   } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [changeTimeAppointment, setChangeTimeAppointment] = useState<PendingAppointment | null>(null);
+
+  async function refreshData() {
+    try {
+      const [appRes, cardRes, meRes, formsRes, pendingRes] = await Promise.all([
+        fetch("/api/appointments/", { credentials: "include" }),
+        fetch("/api/payments/payment-method", { credentials: "include" }),
+        fetch("/api/auth/me", { credentials: "include" }),
+        fetch("/api/patient-forms/my-forms", { credentials: "include" }),
+        fetch("/api/patient-forms/check-pending", { credentials: "include" }),
+      ]);
+      if (appRes.status === 401 || cardRes.status === 401 || meRes.status === 401) {
+        router.push("/login");
+        return;
+      }
+      const apps = await appRes.json();
+      const card = await cardRes.json().catch(() => null);
+      const me = await meRes.json().catch(() => null);
+      const forms = formsRes.ok ? await formsRes.json().catch(() => []) : [];
+      const appList = Array.isArray(apps) ? apps : [];
+      setAppointmentCount(appList.length);
+      setPendingAppointments(
+        appList.filter(
+          (a: { status?: string }) => a.status === "pending_confirmation"
+        ) as PendingAppointment[]
+      );
+      setCardSummary(card && typeof card === "object" ? card : null);
+      setProfile(me && typeof me === "object" ? me : null);
+      setHasAssignedForms(Array.isArray(forms) && forms.length > 0);
+      if (pendingRes.ok) {
+        const pendingData = await pendingRes.json().catch(() => null);
+        setPendingFormsCheck(pendingData);
+      }
+      if (me && typeof me === "object") {
+        setProfileDraft({
+          firstName: (me.firstName ?? "").toString(),
+          lastName: (me.lastName ?? "").toString(),
+          phone: (me.phone ?? "").toString(),
+        });
+      }
+    } catch {
+      // ignore
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -118,6 +163,8 @@ export default function PatientDashboardOverview() {
             phone: (me.phone ?? "").toString(),
           });
         }
+      } catch {
+        // ignore
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -193,7 +240,7 @@ export default function PatientDashboardOverview() {
                 Action required — Confirm your appointment
               </h2>
               <p className="mt-1 text-sm text-amber-800">
-                Your doctor has scheduled an appointment for you. Please confirm or choose a different time.
+                Your doctor has scheduled an appointment for you. Please confirm to add payment and secure your time.
               </p>
               <ul className="mt-4 space-y-3">
                 {pendingAppointments.map((a) => {
@@ -227,19 +274,22 @@ export default function PatientDashboardOverview() {
                             Complete forms first
                           </Link>
                         ) : (
-                          <Link
-                            href={`/patient/confirm-scheduled?appointmentId=${encodeURIComponent(a.id)}`}
-                            className="inline-flex items-center rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90"
-                          >
-                            Confirm & add payment
-                          </Link>
+                          <>
+                            <Link
+                              href={`/patient/confirm-scheduled?appointmentId=${encodeURIComponent(a.id)}`}
+                              className="inline-flex items-center rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90"
+                            >
+                              Confirm & add payment
+                            </Link>
+                            <button
+                              type="button"
+                              onClick={() => setChangeTimeAppointment(a)}
+                              className="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                            >
+                              Change time
+                            </button>
+                          </>
                         )}
-                        <Link
-                          href="/patient/appointments"
-                          className="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                        >
-                          Change time
-                        </Link>
                       </div>
                     </li>
                   );
@@ -397,6 +447,19 @@ export default function PatientDashboardOverview() {
         </Link>
 
       </div>
+
+      <RescheduleModal
+        isOpen={!!changeTimeAppointment}
+        onClose={() => setChangeTimeAppointment(null)}
+        appointmentId={changeTimeAppointment?.id ?? ""}
+        durationMinutes={changeTimeAppointment?.durationMinutes ?? 30}
+        appointmentType={changeTimeAppointment?.type}
+        variant="change-proposed-time"
+        onSuccess={() => {
+          setChangeTimeAppointment(null);
+          refreshData();
+        }}
+      />
     </main>
   );
 }

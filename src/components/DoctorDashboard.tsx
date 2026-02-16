@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import ConfirmChargeModal from "@/components/ConfirmChargeModal";
 
 type PatientRequest = {
   id: string;
@@ -19,16 +20,6 @@ type PatientRequest = {
   user: { id: string; email: string } | null;
 };
 
-type IntakeSummary = {
-  id: string;
-  userId: string;
-  patientName: string;
-  patientEmail: string;
-  status: string;
-  reviewedAt: string | null;
-  updatedAt: string;
-};
-
 type Appointment = {
   id: string;
   scheduledAt: string;
@@ -43,18 +34,15 @@ type Appointment = {
 export default function DoctorDashboard() {
   const router = useRouter();
   const [requests, setRequests] = useState<PatientRequest[]>([]);
-  const [intakes, setIntakes] = useState<IntakeSummary[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [intakesLoading, setIntakesLoading] = useState(true);
   const [appointmentsLoading, setAppointmentsLoading] = useState(true);
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [approvingId, setApprovingId] = useState<string | null>(null);
   const [rejectNote, setRejectNote] = useState<Record<string, string>>({});
-  const [reviewingId, setReviewingId] = useState<string | null>(null);
-  const [selectedIntake, setSelectedIntake] = useState<{ id: string; formData: Record<string, unknown>; patientName: string } | null>(null);
   const [expandedPrescreen, setExpandedPrescreen] = useState<Set<string>>(new Set());
   const [chargingAppointmentId, setChargingAppointmentId] = useState<string | null>(null);
+  const [chargeConfirmAppointment, setChargeConfirmAppointment] = useState<Appointment | null>(null);
   const [completingAppointmentId, setCompletingAppointmentId] = useState<string | null>(null);
   const [notice, setNotice] = useState<{
     type: "success" | "error" | "info";
@@ -156,7 +144,6 @@ export default function DoctorDashboard() {
     let cancelled = false;
     Promise.all([
       load(),
-      loadIntakes(),
       loadAppointments(),
     ]).catch(() => {
       // Errors already handled in individual functions
@@ -547,51 +534,6 @@ export default function DoctorDashboard() {
             )}
 
             <section className="mt-12">
-              <h2 className="text-lg font-semibold text-warm-brown">Intake submissions</h2>
-              <p className="mt-1 text-sm text-gray-600">
-                Review patient intake forms. Mark as reviewed when done.
-              </p>
-              {intakesLoading ? (
-                <p className="mt-4 text-gray-500">Loading…</p>
-              ) : intakes.length === 0 ? (
-                <p className="mt-4 text-gray-500">No intake submissions yet.</p>
-              ) : (
-                <ul className="mt-4 space-y-3">
-                  {intakes.map((i) => (
-                    <li key={i.id} className="card flex flex-wrap items-center justify-between gap-4">
-                      <div>
-                        <p className="font-medium text-gray-900">{i.patientName}</p>
-                        <p className="text-sm text-gray-600">{i.patientEmail}</p>
-                        <p className="text-xs text-gray-500">
-                          {i.status} · Updated {new Date(i.updatedAt).toLocaleString()}
-                        </p>
-                      </div>
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          onClick={() => openIntake(i.id)}
-                          className="btn-secondary text-sm"
-                        >
-                          View
-                        </button>
-                        {i.status === "submitted" && (
-                          <button
-                            type="button"
-                            onClick={() => markIntakeReviewed(i.id)}
-                            disabled={!!reviewingId}
-                            className="btn-primary text-sm"
-                          >
-                            {reviewingId === i.id ? "…" : "Mark reviewed"}
-                          </button>
-                        )}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
-
-            <section className="mt-12">
               <h2 className="text-lg font-semibold text-warm-brown">Appointments</h2>
               <p className="mt-1 text-sm text-gray-600">Your upcoming and past appointments.</p>
               {appointmentsLoading ? (
@@ -629,14 +571,11 @@ export default function DoctorDashboard() {
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                if (chargingAppointmentId === null) {
-                                  chargeAppointment(a.id);
-                                }
+                                setChargeConfirmAppointment(a);
                               }}
-                              disabled={chargingAppointmentId !== null}
-                              className="text-sm font-medium text-warm-brown hover:underline disabled:opacity-50"
+                              className="text-sm font-medium text-warm-brown hover:underline"
                             >
-                              {chargingAppointmentId === a.id ? "Charging…" : "Charge now"}
+                              Charge now
                             </button>
                           </p>
                         )}
@@ -684,39 +623,16 @@ export default function DoctorDashboard() {
           </>
         )}
 
-        {selectedIntake && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-            onClick={() => setSelectedIntake(null)}
-          >
-            <div
-              className="max-h-[90vh] w-full max-w-2xl overflow-auto rounded-xl border border-cream-200 bg-white p-6 shadow-lg"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <h3 className="font-semibold text-warm-brown">{selectedIntake.patientName} — Intake</h3>
-              <pre className="mt-4 whitespace-pre-wrap rounded-lg bg-gray-50 p-4 text-sm text-gray-800">
-                {JSON.stringify(selectedIntake.formData, null, 2)}
-              </pre>
-              <div className="mt-4 flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => markIntakeReviewed(selectedIntake.id)}
-                  disabled={!!reviewingId}
-                  className="btn-primary"
-                >
-                  {reviewingId === selectedIntake.id ? "…" : "Mark reviewed"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSelectedIntake(null)}
-                  className="btn-secondary"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        <ConfirmChargeModal
+          isOpen={!!chargeConfirmAppointment}
+          onClose={() => setChargeConfirmAppointment(null)}
+          appointment={chargeConfirmAppointment}
+          onSuccess={() => {
+            setChargeConfirmAppointment(null);
+            showNotice("success", "Payment successful. Receipt sent by Stripe.");
+            loadAppointments();
+          }}
+        />
       </main>
     </div>
   );

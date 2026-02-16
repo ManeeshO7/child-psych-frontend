@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { questionnaireToQandA } from "@/lib/questionnaireLabels";
@@ -93,14 +93,19 @@ export default function PatientOverviewPage() {
     }
   }
 
+  const PRACTICE_TZ = "America/Los_Angeles";
+
   function formatDate(iso: string | null): string {
     if (!iso) return "—";
     return new Date(iso).toLocaleString("en-US", {
+      timeZone: PRACTICE_TZ,
       month: "short",
       day: "numeric",
       year: "numeric",
       hour: "numeric",
       minute: "2-digit",
+      hour12: true,
+      timeZoneName: "short",
     });
   }
 
@@ -162,10 +167,15 @@ export default function PatientOverviewPage() {
         const completedClinicalIntake = overview.appointments.find(
           (a) => (a.type === "clinical_intake" || a.type === "intake") && a.status === "completed"
         );
+        const hasScheduledFollowup = overview.appointments.some(
+          (a) =>
+            (a.type === "followup_med_30" || a.type === "followup_med_therapy_45") &&
+            ["pending_confirmation", "scheduled", "card_on_file", "paid"].includes(a.status)
+        );
 
         const showAssignForms = completedOrientation && !hasAssignedForms;
         const showScheduleClinicalIntake = completedOrientation && !hasClinicalIntake;
-        const showScheduleFollowup = !!completedClinicalIntake;
+        const showScheduleFollowup = !!completedClinicalIntake && !hasScheduledFollowup;
 
         if (!showAssignForms && !showScheduleClinicalIntake && !showScheduleFollowup) return null;
 
@@ -235,11 +245,17 @@ export default function PatientOverviewPage() {
                               { credentials: "include" }
                             );
                             const data = res.ok ? await res.json() : {};
-                            setFollowupAllowedTypes(data.allowedTypes ?? ["followup_med_30", "followup_med_therapy_45"]);
+                            const types = data.allowedTypes ?? ["followup_med_30", "followup_med_therapy_45"];
+                            startTransition(() => {
+                              setFollowupAllowedTypes(types);
+                              setScheduleFollowupOpen(true);
+                            });
                           } catch {
-                            setFollowupAllowedTypes(["followup_med_30", "followup_med_therapy_45"]);
+                            startTransition(() => {
+                              setFollowupAllowedTypes(["followup_med_30", "followup_med_therapy_45"]);
+                              setScheduleFollowupOpen(true);
+                            });
                           }
-                          setScheduleFollowupOpen(true);
                         }}
                         className="inline-flex rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90"
                       >
