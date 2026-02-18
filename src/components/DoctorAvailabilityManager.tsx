@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 
-const DURATION_OPTIONS = [30, 45, 60] as const;
+const DURATION_OPTIONS = [30, 45, 75] as const;
 
 type Block = {
   id: string;
@@ -17,7 +17,9 @@ type Block = {
 const PRACTICE_TZ = "America/Los_Angeles";
 
 // How many days ahead doctors can configure and patients can see availability.
-const AVAILABILITY_DAYS_AHEAD = 60;
+const AVAILABILITY_DAYS_AHEAD = 90;  // 3 months
+// How many past days to show in the calendar (grayed out, not clickable).
+const CALENDAR_DAYS_BACK = 45;
 
 const NEXT_DAYS: string[] = (() => {
   const out: string[] = [];
@@ -30,6 +32,39 @@ const NEXT_DAYS: string[] = (() => {
   return out;
 })();
 
+const PREV_DAYS: string[] = (() => {
+  const out: string[] = [];
+  const today = new Date();
+  for (let i = 1; i <= CALENDAR_DAYS_BACK; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    out.unshift(d.toISOString().slice(0, 10));
+  }
+  return out;
+})();
+
+const TODAY_ISO = NEXT_DAYS[0];
+const ALL_CALENDAR_DAYS = [...PREV_DAYS, ...NEXT_DAYS];
+
+// Order of months in the calendar (same as derived in component from ALL_CALENDAR_DAYS)
+const ORDERED_MONTH_KEYS = Array.from(
+  new Map(
+    ALL_CALENDAR_DAYS.map((iso) => {
+      const d = new Date(iso + "T12:00:00");
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      return [key, key];
+    })
+  ).keys()
+);
+const TODAY_MONTH_KEY = (() => {
+  const d = new Date(TODAY_ISO + "T12:00:00");
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+})();
+const INITIAL_MONTH_INDEX = (() => {
+  const idx = ORDERED_MONTH_KEYS.indexOf(TODAY_MONTH_KEY);
+  return idx >= 0 ? idx : 0;
+})();
+
 export default function DoctorAvailabilityManager() {
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,20 +74,20 @@ export default function DoctorAvailabilityManager() {
   const [addEnd, setAddEnd] = useState("12:00");
   const [calendarConnected, setCalendarConnected] = useState<boolean | null>(null);
   const [saveMessage, setSaveMessage] = useState<"saved" | "error" | null>(null);
-  const [currentMonthIndex, setCurrentMonthIndex] = useState(0);
+  const [currentMonthIndex, setCurrentMonthIndex] = useState(INITIAL_MONTH_INDEX);
   const [activeTab, setActiveTab] = useState<"offer" | "blocks">("offer");
   const [blocksTabView, setBlocksTabView] = useState<"day" | "all">("day");
   const [allBlocksFilterDate, setAllBlocksFilterDate] = useState<string | "all">("all");
 
   // Offer-slots flow: duration → date → pick slots
-  const [selectedDuration, setSelectedDuration] = useState<30 | 45 | 60>(30);
+  const [selectedDuration, setSelectedDuration] = useState<30 | 45 | 75>(30);
   const [selectedDateForSlots, setSelectedDateForSlots] = useState<string>(NEXT_DAYS[0]);
   const [candidateSlots, setCandidateSlots] = useState<{ startTime: string; endTime: string }[]>([]);
   const [offeredStartTimes, setOfferedStartTimes] = useState<string[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [slotsSaving, setSlotsSaving] = useState(false);
   const [slotsSaveMessage, setSlotsSaveMessage] = useState<"saved" | "error" | null>(null);
-  const [offeredSlotsMonthIndex, setOfferedSlotsMonthIndex] = useState(0);
+  const [offeredSlotsMonthIndex, setOfferedSlotsMonthIndex] = useState(INITIAL_MONTH_INDEX);
   const [selectedStartTimes, setSelectedStartTimes] = useState<string[]>([]);
 
   async function loadCandidateAndOfferedSlots() {
@@ -68,21 +103,14 @@ export default function DoctorAvailabilityManager() {
           { credentials: "include" }
         ),
       ]);
-      if (candRes.ok) {
-        const d = await candRes.json();
-        setCandidateSlots(d.slots || []);
-      } else {
-        setCandidateSlots([]);
-      }
-      if (offRes.ok) {
-        const d = await offRes.json();
-        const offered = (d.startTimes || []) as string[];
-        setOfferedStartTimes(offered);
-        setSelectedStartTimes(offered);
-      } else {
-        setOfferedStartTimes([]);
-        setSelectedStartTimes([]);
-      }
+      const candidateList = candRes.ok ? (await candRes.json()).slots || [] : [];
+      setCandidateSlots(candidateList);
+      const offered: string[] = offRes.ok ? (await offRes.json()).startTimes || [] : [];
+      setOfferedStartTimes(offered);
+      // If doctor hasn't saved offered slots for this date/duration yet, pre-select all candidate slots
+      // so all availability is shown to patients unless they manually uncheck and save.
+      const initialSelected = offered.length > 0 ? offered : candidateList.map((s: { startTime: string }) => s.startTime);
+      setSelectedStartTimes(initialSelected);
     } finally {
       setSlotsLoading(false);
     }
@@ -92,6 +120,24 @@ export default function DoctorAvailabilityManager() {
     if (activeTab !== "offer") return;
     loadCandidateAndOfferedSlots();
   }, [activeTab, selectedDateForSlots, selectedDuration]);
+
+  // Sync calendar month to show the selected date
+  useEffect(() => {
+    const targetIso = selectedDateForSlots.includes("T") ? selectedDateForSlots.slice(0, 10) : selectedDateForSlots;
+    const d = new Date(targetIso + "T12:00:00");
+    const targetMonthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    const orderedMonthKeys = Array.from(
+      new Map(
+        ALL_CALENDAR_DAYS.map((iso) => {
+          const dt = new Date(iso + "T12:00:00");
+          const key = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}`;
+          return [key, key];
+        })
+      ).keys()
+    );
+    const idx = orderedMonthKeys.indexOf(targetMonthKey);
+    if (idx >= 0 && idx !== offeredSlotsMonthIndex) setOfferedSlotsMonthIndex(idx);
+  }, [selectedDateForSlots]);
 
   function toggleSlotOffered(startTime: string) {
     setSelectedStartTimes((prev) =>
@@ -305,7 +351,7 @@ export default function DoctorAvailabilityManager() {
     monthKey: string; // e.g. "2026-02"
   };
 
-  const calendarDays: CalendarDay[] = NEXT_DAYS.map((iso) => {
+  const calendarDays: CalendarDay[] = ALL_CALENDAR_DAYS.map((iso) => {
     const dateObj = new Date(iso + "T12:00:00");
     const year = dateObj.getFullYear();
     const month = dateObj.getMonth(); // 0-based
@@ -350,7 +396,7 @@ export default function DoctorAvailabilityManager() {
       </div>
       <h1 className="section-heading">Manage availability</h1>
       <p className="mt-2 text-gray-600">
-        Choose an appointment length (30, 45, or 60 min), pick a date, then select which slots to offer. Only those slots are visible to patients for that appointment type. Set &quot;When I&apos;m available&quot; first so you have slots to offer.
+        Choose an appointment length (30, 45, or 75 min), pick a date, then select which slots to offer. Only those slots are visible to patients for that appointment type. Set &quot;When I&apos;m available&quot; first so you have slots to offer.
       </p>
       <p className="mt-1 text-sm font-medium text-gray-700">
         All times are in Pacific Time (PST).
@@ -409,7 +455,7 @@ export default function DoctorAvailabilityManager() {
                 <h2 className="text-sm font-semibold text-gray-700">Appointment length</h2>
                 <p className="mt-1 text-xs text-gray-500">Choose which duration you want to offer slots for.</p>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {([30, 45, 60] as const).map((d) => (
+                  {([30, 45, 75] as const).map((d) => (
                     <button
                       key={d}
                       type="button"
@@ -478,9 +524,22 @@ export default function DoctorAvailabilityManager() {
                         return cells.map((cell, idx) => {
                           if (!cell) return <div key={`pad-${idx}`} className="h-8 min-w-0" />;
                           const iso = cell.iso;
+                          const isPast = iso < TODAY_ISO;
                           const isSelected = iso === selectedDateForSlots;
-                          const isToday = iso === NEXT_DAYS[0];
+                          const isToday = iso === TODAY_ISO;
                           const hasBlocks = datesWithBlocks.has(iso);
+                          if (isPast) {
+                            return (
+                              <span
+                                key={iso}
+                                title="Past date – not selectable"
+                                className="flex h-8 w-full min-w-0 cursor-not-allowed items-center justify-center rounded-full border border-cream-100 bg-gray-50/80 text-xs font-medium text-gray-400"
+                                aria-hidden
+                              >
+                                {cell.dom}
+                              </span>
+                            );
+                          }
                           return (
                             <button
                               key={iso}
@@ -518,6 +577,24 @@ export default function DoctorAvailabilityManager() {
                 <p className="mt-1 text-xs text-gray-500">
                   Check the slots you want to offer to patients. Only these will be bookable for {selectedDuration}-min appointments.
                 </p>
+                {candidateSlots.length > 0 && !slotsLoading && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedStartTimes(candidateSlots.map((s) => s.startTime))}
+                      className="rounded border border-cream-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-cream-50"
+                    >
+                      Select all ({candidateSlots.length} slots)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedStartTimes([])}
+                      className="rounded border border-cream-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-cream-50"
+                    >
+                      Deselect all
+                    </button>
+                  </div>
+                )}
                 {selectedStartTimes.length > 0 && !slotsLoading && (
                   <p className="mt-2 text-xs font-medium text-warm-brown">
                     Offered for this day: {selectedStartTimes.map((t) => formatTimeAmPm(selectedDateForSlots, t)).join(", ")}
@@ -622,7 +699,7 @@ export default function DoctorAvailabilityManager() {
               {blocksTabView === "day" ? (
               <>
               <div className="mt-6 grid gap-6 md:grid-cols-[minmax(0,260px)_minmax(0,1fr)]">
-                {/* Calendar (60-day window) */}
+                {/* Calendar (3-month window) */}
                 <div className="rounded-lg border border-cream-200 bg-white p-4">
                   <h2 className="text-sm font-semibold text-gray-700">Select a day</h2>
                   <p className="mt-1 text-xs text-gray-500">
@@ -687,9 +764,22 @@ export default function DoctorAvailabilityManager() {
                               return <div key={idx} className="h-8 min-w-0" />;
                             }
                             const iso = cell.iso;
+                            const isPast = iso < TODAY_ISO;
                             const isSelected = iso === selectedDate;
                             const hasBlocks = datesWithBlocks.has(iso);
-                            const isToday = iso === NEXT_DAYS[0];
+                            const isToday = iso === TODAY_ISO;
+                            if (isPast) {
+                              return (
+                                <span
+                                  key={iso}
+                                  title="Past date – not selectable"
+                                  className="flex h-8 w-full min-w-0 cursor-not-allowed items-center justify-center rounded-full border border-cream-100 bg-gray-50/80 text-xs font-medium text-gray-400"
+                                  aria-hidden
+                                >
+                                  {cell.dom}
+                                </span>
+                              );
+                            }
                             return (
                               <button
                                 key={iso}
@@ -821,7 +911,7 @@ export default function DoctorAvailabilityManager() {
                 Times are in Pacific Time (PST). Use the filter to focus on a specific day.
               </p>
               <p className="mt-1 text-xs text-gray-600">
-                These blocks define when you&apos;re free. The specific 30/45/60 min slots that patients can book are set in the <strong>Offer slots</strong> tab.
+                These blocks define when you&apos;re free. The specific 30/45/75 min slots that patients can book are set in the <strong>Offer slots</strong> tab.
               </p>
 
               <div className="mt-3 flex flex-wrap items-center gap-3">

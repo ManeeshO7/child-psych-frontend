@@ -16,6 +16,7 @@ const SLUG_LABELS: Record<string, string> = {
 export default function PatientBookPage() {
   const [allowedTypes, setAllowedTypes] = useState<AllowedType[]>([]);
   const [pendingForms, setPendingForms] = useState<{ hasPendingForms: boolean; pendingCount: number } | null>(null);
+  const [profileComplete, setProfileComplete] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -30,6 +31,7 @@ export default function PatientBookPage() {
         if (allowedRes.ok) {
           const data = await allowedRes.json();
           setAllowedTypes((data.allowedTypes || []) as AllowedType[]);
+          setProfileComplete(data.profileComplete ?? null);
         }
         if (formsRes.ok) {
           const formsData = await formsRes.json();
@@ -68,6 +70,22 @@ export default function PatientBookPage() {
         </div>
       )}
 
+      {profileComplete === false && (
+        <div className="mt-4 rounded-lg border-2 border-amber-200 bg-amber-50 p-4">
+          <p className="text-sm font-medium text-amber-900">
+            Complete your profile first before booking an appointment.
+          </p>
+          <p className="mt-1 text-sm text-amber-800">
+            Please add Name, Sex, DOB, SSN, Contact info, and Preferred Pharmacy.
+          </p>
+          <Link
+            href="/patient/profile"
+            className="mt-3 inline-block rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90"
+          >
+            Complete profile →
+          </Link>
+        </div>
+      )}
       {loading ? (
         <p className="mt-6 text-gray-500">Loading…</p>
       ) : allowedTypes.length === 0 ? (
@@ -76,7 +94,9 @@ export default function PatientBookPage() {
             You don&apos;t have any bookable appointment types at this time.
           </p>
           <p className="mt-2 text-sm text-gray-500">
-            New patients: request access first. After orientation, you can book clinical intake. After intake, your doctor will assign your follow-up type.
+            {profileComplete === false
+              ? "Complete your profile first to book an orientation consultation."
+              : "New patients: request access first. After orientation, you can book clinical intake. After intake, your doctor will assign your follow-up type."}
           </p>
           <Link href="/patient" className="mt-4 inline-block text-warm-brown hover:underline">
             ← Back to dashboard

@@ -86,7 +86,7 @@ export default function LoginPage() {
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M3 3l18 18" strokeLinecap="round" strokeLinejoin="round" />
                       <path
-                        d="M10.58 10.58A3 3 0 0 0 9 12c0.0 1.66 1.34 3 3 3 0.69 0 1.33-0.23 1.84-0.62M16.24 16.24A5 5 0 0 1 12 17c-4.55 0-7.86-3.28-9-5 0.41-0.62 0.95-1.3 1.6-1.94M9.88 4.12A5.01 5.01 0 0 1 12 4c4.55 0 7.86 3.28 9 5-0.32 0.48-0.72 1-1.2 1.52"
+                        d="M10.58 10.58A3 3 0 0 0 9 12c0 1.66 1.34 3 3 3 0.69 0 1.33-0.23 1.84-0.62M16.24 16.24A5 5 0 0 1 12 17c-4.55 0-7.86-3.28-9-5 0.41-0.62 0.95-1.3 1.6-1.94M9.88 4.12A5.01 5.01 0 0 1 12 4c4.55 0 7.86 3.28 9 5-0.32 0.48-0.72 1-1.2 1.52"
                         strokeLinecap="round"
                         strokeLinejoin="round"
                       />
@@ -95,7 +95,7 @@ export default function LoginPage() {
                     // Plain eye = password hidden, click to show
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path
-                        d="M1.5 12C2.67 9.33 5.64 5 12 5s9.33-4.33 10.5 7c-1.17 2.67-4.14 7-10.5 7S2.67 14.67 1.5 12z"
+                        d="M1.5 12C2.67 9.33 5.64 5 12 5s9.33 4.33 10.5 7c-1.17 2.67-4.14 7-10.5 7S2.67 14.67 1.5 12z"
                         strokeLinecap="round"
                         strokeLinejoin="round"
                       />

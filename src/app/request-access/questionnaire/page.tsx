@@ -80,8 +80,6 @@ function QuestionnaireContent() {
     setFormData((prev) => {
       const arr = prev.primaryReasons ?? [];
       if (checked) {
-        // Limit to 2 selections
-        if (arr.length >= 2) return prev;
         return { ...prev, primaryReasons: [...arr, value] };
       }
       return { ...prev, primaryReasons: arr.filter((x) => x !== value) };
@@ -132,12 +130,7 @@ function QuestionnaireContent() {
     }
     const reasons = formData.primaryReasons ?? [];
     if (reasons.length === 0) {
-      setErrorMessage("Please select at least one primary reason for seeking care (up to 2).");
-      setStatus("error");
-      return;
-    }
-    if (reasons.length > 2) {
-      setErrorMessage("Please select no more than 2 primary reasons.");
+      setErrorMessage("Please select at least one primary reason for seeking care.");
       setStatus("error");
       return;
     }
@@ -193,7 +186,14 @@ function QuestionnaireContent() {
         setStatus("error");
         return;
       }
-      setStatus("success");
+      if (json.autoRejected) {
+        setRejectionReason(
+          "Based on your pre-screening questionnaire responses, our practice may not be the most appropriate setting for your child's current needs. If you have questions or concerns, please contact us directly."
+        );
+        setStatus("rejected");
+      } else {
+        setStatus("success");
+      }
     } catch {
       setErrorMessage("Network error. Please try again.");
       setStatus("error");
@@ -314,7 +314,7 @@ function QuestionnaireContent() {
               </div>
               <div>
                 <p className={labelClass}>
-                  Primary reason for seeking care (choose up to 2):
+                  Primary reason for seeking care (select all that apply):
                   <span className="text-red-500" aria-hidden="true"> *</span>
                 </p>
                 <div className="mt-2 space-y-2">
@@ -324,11 +324,6 @@ function QuestionnaireContent() {
                         type="checkbox"
                         checked={(formData.primaryReasons ?? []).includes(opt)}
                         onChange={(e) => {
-                          const current = formData.primaryReasons ?? [];
-                          if (e.target.checked && current.length >= 2) {
-                            setErrorMessage("You can select up to 2 primary reasons.");
-                            return;
-                          }
                           setErrorMessage("");
                           setPrimaryReasons(e.target.checked, opt);
                         }}
@@ -341,12 +336,7 @@ function QuestionnaireContent() {
                     <input
                       type="checkbox"
                       checked={(formData.primaryReasons ?? []).includes("Other")}
-                      onChange={(e) => {
-                        const current = formData.primaryReasons ?? [];
-                        if (e.target.checked && current.length >= 2) {
-                          setErrorMessage("You can select up to 2 primary reasons.");
-                          return;
-                        }
+                        onChange={(e) => {
                         setErrorMessage("");
                         setPrimaryReasons(e.target.checked, "Other");
                       }}

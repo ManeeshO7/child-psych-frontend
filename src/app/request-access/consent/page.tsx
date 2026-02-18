@@ -13,6 +13,7 @@ function ConsentContent() {
     noEmergency: false,
     notInCrisis: false,
     privatePay: false,
+    telePsychOnly: false,
     noGuarantee: false,
     noRelationship: false,
   });
@@ -23,6 +24,7 @@ function ConsentContent() {
     acks.noEmergency &&
     acks.notInCrisis &&
     acks.privatePay &&
+    acks.telePsychOnly &&
     acks.noGuarantee &&
     acks.noRelationship;
 
@@ -71,6 +73,7 @@ function ConsentContent() {
     acks.noEmergency,
     acks.notInCrisis,
     acks.privatePay,
+    acks.telePsychOnly,
     acks.noGuarantee,
     acks.noRelationship,
   ].filter(Boolean).length;
@@ -95,7 +98,7 @@ function ConsentContent() {
           <div className="card mt-8 sm:mt-10 p-6 sm:p-8">
             <div className="mb-5 flex items-center justify-between">
               <span className="text-sm font-medium text-gray-500">
-                {checkedCount} of 5 selected
+                {checkedCount} of 6 selected
               </span>
               {allAcked && (
                 <span className="text-sm font-medium text-green-700">Ready to continue</span>
@@ -146,6 +149,21 @@ function ConsentContent() {
                   />
                   <span className="text-[15px] text-gray-800 leading-snug">
                     <span className="text-red-600">*</span> I understand this is a private, fee-for-service practice and does not bill insurance
+                  </span>
+                </label>
+
+                <label className="flex cursor-pointer items-start gap-4 py-4 first:pt-0 last:pb-0 transition-colors hover:bg-gray-50/50 -mx-2 px-2 rounded-lg">
+                  <input
+                    type="checkbox"
+                    checked={acks.telePsychOnly}
+                    onChange={(e) => {
+                      setAcks((p) => ({ ...p, telePsychOnly: e.target.checked }));
+                      if (e.target.checked) setErrorMessage("");
+                    }}
+                    className="mt-0.5 h-5 w-5 shrink-0 rounded border-gray-300 text-warm-brown focus:ring-warm-brown focus:ring-offset-0"
+                  />
+                  <span className="text-[15px] text-gray-800 leading-snug">
+                    <span className="text-red-600">*</span> I understand that this is strictly a tele psychiatric practice
                   </span>
                 </label>
 

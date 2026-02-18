@@ -91,9 +91,9 @@ export default function RescheduleModal({
         const params = new URLSearchParams({
           durationMinutes: String(durationMinutes),
         });
-        // For reschedule: exclude current appointment so patient can keep same time
-        // For change-proposed-time: do NOT exclude — only show different slots
-        if (variant === "reschedule") {
+        // For reschedule: include current appointment so its slot is hidden (patient is changing time)
+        // For change-proposed-time: exclude so patient can keep the proposed time if desired
+        if (variant === "change-proposed-time") {
           params.set("excludeAppointmentId", appointmentId);
         }
         const res = await fetch(`/api/availability/slots?${params}`, {
@@ -246,7 +246,7 @@ export default function RescheduleModal({
             <p className="text-gray-500">Loading available slots…</p>
           ) : sortedDates.length === 0 ? (
             <div className="rounded-lg border border-cream-200 bg-cream-50 p-4 text-center">
-              <p className="text-gray-600">No available {durationMinutes}-min slots in the next 60 days.</p>
+              <p className="text-gray-600">No available {durationMinutes}-min slots in the next 3 months.</p>
             </div>
           ) : (
             <>

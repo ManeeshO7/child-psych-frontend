@@ -228,7 +228,7 @@ export default function ScheduleFollowupModal({
             <p className="text-gray-500">Loading available slots…</p>
           ) : sortedDates.length === 0 ? (
             <div className="rounded-lg border border-cream-200 bg-cream-50 p-4 text-center">
-              <p className="text-gray-600">No available {durationMinutes}-min slots in the next 60 days.</p>
+              <p className="text-gray-600">No available {durationMinutes}-min slots in the next 3 months.</p>
               <p className="mt-1 text-sm text-gray-500">Add availability and offer {durationMinutes}-min slots in your calendar.</p>
             </div>
           ) : (

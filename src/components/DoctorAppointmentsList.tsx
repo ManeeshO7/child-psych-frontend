@@ -57,6 +57,8 @@ export default function DoctorAppointmentsList() {
   const [prevStack, setPrevStack] = useState<(string | null)[]>([]);
   const [view, setView] = useState<"active" | "completed">("active");
   const [filterDate, setFilterDate] = useState<string | null>(null);
+  const [searchInput, setSearchInput] = useState("");
+  const [searchApplied, setSearchApplied] = useState("");
   const [loading, setLoading] = useState(true);
   const [chargingId, setChargingId] = useState<string | null>(null);
   const [completingId, setCompletingId] = useState<string | null>(null);
@@ -112,7 +114,11 @@ export default function DoctorAppointmentsList() {
     }
   }, []);
 
-  async function load(cursor: string | null, nextView?: "active" | "completed") {
+  async function load(
+    cursor: string | null,
+    nextView?: "active" | "completed",
+    patientSearch?: string,
+  ) {
     // Prevent concurrent load() calls - critical for preventing crashes
     if (loadingRef.current || !mountedRef.current) {
       return;
@@ -124,6 +130,7 @@ export default function DoctorAppointmentsList() {
       qs.set("view", nextView ?? view);
       if (cursor) qs.set("cursor", cursor);
       if (filterDate) qs.set("date_str", filterDate);
+      if (patientSearch?.trim()) qs.set("patient_search", patientSearch.trim());
       const res = await fetch(`/api/appointments/paged?${qs.toString()}`, {
         credentials: "include",
       });
@@ -172,27 +179,28 @@ export default function DoctorAppointmentsList() {
   }
 
   useEffect(() => {
+    const t = setTimeout(() => setSearchApplied(searchInput.trim()), 300);
+    return () => clearTimeout(t);
+  }, [searchInput]);
+
+  useEffect(() => {
     mountedRef.current = true;
-    load(null).catch(() => {
-      // Errors already handled in load()
-    });
     return () => {
       mountedRef.current = false;
       loadingRef.current = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // When switching tabs or date filter, reset pagination and reload.
+  // When switching tabs, date filter, or patient search, reset pagination and reload.
   useEffect(() => {
     setLoading(true);
     setPageCursor(null);
     setPrevStack([]);
     setNextCursor(null);
     setHasMore(false);
-    load(null, view).catch(() => {});
+    load(null, view, searchApplied).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [view, filterDate]);
+  }, [view, filterDate, searchApplied]);
 
   const formattedAppointments: FormattedAppointment[] = useMemo(() => {
     if (!appointments || appointments.length === 0) return [];
@@ -224,7 +232,7 @@ export default function DoctorAppointmentsList() {
     setPrevStack((prev) => [...prev, pageCursor]);
     setPageCursor(nextCursor);
     setLoading(true);
-    await load(nextCursor);
+    await load(nextCursor, undefined, searchApplied);
   }
 
   async function goPrev() {
@@ -233,7 +241,7 @@ export default function DoctorAppointmentsList() {
     setPrevStack((prev) => prev.slice(0, -1));
     setPageCursor(prevCursor);
     setLoading(true);
-    await load(prevCursor);
+    await load(prevCursor, undefined, searchApplied);
   }
 
   async function chargeAppointment(id: string) {
@@ -404,8 +412,9 @@ export default function DoctorAppointmentsList() {
         Your upcoming and past appointments.
       </p>
 
-      <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-3">
+      <div className="mt-6 space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-3">
           <div className="inline-flex rounded-lg border border-cream-200 bg-white p-1 text-sm">
             <button
               type="button"
@@ -451,21 +460,45 @@ export default function DoctorAppointmentsList() {
         <div className="text-sm text-gray-600">
           Showing <span className="font-medium text-gray-900">{appointments.length}</span> appointments
         </div>
+        </div>
+        <div>
+          <label htmlFor="appt-patient-search" className="sr-only">
+            Search by patient name
+          </label>
+          <div className="relative max-w-md">
+            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" aria-hidden>
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+              </svg>
+            </span>
+            <input
+              id="appt-patient-search"
+              type="search"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder="Search by patient name…"
+              className="w-full rounded-lg border border-cream-200 bg-white py-2 pl-10 pr-3 text-sm text-gray-900 placeholder-gray-500"
+              aria-label="Search by patient name"
+            />
+          </div>
+        </div>
       </div>
 
       {loading ? (
         <p className="mt-10 text-gray-500">Loading…</p>
       ) : appointments.length === 0 ? (
         <p className="mt-10 text-gray-500">
-          {filterDate
-            ? `No appointments on ${new Date(filterDate + "T12:00:00").toLocaleDateString("en-US", {
-                timeZone: "America/Los_Angeles",
-                weekday: "short",
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-              })}.`
-            : "No appointments yet."}
+          {searchApplied
+            ? `No appointments found for patient "${searchApplied}".`
+            : filterDate
+              ? `No appointments on ${new Date(filterDate + "T12:00:00").toLocaleDateString("en-US", {
+                  timeZone: "America/Los_Angeles",
+                  weekday: "short",
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })}.`
+              : "No appointments yet."}
         </p>
       ) : (
         <div className="mt-10 space-y-6">
@@ -484,131 +517,118 @@ export default function DoctorAppointmentsList() {
                     {a.durationMinutes} min · {a.type}
                     {a.patient?.name && ` · ${a.patient.name}`}
                   </p>
-                  {a.meetLink && (a.status === "scheduled" || a.status === "card_on_file" || a.status === "paid") && (
-                    <p className="mt-1.5">
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    {a.meetLink && (a.status === "scheduled" || a.status === "card_on_file" || a.status === "paid") && (
                       <a
                         href={a.meetLink}
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => {
-                          // Rapid multi-clicks can open many tabs and crash Chrome.
-                          // Allow the first click, then block repeats briefly.
                           if (openingMeetId === a.id) {
                             e.preventDefault();
                             e.stopPropagation();
                             return;
                           }
                           setOpeningMeetId(a.id);
-                          window.setTimeout(() => {
-                            setOpeningMeetId((curr) => (curr === a.id ? null : curr));
-                          }, 2000);
+                          window.setTimeout(() => setOpeningMeetId((curr) => (curr === a.id ? null : curr)), 2000);
                         }}
-                        className="text-sm font-medium text-warm-brown hover:underline"
+                        className="inline-flex items-center rounded-lg border border-warm-brown/50 bg-warm-brown/5 px-3 py-1.5 text-sm font-medium text-warm-brown hover:bg-warm-brown/10"
                       >
                         {openingMeetId === a.id ? "Opening…" : "Join video call →"}
                       </a>
-                    </p>
-                  )}
-                  {a.status === "pending_confirmation" && (
-                    <p className="mt-1.5">
+                    )}
+                    {a.status === "pending_confirmation" && (
                       <button
                         type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setRescheduleAppointment(a);
-                        }}
-                        className="text-sm font-medium text-warm-brown hover:underline"
+                        onClick={(e) => { e.stopPropagation(); setRescheduleAppointment(a); }}
+                        className="inline-flex items-center rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
                       >
                         Change time
                       </button>
-                    </p>
-                  )}
-                  {canReschedule(a) && (
-                    <p className="mt-1.5">
+                    )}
+                    {canReschedule(a) && (
                       <button
                         type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setRescheduleAppointment(a);
-                        }}
-                        className="text-sm font-medium text-warm-brown hover:underline"
+                        onClick={(e) => { e.stopPropagation(); setRescheduleAppointment(a); }}
+                        className="inline-flex items-center rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
                       >
                         Reschedule
                       </button>
-                    </p>
-                  )}
-                  {a.status === "card_on_file" && (
-                    <p className="mt-1.5">
+                    )}
+                    {a.status === "card_on_file" && (
                       <button
                         type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setChargeConfirmAppointment(a);
-                        }}
-                        className="text-sm font-medium text-warm-brown hover:underline"
+                        onClick={(e) => { e.stopPropagation(); setChargeConfirmAppointment(a); }}
+                        className="inline-flex items-center rounded-lg border border-amber-300 bg-amber-50 px-3 py-1.5 text-sm font-medium text-amber-800 hover:bg-amber-100"
                       >
                         Charge now
                       </button>
-                    </p>
-                  )}
-                  {a.status === "paid" && (
-                    <p className="mt-1.5">
+                    )}
+                    {a.status === "paid" && (
                       <button
                         type="button"
                         onClick={() => completeAppointment(a.id)}
                         disabled={completingId !== null}
-                        className="text-sm font-medium text-green-700 hover:underline disabled:opacity-50"
+                        className="inline-flex items-center rounded-lg border border-green-300 bg-green-50 px-3 py-1.5 text-sm font-medium text-green-800 hover:bg-green-100 disabled:opacity-50"
                       >
                         {completingId === a.id ? "Marking…" : "Mark as complete"}
                       </button>
-                    </p>
-                  )}
-                  {a.status === "completed" && a.type === "orientation_consult" && a.patient && (
-                    <p className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1">
-                      {!a.patientHasAssignedForms && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setAssignFormsAppointment({ id: a.id, patientId: a.patient!.id });
-                            setAssignFormsModalOpen(true);
-                          }}
-                          className="text-sm font-medium text-warm-brown hover:underline"
-                        >
-                          Assign forms →
-                        </button>
-                      )}
-                      {!a.patientHasPendingClinicalIntake && (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setScheduleClinicalIntakeAppointment({
-                              id: a.id,
-                              patientId: a.patient!.id,
-                              patientName: a.patient!.name || "",
-                            });
-                            setScheduleClinicalIntakeOpen(true);
-                          }}
-                          className="text-sm font-medium text-warm-brown hover:underline"
-                        >
-                          Schedule clinical intake →
-                        </button>
-                      )}
+                    )}
+                    {a.patient && (a.status === "scheduled" || a.status === "pending_confirmation" || a.status === "card_on_file" || a.status === "paid") && ["clinical_intake", "followup_med_30", "followup_med_therapy_45"].includes(a.type) && (
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          rejectAfterOrientation(a.id);
+                          setAssignFormsAppointment({ id: a.id, patientId: a.patient!.id });
+                          setAssignFormsModalOpen(true);
                         }}
-                        disabled={rejectingId !== null}
-                        className="text-sm font-medium text-red-600 hover:underline disabled:opacity-50"
+                        className="inline-flex items-center rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
                       >
-                        {rejectingId === a.id ? "Rejecting…" : "Reject patient"}
+                        Assign forms →
                       </button>
-                    </p>
-                  )}
-                  {a.status === "completed" && (a.type === "intake" || a.type === "clinical_intake") && a.patient && !a.patientHasScheduledFollowup && (
-                    <p className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1">
+                    )}
+                    {a.status === "completed" && a.type === "orientation_consult" && a.patient && (
+                      <>
+                        {!a.patientHasAssignedForms && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setAssignFormsAppointment({ id: a.id, patientId: a.patient!.id });
+                              setAssignFormsModalOpen(true);
+                            }}
+                            className="inline-flex items-center rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                          >
+                            Assign forms →
+                          </button>
+                        )}
+                        {!a.patientHasPendingClinicalIntake && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setScheduleClinicalIntakeAppointment({
+                                id: a.id,
+                                patientId: a.patient!.id,
+                                patientName: a.patient!.name || "",
+                              });
+                              setScheduleClinicalIntakeOpen(true);
+                            }}
+                            className="inline-flex items-center rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                          >
+                            Schedule clinical intake →
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); rejectAfterOrientation(a.id); }}
+                          disabled={rejectingId !== null}
+                          className="inline-flex items-center rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-100 disabled:opacity-50"
+                        >
+                          {rejectingId === a.id ? "Rejecting…" : "Reject patient"}
+                        </button>
+                      </>
+                    )}
+                    {a.status === "completed" && (a.type === "intake" || a.type === "clinical_intake") && a.patient && !a.patientHasScheduledFollowup && (
                       <button
                         type="button"
                         onClick={async (e) => {
@@ -616,9 +636,7 @@ export default function DoctorAppointmentsList() {
                           const patientId = a.patient!.id;
                           const patientName = a.patient!.name || "";
                           try {
-                            const res = await fetch(`/api/appointments/patient/${patientId}/allowed-followup-types`, {
-                              credentials: "include",
-                            });
+                            const res = await fetch(`/api/appointments/patient/${patientId}/allowed-followup-types`, { credentials: "include" });
                             const data = res.ok ? await res.json() : {};
                             const allowedTypes = data.allowedTypes ?? ["followup_med_30", "followup_med_therapy_45"];
                             startTransition(() => {
@@ -632,22 +650,20 @@ export default function DoctorAppointmentsList() {
                             });
                           }
                         }}
-                        className="text-sm font-medium text-warm-brown hover:underline"
+                        className="inline-flex items-center rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
                       >
                         Schedule follow-up →
                       </button>
-                    </p>
-                  )}
-                  {a.patient && (
-                    <p className="mt-1.5">
+                    )}
+                    {a.patient && (
                       <Link
                         href={`/doctor/patients/${a.patient.id}`}
-                        className="text-sm font-medium text-gray-700 hover:underline"
+                        className="inline-flex items-center rounded-lg border border-warm-brown/50 bg-white px-3 py-1.5 text-sm font-medium text-warm-brown hover:bg-warm-brown/5"
                       >
                         View patient →
                       </Link>
-                    </p>
-                  )}
+                    )}
+                  </div>
                 </div>
                 <span
                   className={`rounded-full px-2 py-0.5 text-xs ${

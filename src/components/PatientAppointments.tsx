@@ -10,6 +10,7 @@ const PRACTICE_TZ = "America/Los_Angeles";
 
 const RESCHEDULABLE_STATUSES = ["scheduled", "card_on_file", "paid"];
 const RESCHEDULE_MIN_HOURS = 48;
+const PAGE_SIZE = 10;
 
 function canReschedule(a: { scheduledAt: string; status: string }): boolean {
   if (!RESCHEDULABLE_STATUSES.includes(a.status)) return false;
@@ -55,6 +56,9 @@ export default function PatientAppointments() {
   const router = useRouter();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(false);
   const [tzLabel, setTzLabel] = useState("PT");
   const [rescheduleAppointment, setRescheduleAppointment] = useState<Appointment | null>(null);
   const lastInteractionAtRef = useRef<Record<string, number>>({});
@@ -74,28 +78,38 @@ export default function PatientAppointments() {
     }
   }, []);
 
-  async function load() {
+  async function load(cursor?: string | null, append = false) {
+    if (!append) setLoading(true);
+    else setLoadingMore(true);
     try {
-      // Fetch a bounded set to avoid crashing the browser if the account has many appointments
-      const res = await fetch("/api/appointments/paged?limit=100", { credentials: "include" });
+      const params = new URLSearchParams({ limit: String(PAGE_SIZE) });
+      if (cursor) params.set("cursor", cursor);
+      const res = await fetch(`/api/appointments/paged?${params}`, { credentials: "include" });
       if (res.status === 401) {
         router.push("/login");
         return;
       }
       if (!res.ok) {
         console.error("Failed to load appointments:", res.status);
-        setAppointments([]);
-        setLoading(false);
+        if (!append) setAppointments([]);
         return;
       }
       const data = await res.json();
-      setAppointments(Array.isArray(data?.items) ? data.items : []);
+      const items = Array.isArray(data?.items) ? data.items : [];
+      setAppointments((prev) => (append ? [...prev, ...items] : items));
+      setNextCursor(data?.nextCursor ?? null);
+      setHasMore(!!data?.hasMore);
     } catch (err) {
       console.error("Error loading appointments:", err);
-      setAppointments([]);
+      if (!append) setAppointments([]);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
+  }
+
+  function loadMore() {
+    if (nextCursor && !loadingMore) load(nextCursor, true);
   }
 
   useEffect(() => {
@@ -317,6 +331,18 @@ export default function PatientAppointments() {
             })}
           </ul>
         </section>
+      )}
+      {hasMore && (
+        <div className="flex justify-center pt-2">
+          <button
+            type="button"
+            onClick={loadMore}
+            disabled={loadingMore}
+            className="rounded-lg border border-cream-300 bg-white px-4 py-2 text-sm font-medium text-warm-brown hover:bg-cream-50 disabled:opacity-50"
+          >
+            {loadingMore ? "Loading…" : "Load more"}
+          </button>
+        </div>
       )}
     </div>
   );

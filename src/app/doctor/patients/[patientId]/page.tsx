@@ -4,9 +4,26 @@ import { useEffect, useState, useTransition } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { questionnaireToQandA } from "@/lib/questionnaireLabels";
+import { formatPhone } from "@/lib/formatPhone";
 import AssignFormsModal from "@/components/AssignFormsModal";
 import ScheduleClinicalIntakeModal from "@/components/ScheduleClinicalIntakeModal";
 import ScheduleFollowupModal from "@/components/ScheduleFollowupModal";
+
+type PatientProfileData = {
+  sex?: string | null;
+  dateOfBirth?: string | null;
+  ssn?: string | null;
+  address?: string | null;
+  preferredPharmacyName?: string | null;
+  preferredPharmacyPhone?: string | null;
+  preferredPharmacyAddress?: string | null;
+  guardian1Name?: string | null;
+  guardian1Relationship?: string | null;
+  guardian1Phone?: string | null;
+  guardian2Name?: string | null;
+  guardian2Relationship?: string | null;
+  guardian2Phone?: string | null;
+};
 
 type PatientOverview = {
   patientId: string;
@@ -14,6 +31,7 @@ type PatientOverview = {
   patientEmail: string;
   patientPhone?: string | null;
   address?: string | null;
+  patientProfile?: PatientProfileData | null;
   patientRequest?: {
     id: string;
     status: string;
@@ -40,6 +58,9 @@ type PatientOverview = {
     questionnaireData?: Record<string, unknown> | null;
     uploadedGcsPath: string | null;
     downloadUrl: string | null;
+    appointmentId?: string | null;
+    appointmentScheduledAt?: string | null;
+    appointmentType?: string | null;
   }>;
   intakeSubmission: {
     id: string;
@@ -47,6 +68,14 @@ type PatientOverview = {
     status: string;
     reviewedAt: string | null;
   } | null;
+  patientDocuments?: Array<{
+    id: string;
+    displayName: string;
+    fileName: string;
+    contentType?: string;
+    createdAt: string;
+    downloadUrl?: string | null;
+  }>;
 };
 
 export default function PatientOverviewPage() {
@@ -59,6 +88,7 @@ export default function PatientOverviewPage() {
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
   const [showFormResponses, setShowFormResponses] = useState<Record<string, boolean>>({});
   const [assignFormsOpen, setAssignFormsOpen] = useState(false);
+  const [assignFormsForAppointmentId, setAssignFormsForAppointmentId] = useState<string | null>(null);
   const [scheduleClinicalIntakeOpen, setScheduleClinicalIntakeOpen] = useState(false);
   const [scheduleFollowupOpen, setScheduleFollowupOpen] = useState(false);
   const [followupAllowedTypes, setFollowupAllowedTypes] = useState<string[]>(["followup_med_30", "followup_med_therapy_45"]);
@@ -140,18 +170,123 @@ export default function PatientOverviewPage() {
 
       <h1 className="section-heading">Patient Overview</h1>
 
+      {/* Combined Patient Information & Profile */}
       <div className="mt-6 card">
-        <h2 className="text-lg font-semibold text-gray-900 mb-2">Patient Information</h2>
-        <div className="space-y-1 text-sm">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Patient Information</h2>
+        <div className="space-y-3 text-sm">
           <p><span className="font-medium text-gray-700">Name:</span> {overview.patientName}</p>
           <p><span className="font-medium text-gray-700">Email:</span> {overview.patientEmail}</p>
           {overview.patientPhone != null && overview.patientPhone !== "" && (
-            <p><span className="font-medium text-gray-700">Phone:</span> {overview.patientPhone}</p>
+            <p><span className="font-medium text-gray-700">Phone:</span> {formatPhone(overview.patientPhone)}</p>
           )}
-          {overview.address != null && overview.address !== "" && (
-            <p><span className="font-medium text-gray-700">Address:</span> {overview.address}</p>
+          {(overview.address != null && overview.address !== "") || (overview.patientProfile?.address != null && overview.patientProfile?.address !== "") ? (
+            <p><span className="font-medium text-gray-700">Address:</span> {overview.address || overview.patientProfile?.address || "—"}</p>
+          ) : null}
+          {overview.patientProfile?.sex && (
+            <p><span className="font-medium text-gray-700">Sex:</span> {overview.patientProfile.sex.replace(/_/g, " ")}</p>
+          )}
+          {overview.patientProfile?.dateOfBirth && (
+            <p><span className="font-medium text-gray-700">Date of birth:</span> {overview.patientProfile.dateOfBirth}</p>
+          )}
+          {overview.patientProfile?.ssn && (
+            <p><span className="font-medium text-gray-700">SSN:</span> {overview.patientProfile.ssn.replace(/\D/g, "").length === 9
+              ? `${overview.patientProfile.ssn.replace(/\D/g, "").slice(0, 3)}-${overview.patientProfile.ssn.replace(/\D/g, "").slice(3, 5)}-${overview.patientProfile.ssn.replace(/\D/g, "").slice(5)}`
+              : overview.patientProfile.ssn}
+            </p>
+          )}
+          {(overview.patientProfile?.preferredPharmacyName || overview.patientProfile?.preferredPharmacyPhone || overview.patientProfile?.preferredPharmacyAddress) && (
+            <div className="border-t border-gray-200 pt-3 mt-3">
+              <p className="font-medium text-gray-700 mb-2">Preferred pharmacy</p>
+              <div className="pl-0 space-y-1 text-gray-800">
+                {overview.patientProfile.preferredPharmacyName && (
+                  <p><span className="font-medium text-gray-700">Name:</span> {overview.patientProfile.preferredPharmacyName}</p>
+                )}
+                {overview.patientProfile.preferredPharmacyPhone && (
+                  <p><span className="font-medium text-gray-700">Phone:</span> {formatPhone(overview.patientProfile.preferredPharmacyPhone)}</p>
+                )}
+                {overview.patientProfile.preferredPharmacyAddress && (
+                  <p><span className="font-medium text-gray-700">Address:</span> {overview.patientProfile.preferredPharmacyAddress}</p>
+                )}
+              </div>
+            </div>
+          )}
+          {(overview.patientProfile?.guardian1Name || overview.patientProfile?.guardian1Relationship || overview.patientProfile?.guardian1Phone) && (
+            <div className="border-t border-gray-200 pt-3 mt-3">
+              <p className="font-medium text-gray-700 mb-2">Guardian 1</p>
+              <div className="pl-0 space-y-1 text-gray-800">
+                {overview.patientProfile.guardian1Name && (
+                  <p><span className="font-medium text-gray-700">Name:</span> {overview.patientProfile.guardian1Name}</p>
+                )}
+                {overview.patientProfile.guardian1Relationship && (
+                  <p><span className="font-medium text-gray-700">Relationship:</span> {overview.patientProfile.guardian1Relationship}</p>
+                )}
+                {overview.patientProfile.guardian1Phone && (
+                  <p><span className="font-medium text-gray-700">Phone:</span> {formatPhone(overview.patientProfile.guardian1Phone)}</p>
+                )}
+              </div>
+            </div>
+          )}
+          {(overview.patientProfile?.guardian2Name || overview.patientProfile?.guardian2Relationship || overview.patientProfile?.guardian2Phone) && (
+            <div className="border-t border-gray-200 pt-3 mt-3">
+              <p className="font-medium text-gray-700 mb-2">Guardian 2</p>
+              <div className="pl-0 space-y-1 text-gray-800">
+                {overview.patientProfile.guardian2Name && (
+                  <p><span className="font-medium text-gray-700">Name:</span> {overview.patientProfile.guardian2Name}</p>
+                )}
+                {overview.patientProfile.guardian2Relationship && (
+                  <p><span className="font-medium text-gray-700">Relationship:</span> {overview.patientProfile.guardian2Relationship}</p>
+                )}
+                {overview.patientProfile.guardian2Phone && (
+                  <p><span className="font-medium text-gray-700">Phone:</span> {formatPhone(overview.patientProfile.guardian2Phone)}</p>
+                )}
+              </div>
+            </div>
           )}
         </div>
+        {!overview.patientProfile && (
+          <p className="text-sm text-gray-600 mt-3">Profile incomplete or not yet submitted.</p>
+        )}
+      </div>
+
+      {/* Patient uploaded documents (previous medical records) */}
+      <div className="mt-6 card">
+        <h2 className="text-lg font-semibold text-gray-900 mb-2">Patient documents</h2>
+        <p className="text-sm text-gray-600 mb-4">Documents uploaded by the patient (e.g. previous medical records).</p>
+        {overview.patientDocuments && overview.patientDocuments.length > 0 ? (
+          <ul className="space-y-2">
+            {overview.patientDocuments.map((doc) => (
+              <li key={doc.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-3">
+                <div>
+                  <p className="font-medium text-gray-900">{doc.displayName || doc.fileName}</p>
+                  <p className="text-xs text-gray-500">{doc.fileName}</p>
+                </div>
+                {doc.downloadUrl && (
+                  <div className="flex items-center gap-2">
+                    <a
+                      href={doc.downloadUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex rounded-lg border border-warm-brown bg-white px-3 py-1.5 text-sm font-medium text-warm-brown hover:bg-warm-brown/10"
+                    >
+                      View
+                    </a>
+                    <a
+                      href={doc.downloadUrl}
+                      download={doc.fileName}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex rounded-lg bg-warm-brown px-3 py-1.5 text-sm font-medium text-white hover:bg-warm-brown/90"
+                    >
+                      Download
+                    </a>
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-gray-600">No documents uploaded yet.</p>
+        )}
       </div>
 
       {/* Action reminders - same logic as completed appointments list */}
@@ -204,7 +339,13 @@ export default function PatientOverviewPage() {
                       </div>
                       <button
                         type="button"
-                        onClick={() => setAssignFormsOpen(true)}
+                        onClick={() => {
+                          const orientationApt = overview.appointments.find(
+                            (a) => a.type === "orientation_consult" && a.status === "completed"
+                          );
+                          setAssignFormsForAppointmentId(orientationApt?.id ?? null);
+                          setAssignFormsOpen(true);
+                        }}
                         className="inline-flex rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90"
                       >
                         Assign forms →
@@ -216,7 +357,7 @@ export default function PatientOverviewPage() {
                       <div>
                         <p className="font-medium text-gray-900">Schedule clinical intake</p>
                         <p className="text-sm text-gray-600">
-                          Schedule a 60-minute clinical intake appointment for this patient.
+                          Schedule a 75-minute clinical intake appointment for this patient.
                         </p>
                       </div>
                       <button
@@ -340,18 +481,20 @@ export default function PatientOverviewPage() {
       )}
 
       <div className="mt-6 card">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Appointments</h2>
-        {overview.appointments.length === 0 ? (
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Appointments & Form Responses</h2>
+        {overview.appointments.length === 0 && overview.formAssignments.filter((fa) => !fa.appointmentId).length === 0 ? (
           <p className="text-sm text-gray-600">No appointments yet.</p>
         ) : (
-          <div className="space-y-3">
-            {overview.appointments.map((apt) => (
-              <div key={apt.id} className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-                <div className="flex items-start justify-between gap-4">
+          <div className="space-y-6">
+            {overview.appointments.map((apt) => {
+              const formsForApt = overview.formAssignments.filter((fa) => fa.appointmentId === apt.id);
+              return (
+              <div key={apt.id} className="rounded-lg border border-gray-200 bg-gray-50 overflow-hidden">
+                <div className="flex items-start justify-between gap-4 p-4">
                   <div className="flex-1">
                     <p className="font-medium text-gray-900">{formatDate(apt.scheduledAt)}</p>
                     <p className="mt-1 text-sm text-gray-600">
-                      {apt.type} · {apt.status}
+                      {apt.type.replace(/_/g, " ")} · {apt.status}
                     </p>
                     {apt.meetLink && (
                       <a
@@ -366,6 +509,21 @@ export default function PatientOverviewPage() {
                     {apt.notes && (
                       <p className="mt-2 text-sm text-gray-600">
                         <span className="font-medium">Notes:</span> {apt.notes}
+                      </p>
+                    )}
+                    {["scheduled", "pending_confirmation", "card_on_file", "paid"].includes(apt.status) &&
+                      ["clinical_intake", "followup_med_30", "followup_med_therapy_45"].includes(apt.type) && (
+                      <p className="mt-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAssignFormsForAppointmentId(apt.id);
+                            setAssignFormsOpen(true);
+                          }}
+                          className="text-sm font-medium text-warm-brown hover:underline"
+                        >
+                          Assign forms for this appointment →
+                        </button>
                       </p>
                     )}
                   </div>
@@ -385,117 +543,166 @@ export default function PatientOverviewPage() {
                     {apt.status === "card_on_file" ? "Card on file" : apt.status}
                   </span>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div className="mt-6 card">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Form Assignments</h2>
-        {overview.formAssignments.length === 0 ? (
-          <p className="text-sm text-gray-600">No forms assigned yet.</p>
-        ) : (
-          <div className="space-y-3">
-            {overview.formAssignments.map((fa) => {
-              const hasQuestionnaireData = fa.formType === "questionnaire" &&
-                fa.questionnaireData && typeof fa.questionnaireData === "object" &&
-                Object.keys(fa.questionnaireData).length > 0;
-              const isExpanded = showFormResponses[fa.id];
-
-              return (
-              <div key={fa.id} className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex flex-wrap items-start justify-between gap-2">
-                      <div>
-                        <p className="font-medium text-gray-900">{fa.formTitle}</p>
-                        <p className="mt-1 text-sm text-gray-600">
-                          Type: {fa.formType === "questionnaire" ? "Questionnaire" : "PDF Upload"}
-                        </p>
-                        <p className="mt-1 text-xs text-gray-500">
-                          Assigned: {formatDate(fa.assignedAt)}
-                          {fa.completedAt && <> · Completed: {formatDate(fa.completedAt)}</>}
-                        </p>
-                      </div>
-                      {hasQuestionnaireData && (
-                        <button
-                          type="button"
-                          onClick={() => setShowFormResponses((prev) => ({ ...prev, [fa.id]: !prev[fa.id] }))}
-                          className="flex items-center gap-1 text-sm font-medium text-warm-brown hover:underline"
-                        >
-                          {isExpanded ? "Hide" : "Show"} responses
-                          <svg
-                            className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-180" : ""}`}
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                          </svg>
-                        </button>
-                      )}
-                    </div>
-                    {hasQuestionnaireData && isExpanded && (
-                      <div className="mt-4 space-y-3">
-                        {questionnaireToQandA(fa.questionnaireData!).map((qa, idx) => (
-                          <div key={idx} className="rounded-lg border border-gray-200 bg-white p-3">
-                            <p className="text-xs font-medium text-gray-500">{qa.question}</p>
-                            <p className="mt-1 text-sm text-gray-900">{qa.answer}</p>
+                {formsForApt.length > 0 && (
+                  <div className="border-t border-gray-200 bg-white px-4 py-3">
+                    <p className="text-sm font-semibold text-gray-700 mb-3">Forms for this appointment</p>
+                    <div className="space-y-3">
+                      {formsForApt.map((fa) => {
+                        const hasQuestionnaireData =
+                          fa.formType === "questionnaire" &&
+                          fa.questionnaireData &&
+                          typeof fa.questionnaireData === "object" &&
+                          Object.keys(fa.questionnaireData).length > 0;
+                        const isExpanded = showFormResponses[fa.id];
+                        return (
+                          <div key={fa.id} className="rounded-lg border border-cream-200 bg-gray-50/50 p-4">
+                            <div className="flex flex-wrap items-start justify-between gap-2">
+                              <div>
+                                <p className="font-medium text-gray-900">{fa.formTitle}</p>
+                                <p className="mt-0.5 text-xs text-gray-500">
+                                  {fa.formType === "questionnaire" ? "Questionnaire" : "PDF Upload"}
+                                  {fa.assignedAt && <> · Assigned: {formatDate(fa.assignedAt)}</>}
+                                  {fa.completedAt && <> · Completed: {formatDate(fa.completedAt)}</>}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span
+                                  className={`rounded-full px-2 py-0.5 text-xs ${
+                                    fa.status === "completed" ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"
+                                  }`}
+                                >
+                                  {fa.status === "completed" ? "Completed" : "Pending"}
+                                </span>
+                                {hasQuestionnaireData && (
+                                  <button
+                                    type="button"
+                                    onClick={() => setShowFormResponses((prev) => ({ ...prev, [fa.id]: !prev[fa.id] }))}
+                                    className="text-sm font-medium text-warm-brown hover:underline"
+                                  >
+                                    {isExpanded ? "Hide" : "Show"} responses
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                            {hasQuestionnaireData && isExpanded && (
+                              <div className="mt-4 space-y-3">
+                                {questionnaireToQandA(fa.questionnaireData!).map((qa, idx) => (
+                                  <div key={idx} className="rounded border border-gray-200 bg-white p-3">
+                                    <p className="text-xs font-medium text-gray-500">{qa.question}</p>
+                                    <p className="mt-1 text-sm text-gray-900">{qa.answer}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            {fa.formType === "questionnaire" && fa.fhirResponseId && !fa.questionnaireData && (
+                              <p className="mt-2 text-xs text-amber-600">Response data could not be loaded.</p>
+                            )}
+                            {fa.downloadUrl && (
+                              <div className="mt-2 flex flex-wrap gap-3">
+                                <a href={fa.downloadUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-warm-brown hover:underline">
+                                  View PDF →
+                                </a>
+                                <a href={fa.downloadUrl} download target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-warm-brown hover:underline">
+                                  Download PDF →
+                                </a>
+                              </div>
+                            )}
                           </div>
-                        ))}
-                      </div>
-                    )}
-                    {fa.formType === "questionnaire" && fa.fhirResponseId && !fa.questionnaireData && (
-                      <p className="mt-2 text-xs text-amber-600">
-                        Response data could not be loaded. FHIR ID: {fa.fhirResponseId}
-                      </p>
-                    )}
-                    {fa.downloadUrl && (
-                      <div className="mt-2 flex flex-wrap gap-3">
-                        <a
-                          href={fa.downloadUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm font-medium text-warm-brown hover:underline"
-                        >
-                          View PDF →
-                        </a>
-                        <a
-                          href={fa.downloadUrl}
-                          download
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm font-medium text-warm-brown hover:underline"
-                        >
-                          Download PDF →
-                        </a>
-                      </div>
-                    )}
+                        );
+                      })}
+                    </div>
                   </div>
-                  <span
-                    className={`shrink-0 rounded-full px-2 py-1 text-xs ${
-                      fa.status === "completed"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-amber-100 text-amber-800"
-                    }`}
-                  >
-                    {fa.status === "completed" ? "Completed" : "Pending"}
-                  </span>
+                )}
+              </div>
+            );
+            })}
+            {overview.formAssignments.filter((fa) => !fa.appointmentId).length > 0 && (
+              <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+                <p className="text-sm font-semibold text-gray-700 mb-3">Forms (general / before intake)</p>
+                <div className="space-y-3">
+                  {overview.formAssignments
+                    .filter((fa) => !fa.appointmentId)
+                    .map((fa) => {
+                      const hasQuestionnaireData =
+                        fa.formType === "questionnaire" &&
+                        fa.questionnaireData &&
+                        typeof fa.questionnaireData === "object" &&
+                        Object.keys(fa.questionnaireData).length > 0;
+                      const isExpanded = showFormResponses[fa.id];
+                      return (
+                        <div key={fa.id} className="rounded-lg border border-cream-200 bg-white p-4">
+                          <div className="flex flex-wrap items-start justify-between gap-2">
+                            <div>
+                              <p className="font-medium text-gray-900">{fa.formTitle}</p>
+                              <p className="mt-0.5 text-xs text-gray-500">
+                                {fa.formType === "questionnaire" ? "Questionnaire" : "PDF Upload"}
+                                {fa.assignedAt && <> · Assigned: {formatDate(fa.assignedAt)}</>}
+                                {fa.completedAt && <> · Completed: {formatDate(fa.completedAt)}</>}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span
+                                className={`rounded-full px-2 py-0.5 text-xs ${
+                                  fa.status === "completed" ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"
+                                }`}
+                              >
+                                {fa.status === "completed" ? "Completed" : "Pending"}
+                              </span>
+                              {hasQuestionnaireData && (
+                                <button
+                                  type="button"
+                                  onClick={() => setShowFormResponses((prev) => ({ ...prev, [fa.id]: !prev[fa.id] }))}
+                                  className="text-sm font-medium text-warm-brown hover:underline"
+                                >
+                                  {isExpanded ? "Hide" : "Show"} responses
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                          {hasQuestionnaireData && isExpanded && (
+                            <div className="mt-4 space-y-3">
+                              {questionnaireToQandA(fa.questionnaireData!).map((qa, idx) => (
+                                <div key={idx} className="rounded border border-gray-200 bg-gray-50 p-3">
+                                  <p className="text-xs font-medium text-gray-500">{qa.question}</p>
+                                  <p className="mt-1 text-sm text-gray-900">{qa.answer}</p>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {fa.formType === "questionnaire" && fa.fhirResponseId && !fa.questionnaireData && (
+                            <p className="mt-2 text-xs text-amber-600">Response data could not be loaded.</p>
+                          )}
+                          {fa.downloadUrl && (
+                            <div className="mt-2 flex flex-wrap gap-3">
+                              <a href={fa.downloadUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-warm-brown hover:underline">
+                                View PDF →
+                              </a>
+                              <a href={fa.downloadUrl} download target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-warm-brown hover:underline">
+                                Download PDF →
+                              </a>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                 </div>
               </div>
-            );})}
+            )}
           </div>
         )}
       </div>
 
       <AssignFormsModal
         isOpen={assignFormsOpen}
-        onClose={() => setAssignFormsOpen(false)}
+        onClose={() => {
+          setAssignFormsOpen(false);
+          setAssignFormsForAppointmentId(null);
+        }}
         patientId={patientId}
-        appointmentId={overview.appointments.find((a) => a.type === "orientation_consult" && a.status === "completed")?.id ?? null}
+        appointmentId={assignFormsForAppointmentId ?? overview.appointments.find((a) => a.type === "orientation_consult" && a.status === "completed")?.id ?? null}
         onSuccess={() => {
           setAssignFormsOpen(false);
+          setAssignFormsForAppointmentId(null);
           loadOverview();
         }}
       />

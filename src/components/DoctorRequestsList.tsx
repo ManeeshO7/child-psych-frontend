@@ -33,6 +33,7 @@ type PatientRequest = {
   notes: string | null;
   status: string;
   rejectedNote: string | null;
+  autoRejected?: boolean;
   createdAt: string;
   consentAt: string | null;
   questionnaireData: Record<string, unknown> | null;
@@ -184,7 +185,7 @@ export default function DoctorRequestsList() {
               {req.firstName} {req.lastName}
             </p>
             <p className="text-sm text-gray-600">{req.email}</p>
-            <p className="text-sm text-gray-600">{req.phone}</p>
+            <p className="text-sm text-gray-600">{formatPhone(req.phone)}</p>
             {req.notes && (
               <p className="mt-2 text-sm text-gray-600">
                 <span className="font-medium">Notes:</span> {req.notes}
@@ -196,6 +197,11 @@ export default function DoctorRequestsList() {
                 <> · Consent {new Date(req.consentAt).toLocaleString()}</>
               )}
             </p>
+            {req.autoRejected && (
+              <span className="mt-2 inline-flex shrink-0 items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800">
+                Auto-rejected (provider may override)
+              </span>
+            )}
             {statusBadge === "rejected" && req.rejectedNote && (
               <p className="mt-2 text-sm text-red-700">
                 <span className="font-medium">Rejection note:</span> {req.rejectedNote}
@@ -450,7 +456,7 @@ export default function DoctorRequestsList() {
               return rejected.length > 0 ? (
                 <>
                   <ul className="space-y-4">
-                    {items.map((req) => renderRequestCard(req, false, "rejected"))}
+                    {items.map((req) => renderRequestCard(req, !!req.autoRejected, "rejected"))}
                   </ul>
                   {totalPages > 1 && (
                     <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-cream-200 bg-white px-4 py-3 shadow-sm">

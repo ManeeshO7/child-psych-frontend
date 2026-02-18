@@ -57,6 +57,8 @@ type Props = {
   disabled?: boolean;
   className?: string;
   "aria-label"?: string;
+  /** When false, allows any US address (no California-only restriction). Default true. */
+  restrictToCalifornia?: boolean;
 };
 
 export function CaliforniaAddressAutocomplete({
@@ -68,6 +70,7 @@ export function CaliforniaAddressAutocomplete({
   disabled,
   className,
   "aria-label": ariaLabel,
+  restrictToCalifornia = true,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scriptLoaded, setScriptLoaded] = useState(false);
@@ -173,6 +176,7 @@ export function CaliforniaAddressAutocomplete({
     }
 
     const bounds =
+      restrictToCalifornia &&
       window.google.maps.LatLngBounds &&
       new window.google.maps.LatLngBounds(
         { lat: CA_BOUNDS.south, lng: CA_BOUNDS.west },
@@ -198,14 +202,14 @@ export function CaliforniaAddressAutocomplete({
         onChange("", null);
         return;
       }
-      if (!isCalifornia) {
+      if (restrictToCalifornia && !isCalifornia) {
         onChange("", null);
         return;
       }
       onChange(formatted, {
         formattedAddress: formatted,
-        state: "California",
-        isCalifornia: true,
+        state: restrictToCalifornia ? "California" : (stateShort || ""),
+        isCalifornia,
       });
       // Google's Place Autocomplete clears the input on selection by design.
       // Set the internal input value via shadow DOM so the address stays visible.
@@ -229,7 +233,7 @@ export function CaliforniaAddressAutocomplete({
       widgetRef.current = null;
       if (containerRef.current) containerRef.current.innerHTML = "";
     };
-  }, [scriptLoaded, placeholder, onChange]);
+  }, [scriptLoaded, placeholder, onChange, restrictToCalifornia]);
 
   useEffect(() => {
     const w = widgetRef.current as (HTMLElement & { value?: string }) | null;
@@ -296,7 +300,9 @@ export function CaliforniaAddressAutocomplete({
       value={value}
       onChange={(e) => onChange(e.target.value, null)}
       placeholder={
-        scriptLoaded ? "Start typing a California address…" : "Loading address search… (you can type manually)"
+        scriptLoaded
+          ? (restrictToCalifornia ? "Start typing a California address…" : "Start typing an address…")
+          : "Loading address search… (you can type manually)"
       }
       required={required}
       disabled={disabled}
@@ -314,9 +320,11 @@ export function CaliforniaAddressAutocomplete({
         <p className="text-xs text-amber-700">
           Add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to .env to enable autocomplete.
         </p>
-        <p className="text-xs italic text-warm-brown">
-          Only California addresses are accepted. Visits must occur from California.
-        </p>
+        {restrictToCalifornia && (
+          <p className="text-xs italic text-warm-brown">
+            Only California addresses are accepted. Visits must occur from California.
+          </p>
+        )}
       </div>
     );
   }
@@ -325,9 +333,11 @@ export function CaliforniaAddressAutocomplete({
     return (
       <div className="space-y-1">
         {fallbackInput}
-        <p className="text-xs italic text-warm-brown">
-          Only California addresses are accepted. Visits must occur from California.
-        </p>
+        {restrictToCalifornia && (
+          <p className="text-xs italic text-warm-brown">
+            Only California addresses are accepted. Visits must occur from California.
+          </p>
+        )}
       </div>
     );
   }
@@ -368,9 +378,11 @@ export function CaliforniaAddressAutocomplete({
           {loadError} Check API key restrictions allow your domain (e.g. localhost).
         </p>
       )}
-      <p className="text-xs italic text-warm-brown">
-        Only California addresses are accepted. Visits must occur from California.
-      </p>
+      {restrictToCalifornia && (
+        <p className="text-xs italic text-warm-brown">
+          Only California addresses are accepted. Visits must occur from California.
+        </p>
+      )}
     </div>
   );
 }

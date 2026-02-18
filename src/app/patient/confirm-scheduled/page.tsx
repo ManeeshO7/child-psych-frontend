@@ -56,7 +56,10 @@ export default function ConfirmScheduledPage() {
           fetch(`/api/appointments/${appointmentId}`, { credentials: "include" }),
           fetch("/api/payments/payment-method", { credentials: "include" }),
           fetch("/api/payments/pricing", { credentials: "include" }),
-          fetch("/api/patient-forms/check-pending", { credentials: "include" }),
+          fetch(
+            `/api/patient-forms/check-pending?appointmentId=${encodeURIComponent(appointmentId!)}`,
+            { credentials: "include" }
+          ),
         ]);
         if (cancelled) return;
         if (apptRes.ok) {
@@ -218,7 +221,7 @@ export default function ConfirmScheduledPage() {
         <div className="mt-6 rounded-lg border-2 border-amber-200 bg-amber-50 p-4">
           <p className="text-sm font-semibold text-amber-900">Complete your forms first</p>
           <p className="mt-1 text-sm text-amber-800">
-            Your doctor has assigned {pendingForms?.pendingCount ?? 0} form{pendingForms?.pendingCount === 1 ? "" : "s"} for you to complete before confirming your clinical intake. Please complete them in Forms & Documents, then return here to confirm.
+            Your doctor has assigned {pendingForms?.pendingCount ?? 0} form{pendingForms?.pendingCount === 1 ? "" : "s"} for you to complete before confirming this appointment. Please complete them in Forms & Documents, then return here to confirm.
           </p>
           <Link
             href="/patient/forms"

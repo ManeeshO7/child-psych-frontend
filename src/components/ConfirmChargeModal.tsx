@@ -44,10 +44,28 @@ export default function ConfirmChargeModal({
   const [pricingLoading, setPricingLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
+  const [emailSending, setEmailSending] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
+
+  const updateCardUrl =
+    typeof window !== "undefined" ? `${window.location.origin}/patient/save-card` : "/patient/save-card";
+
+  function copyUpdateCardLink() {
+    const url = typeof window !== "undefined" ? `${window.location.origin}/patient/save-card` : updateCardUrl;
+    navigator.clipboard.writeText(url).then(
+      () => {
+        setLinkCopied(true);
+        setTimeout(() => setLinkCopied(false), 2000);
+      },
+      () => {}
+    );
+  }
 
   useEffect(() => {
     if (!isOpen) return;
     setError(null);
+    setEmailSent(false);
     setPricing(null);
     setPricingLoading(true);
     fetch("/api/payments/pricing", { credentials: "include" })
@@ -56,6 +74,27 @@ export default function ConfirmChargeModal({
       .catch(() => setPricing(null))
       .finally(() => setPricingLoading(false));
   }, [isOpen]);
+
+  async function handleEmailRequestCardUpdate() {
+    if (!appointment?.id) return;
+    setEmailSending(true);
+    setEmailSent(false);
+    try {
+      const res = await fetch(`/api/appointments/${appointment.id}/request-card-update`, {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.detail || "Failed to send email");
+      }
+      setEmailSent(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to send email");
+    } finally {
+      setEmailSending(false);
+    }
+  }
 
   async function handleConfirm() {
     if (!appointment?.id) return;
@@ -130,8 +169,41 @@ export default function ConfirmChargeModal({
             </div>
           </div>
           {error && (
-            <div className="rounded-lg border border-red-200 bg-red-50 p-3">
-              <p className="text-sm text-red-700">{error}</p>
+            <div className="space-y-3">
+              <div className="rounded-lg border border-red-200 bg-red-50 p-3">
+                <p className="text-sm text-red-700">{error}</p>
+              </div>
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+                <p className="text-sm font-medium text-amber-900">Ask the patient to update their card</p>
+                <p className="mt-1 text-xs text-amber-800">
+                  Share the link below so they can add a new card. Then click &quot;Confirm charge&quot; again.
+                </p>
+                <div className="mt-2 flex items-center gap-2">
+                  <code className="flex-1 truncate rounded bg-white/80 px-2 py-1 text-xs text-amber-900">
+                    {updateCardUrl}
+                  </code>
+                  <button
+                    type="button"
+                    onClick={copyUpdateCardLink}
+                    className="shrink-0 rounded border border-amber-300 bg-white px-2 py-1 text-xs font-medium text-amber-900 hover:bg-amber-100"
+                  >
+                    {linkCopied ? "Copied!" : "Copy link"}
+                  </button>
+                </div>
+                <div className="mt-3 flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleEmailRequestCardUpdate}
+                    disabled={emailSending}
+                    className="rounded border border-amber-400 bg-amber-100 px-3 py-1.5 text-xs font-medium text-amber-900 hover:bg-amber-200 disabled:opacity-50"
+                  >
+                    {emailSending ? "Sending…" : "Email patient to update card"}
+                  </button>
+                  {emailSent && (
+                    <span className="text-xs text-green-700">Email sent. Retry charge after they update their card.</span>
+                  )}
+                </div>
+              </div>
             </div>
           )}
         </div>

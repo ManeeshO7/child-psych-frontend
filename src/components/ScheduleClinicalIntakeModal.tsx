@@ -61,7 +61,7 @@ export default function ScheduleClinicalIntakeModal({
     async function loadSlots() {
       try {
         const res = await fetch(
-          "/api/availability/slots?durationMinutes=60",
+          "/api/availability/slots?durationMinutes=75",
           { credentials: "include" }
         );
         if (cancelled) return;
@@ -163,7 +163,7 @@ export default function ScheduleClinicalIntakeModal({
         <div className="border-b border-gray-200 px-6 py-4">
           <h2 className="text-xl font-semibold text-gray-900">Schedule clinical intake</h2>
           <p className="mt-1 text-sm text-gray-600">
-            Schedule a 60-min clinical intake for {patientName || "patient"}. They will be asked to add their card and confirm.
+            Schedule a 75-min clinical intake for {patientName || "patient"}. They will be asked to add their card and confirm.
           </p>
         </div>
         <div className="px-6 py-4 space-y-4">
@@ -175,8 +175,8 @@ export default function ScheduleClinicalIntakeModal({
             <p className="text-gray-500">Loading available slots…</p>
           ) : sortedDates.length === 0 ? (
             <div className="rounded-lg border border-cream-200 bg-cream-50 p-4 text-center">
-              <p className="text-gray-600">No available 60-min slots in the next 60 days.</p>
-              <p className="mt-1 text-sm text-gray-500">Add availability in your calendar, then offer slots for 60-min appointments.</p>
+              <p className="text-gray-600">No available 75-min slots in the next 3 months.</p>
+              <p className="mt-1 text-sm text-gray-500">Add availability in your calendar, then offer slots for 75-min appointments in the next 3 months.</p>
             </div>
           ) : (
             <>
@@ -245,7 +245,7 @@ export default function ScheduleClinicalIntakeModal({
                 <div className="rounded-xl border border-cream-200 bg-white p-4 shadow-sm">
                   <h3 className="text-sm font-semibold text-gray-900">2. Select a time slot</h3>
                   <p className="mt-1 text-sm text-gray-600">
-                    {formatSlotDate(slotsForSelected[0]?.start ?? selectedDate)} · 60-min clinical intake
+                    {formatSlotDate(slotsForSelected[0]?.start ?? selectedDate)} · 75-min clinical intake
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {slotsForSelected.map((slot, index) => {

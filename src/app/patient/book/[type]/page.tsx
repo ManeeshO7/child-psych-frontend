@@ -9,6 +9,19 @@ type Slot = { start: string; end: string };
 
 const PRACTICE_TZ = "America/Los_Angeles";
 
+// Match backend: same window as doctor (90 days ahead). Patient calendar shows all months in this range.
+const AVAILABILITY_DAYS_AHEAD = 90;
+const CALENDAR_DATE_STRINGS: string[] = (() => {
+  const out: string[] = [];
+  const today = new Date();
+  for (let i = 0; i < AVAILABILITY_DAYS_AHEAD; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
+    out.push(d.toISOString().slice(0, 10));
+  }
+  return out;
+})();
+
 function formatSlotTime(iso: string): string {
   const d = new Date(iso);
   return d.toLocaleTimeString("en-US", {
@@ -132,8 +145,9 @@ export default function PatientBookTypePage() {
       by[key].push(slot);
     }
     const sorted = Object.keys(by).sort();
+    // Build months from the full 90-day window (same as doctor) so patient can navigate all months
     const monthMap = new Map<string, string[]>();
-    for (const d of sorted) {
+    for (const d of CALENDAR_DATE_STRINGS) {
       const monthKey = d.slice(0, 7);
       if (!monthMap.has(monthKey)) monthMap.set(monthKey, []);
       monthMap.get(monthKey)!.push(d);

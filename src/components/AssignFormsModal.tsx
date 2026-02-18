@@ -118,7 +118,7 @@ export default function AssignFormsModal({
         <div className="border-b border-gray-200 px-6 py-4">
           <h2 className="text-xl font-semibold text-gray-900">Assign Forms to Patient</h2>
           <p className="mt-1 text-sm text-gray-600">
-            Select forms that the patient needs to complete before their next appointment.
+            Select forms that the patient needs to complete before their appointment.
           </p>
         </div>
 

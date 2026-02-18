@@ -429,7 +429,7 @@ export default function DoctorDashboard() {
                             {req.firstName} {req.lastName}
                           </p>
                           <p className="text-sm text-gray-600">{req.email}</p>
-                          <p className="text-sm text-gray-600">{req.phone}</p>
+                          <p className="text-sm text-gray-600">{formatPhone(req.phone)}</p>
                           {req.notes && (
                             <p className="mt-2 text-sm text-gray-600">
                               <span className="font-medium">Notes:</span> {req.notes}
