@@ -277,36 +277,6 @@ export default function DoctorDashboard() {
     }
   }
 
-  async function markIntakeReviewed(id: string) {
-    setReviewingId(id);
-    try {
-      const res = await fetch(`/api/intake/${id}/review`, {
-        method: "POST",
-        credentials: "include",
-      });
-      if (res.status === 401) {
-        router.push("/doctor/login");
-        return;
-      }
-      if (!res.ok) {
-        const err = await res.json();
-        showNotice("error", err.detail || "Failed to mark reviewed");
-        return;
-      }
-      await loadIntakes();
-      setSelectedIntake((prev) => (prev?.id === id ? null : prev));
-    } finally {
-      setReviewingId(null);
-    }
-  }
-
-  async function openIntake(id: string) {
-    const res = await fetch(`/api/intake/${id}`, { credentials: "include" });
-    if (!res.ok) return;
-    const data = await res.json();
-    setSelectedIntake({ id: data.id, formData: data.formData || {}, patientName: data.patientName || "Patient" });
-  }
-
   async function approve(id: string) {
     setApprovingId(id);
     try {

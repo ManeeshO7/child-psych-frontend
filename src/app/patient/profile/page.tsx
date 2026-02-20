@@ -45,7 +45,6 @@ export default function PatientProfilePage() {
   const [saving, setSaving] = useState(false);
   const [documents, setDocuments] = useState<PatientDocument[]>([]);
   const [uploading, setUploading] = useState(false);
-  const [uploadDisplayName, setUploadDisplayName] = useState("Previous medical records");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [data, setData] = useState<ProfileData | null>(null);
@@ -130,14 +129,13 @@ export default function PatientProfilePage() {
     }
     setUploading(true);
     setError(null);
-    const displayName = uploadDisplayName.trim() || "Previous medical records";
     const failed: string[] = [];
     try {
       for (let i = 0; i < toUpload.length; i++) {
         const file = toUpload[i];
         const fd = new FormData();
         fd.append("file", file);
-        fd.append("displayName", displayName);
+        fd.append("displayName", file.name);
         const res = await fetch("/api/patient-documents/upload", {
           method: "POST",
           credentials: "include",
@@ -155,7 +153,6 @@ export default function PatientProfilePage() {
       if (failed.length > 0) {
         setError(failed.join("; "));
       } else {
-        setUploadDisplayName("Previous medical records");
         fileInput!.value = "";
         loadDocuments();
       }
@@ -605,16 +602,6 @@ export default function PatientProfilePage() {
         <h2 className="text-base font-semibold text-gray-900">Previous medical records</h2>
         <p className="mt-1 text-sm text-gray-500">Upload documents (PDF, PNG, JPG) that your doctor may need. Max 10 MB per file.</p>
         <form onSubmit={handleUpload} className="mt-4 flex flex-wrap items-end gap-3">
-          <div className="min-w-[140px]">
-            <label className="block text-xs font-medium text-gray-600">Description</label>
-            <input
-              type="text"
-              value={uploadDisplayName}
-              onChange={(e) => setUploadDisplayName(e.target.value)}
-              placeholder="e.g. Lab results 2024"
-              className="mt-1 w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
-            />
-          </div>
           <div className="min-w-[180px]">
             <label className="block text-xs font-medium text-gray-600">Files</label>
             <input
@@ -636,15 +623,12 @@ export default function PatientProfilePage() {
           <ul className="mt-4 space-y-2">
             {documents.map((doc) => (
               <li key={doc.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-gray-200 bg-gray-50/50 px-3 py-2 text-sm">
-                <span className="font-medium text-gray-900">{doc.displayName || doc.fileName}</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-gray-500">{doc.fileName}</span>
-                  {doc.downloadUrl && (
-                    <a href={doc.downloadUrl} target="_blank" rel="noopener noreferrer" className="text-warm-brown hover:underline">
-                      View
-                    </a>
-                  )}
-                </div>
+                <span className="font-medium text-gray-900">{doc.fileName}</span>
+                {doc.downloadUrl && (
+                  <a href={doc.downloadUrl} target="_blank" rel="noopener noreferrer" className="text-warm-brown hover:underline">
+                    View
+                  </a>
+                )}
               </li>
             ))}
           </ul>

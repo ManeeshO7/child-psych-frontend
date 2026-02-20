@@ -216,7 +216,7 @@ function QuestionnaireContent() {
                 We have received your pre-screening questionnaire and will review it shortly.
               </p>
               <p className="mt-2 text-sm leading-relaxed text-warm-brown/90">
-                We will let you know about the decision within 1–2 working days. If approved, we will email you with next steps to complete registration.
+                We will let you know about the decision within 1–3 working days. If approved, we will email you with next steps to complete registration.
               </p>
               <Link href="/" className="mt-8 inline-block btn-primary">
                 Back to Home

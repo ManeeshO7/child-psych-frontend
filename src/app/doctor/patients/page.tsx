@@ -80,7 +80,7 @@ export default function DoctorPatientsListPage() {
   const tableRows =
     filteredPatients.length === 0 ? (
       <tr>
-        <td colSpan={5} className="px-4 py-8 text-center text-sm text-gray-500">
+        <td colSpan={4} className="px-4 py-8 text-center text-sm text-gray-500">
           {searchApplied ? `No patients match "${searchApplied}".` : "No patients yet."}
         </td>
       </tr>
@@ -189,9 +189,6 @@ export default function DoctorPatientsListPage() {
                   </th>
                   <th scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600">
                     Email
-                  </th>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600">
-                    Intake
                   </th>
                   <th scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600">
                     Appointments

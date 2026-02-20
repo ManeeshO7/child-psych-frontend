@@ -62,12 +62,6 @@ type PatientOverview = {
     appointmentScheduledAt?: string | null;
     appointmentType?: string | null;
   }>;
-  intakeSubmission: {
-    id: string;
-    formData: any;
-    status: string;
-    reviewedAt: string | null;
-  } | null;
   patientDocuments?: Array<{
     id: string;
     displayName: string;
@@ -90,6 +84,7 @@ export default function PatientOverviewPage() {
   const [assignFormsOpen, setAssignFormsOpen] = useState(false);
   const [assignFormsForAppointmentId, setAssignFormsForAppointmentId] = useState<string | null>(null);
   const [scheduleClinicalIntakeOpen, setScheduleClinicalIntakeOpen] = useState(false);
+  const [assignFormsAfterSchedule, setAssignFormsAfterSchedule] = useState(false);
   const [scheduleFollowupOpen, setScheduleFollowupOpen] = useState(false);
   const [followupAllowedTypes, setFollowupAllowedTypes] = useState<string[]>(["followup_med_30", "followup_med_therapy_45"]);
 
@@ -294,7 +289,15 @@ export default function PatientOverviewPage() {
         const completedOrientation = overview.appointments.find(
           (a) => a.type === "orientation_consult" && a.status === "completed"
         );
-        const hasAssignedForms = overview.formAssignments.length > 0;
+        // Next appointment to assign forms to: clinical intake (or follow-up) that is upcoming
+        const clinicalIntakeForForms = overview.appointments.find(
+          (a) =>
+            a.type === "clinical_intake" &&
+            ["pending_confirmation", "scheduled", "card_on_file", "paid"].includes(a.status)
+        );
+        const hasFormsForClinicalIntake =
+          !!clinicalIntakeForForms &&
+          overview.formAssignments.some((fa) => fa.appointmentId === clinicalIntakeForForms.id);
         // Has any clinical intake (pending, scheduled, or completed) — hide "Schedule clinical intake" once they have one
         const hasClinicalIntake = overview.appointments.some(
           (a) => a.type === "clinical_intake" && a.status !== "cancelled"
@@ -308,11 +311,12 @@ export default function PatientOverviewPage() {
             ["pending_confirmation", "scheduled", "card_on_file", "paid"].includes(a.status)
         );
 
-        const showAssignForms = completedOrientation && !hasAssignedForms;
+        const showAssignForms = completedOrientation && !!clinicalIntakeForForms && !hasFormsForClinicalIntake;
         const showScheduleClinicalIntake = completedOrientation && !hasClinicalIntake;
+        const showScheduleAndAssignForms = completedOrientation && !hasClinicalIntake;
         const showScheduleFollowup = !!completedClinicalIntake && !hasScheduledFollowup;
 
-        if (!showAssignForms && !showScheduleClinicalIntake && !showScheduleFollowup) return null;
+        if (!showAssignForms && !showScheduleClinicalIntake && !showScheduleAndAssignForms && !showScheduleFollowup) return null;
 
         return (
           <div className="mt-6 rounded-xl border-2 border-amber-200 bg-amber-50 p-5 shadow-sm">
@@ -360,13 +364,28 @@ export default function PatientOverviewPage() {
                           Schedule a 75-minute clinical intake appointment for this patient.
                         </p>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => setScheduleClinicalIntakeOpen(true)}
-                        className="inline-flex rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90"
-                      >
-                        Schedule clinical intake →
-                      </button>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAssignFormsAfterSchedule(false);
+                            setScheduleClinicalIntakeOpen(true);
+                          }}
+                          className="inline-flex rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90"
+                        >
+                          Schedule clinical intake →
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAssignFormsAfterSchedule(true);
+                            setScheduleClinicalIntakeOpen(true);
+                          }}
+                          className="inline-flex rounded-lg border-2 border-warm-brown bg-white px-4 py-2 text-sm font-medium text-warm-brown hover:bg-amber-50"
+                        >
+                          Schedule & assign forms →
+                        </button>
+                      </div>
                     </li>
                   )}
                   {showScheduleFollowup && (
@@ -512,7 +531,8 @@ export default function PatientOverviewPage() {
                       </p>
                     )}
                     {["scheduled", "pending_confirmation", "card_on_file", "paid"].includes(apt.status) &&
-                      ["clinical_intake", "followup_med_30", "followup_med_therapy_45"].includes(apt.type) && (
+                      ["clinical_intake", "followup_med_30", "followup_med_therapy_45"].includes(apt.type) &&
+                      overview.formAssignments.filter((fa) => fa.appointmentId === apt.id).length === 0 && (
                       <p className="mt-2">
                         <button
                           type="button"
@@ -699,7 +719,7 @@ export default function PatientOverviewPage() {
           setAssignFormsForAppointmentId(null);
         }}
         patientId={patientId}
-        appointmentId={assignFormsForAppointmentId ?? overview.appointments.find((a) => a.type === "orientation_consult" && a.status === "completed")?.id ?? null}
+        appointmentId={assignFormsForAppointmentId}
         onSuccess={() => {
           setAssignFormsOpen(false);
           setAssignFormsForAppointmentId(null);
@@ -708,12 +728,20 @@ export default function PatientOverviewPage() {
       />
       <ScheduleClinicalIntakeModal
         isOpen={scheduleClinicalIntakeOpen}
-        onClose={() => setScheduleClinicalIntakeOpen(false)}
+        onClose={() => {
+          setScheduleClinicalIntakeOpen(false);
+          setAssignFormsAfterSchedule(false);
+        }}
         patientId={patientId}
         patientName={overview.patientName}
-        onSuccess={() => {
+        onSuccess={(appointmentId) => {
           setScheduleClinicalIntakeOpen(false);
           loadOverview();
+          if (assignFormsAfterSchedule && appointmentId) {
+            setAssignFormsForAppointmentId(appointmentId);
+            setAssignFormsOpen(true);
+            setAssignFormsAfterSchedule(false);
+          }
         }}
       />
       <ScheduleFollowupModal

@@ -138,7 +138,7 @@ export default function ScheduleClinicalIntakeModal({
         body: JSON.stringify({
           patientId,
           scheduledAt: selectedSlot.start,
-          durationMinutes: 60,
+          durationMinutes: 75,
           type: "clinical_intake",
         }),
       });
@@ -146,7 +146,9 @@ export default function ScheduleClinicalIntakeModal({
         const err = await res.json().catch(() => ({}));
         throw new Error(err.detail || "Failed to schedule");
       }
-      onSuccess?.();
+      const data = await res.json().catch(() => ({}));
+      const appointmentId = data.appointment?.id;
+      onSuccess?.(appointmentId);
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to schedule");

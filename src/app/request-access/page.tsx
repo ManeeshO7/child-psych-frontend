@@ -5,22 +5,35 @@ import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
+const US_PHONE_DIGITS = 10;
+
 export default function RequestAccessPage() {
   const router = useRouter();
   const [status, setStatus] = useState<"idle" | "submitting" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  const [phoneDigits, setPhoneDigits] = useState("");
+
+  function handlePhoneChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const digits = e.target.value.replace(/\D/g, "").slice(0, US_PHONE_DIGITS);
+    setPhoneDigits(digits);
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setStatus("submitting");
     setErrorMessage("");
     const form = e.currentTarget;
     const fd = new FormData(form);
+    const digits = phoneDigits.replace(/\D/g, "").slice(0, US_PHONE_DIGITS);
+    if (digits.length !== US_PHONE_DIGITS) {
+      setErrorMessage("Please enter a valid 10-digit US phone number.");
+      return;
+    }
+    setStatus("submitting");
     const data = {
       firstName: fd.get("firstName") as string,
       lastName: fd.get("lastName") as string,
       email: fd.get("email") as string,
-      phone: fd.get("phone") as string,
+      phone: "1" + digits,
       notes: (fd.get("notes") as string) || "",
     };
     try {
@@ -101,13 +114,22 @@ export default function RequestAccessPage() {
                 <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
                   Phone Number *
                 </label>
-                <input
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  required
-                  className="mt-1 block w-full rounded-lg border border-cream-200 bg-white px-3 py-2 text-gray-900 shadow-sm focus:border-warm-brown focus:outline-none focus:ring-1 focus:ring-warm-brown"
-                />
+                <div className="mt-1 flex rounded-lg border border-cream-200 bg-white shadow-sm focus-within:border-warm-brown focus-within:ring-1 focus-within:ring-warm-brown">
+                  <span className="inline-flex items-center rounded-l-lg border-r border-cream-200 bg-gray-50 px-3 text-gray-600">+1</span>
+                  <input
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    inputMode="numeric"
+                    autoComplete="tel"
+                    placeholder="5551234567"
+                    maxLength={US_PHONE_DIGITS}
+                    value={phoneDigits}
+                    onChange={handlePhoneChange}
+                    className="block w-full rounded-r-lg border-0 bg-transparent py-2 pl-2 pr-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-0"
+                    aria-label="US phone number, 10 digits"
+                  />
+                </div>
               </div>
               <div>
                 <label htmlFor="notes" className="block text-sm font-medium text-gray-700">

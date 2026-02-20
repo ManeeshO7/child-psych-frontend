@@ -41,6 +41,8 @@ type Appointment = {
   patientHasPendingClinicalIntake?: boolean;
   /** Present for completed clinical_intake/intake: true when patient already has a follow-up scheduled */
   patientHasScheduledFollowup?: boolean;
+  /** Present for clinical_intake/followup: true when forms are already assigned for this appointment */
+  hasFormsForThisAppointment?: boolean;
 };
 
 type FormattedAppointment = {
@@ -574,7 +576,7 @@ export default function DoctorAppointmentsList() {
                         {completingId === a.id ? "Marking…" : "Mark as complete"}
                       </button>
                     )}
-                    {a.patient && (a.status === "scheduled" || a.status === "pending_confirmation" || a.status === "card_on_file" || a.status === "paid") && ["clinical_intake", "followup_med_30", "followup_med_therapy_45"].includes(a.type) && (
+                    {a.patient && (a.status === "scheduled" || a.status === "pending_confirmation" || a.status === "card_on_file" || a.status === "paid") && ["clinical_intake", "followup_med_30", "followup_med_therapy_45"].includes(a.type) && !a.hasFormsForThisAppointment && (
                       <button
                         type="button"
                         onClick={(e) => {
@@ -589,18 +591,6 @@ export default function DoctorAppointmentsList() {
                     )}
                     {a.status === "completed" && a.type === "orientation_consult" && a.patient && (
                       <>
-                        {!a.patientHasAssignedForms && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setAssignFormsAppointment({ id: a.id, patientId: a.patient!.id });
-                              setAssignFormsModalOpen(true);
-                            }}
-                            className="inline-flex items-center rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                          >
-                            Assign forms →
-                          </button>
-                        )}
                         {!a.patientHasPendingClinicalIntake && (
                           <button
                             type="button"

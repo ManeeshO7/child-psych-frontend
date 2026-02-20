@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { questionnaireToQandA } from "@/lib/questionnaireLabels";
+import { formatPhone } from "@/lib/formatPhone";
 
 const RED_FLAG_KEYS = [
   "activeSuicidalThoughts",

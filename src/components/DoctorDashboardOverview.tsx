@@ -36,7 +36,7 @@ export default function DoctorDashboardOverview() {
         if (cancelled) return;
         const requests: PatientRequest[] = await reqRes.json();
         const appointments = await appRes.json();
-        const patients = patientsRes.ok ? await patientsRes.json() : [];
+        const patientsData = patientsRes.ok ? await patientsRes.json() : {};
         const pending = requests.filter(
           (r) =>
             r.status === "pending" &&
@@ -45,7 +45,13 @@ export default function DoctorDashboardOverview() {
         );
         setPendingCount(pending.length);
         setAppointmentCount(Array.isArray(appointments) ? appointments.length : 0);
-        setPatientCount(Array.isArray(patients) ? patients.length : 0);
+        const count =
+          typeof patientsData.total === "number"
+            ? patientsData.total
+            : Array.isArray(patientsData.patients)
+              ? patientsData.patients.length
+              : 0;
+        setPatientCount(count);
         if (calRes.ok) {
           const cal = await calRes.json();
           setCalendarConnected(cal.connected === true);
