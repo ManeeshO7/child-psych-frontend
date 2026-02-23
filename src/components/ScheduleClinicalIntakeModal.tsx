@@ -49,6 +49,7 @@ export default function ScheduleClinicalIntakeModal({
   const [currentMonthIndex, setCurrentMonthIndex] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [requireFormsBeforeConfirm, setRequireFormsBeforeConfirm] = useState(true);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -140,6 +141,7 @@ export default function ScheduleClinicalIntakeModal({
           scheduledAt: selectedSlot.start,
           durationMinutes: 75,
           type: "clinical_intake",
+          requireFormsBeforeConfirm,
         }),
       });
       if (!res.ok) {
@@ -169,6 +171,18 @@ export default function ScheduleClinicalIntakeModal({
           </p>
         </div>
         <div className="px-6 py-4 space-y-4">
+          <label className="flex items-start gap-3">
+            <input
+              type="checkbox"
+              checked={requireFormsBeforeConfirm}
+              onChange={(e) => setRequireFormsBeforeConfirm(e.target.checked)}
+              className="mt-1 h-4 w-4 rounded border-gray-300 text-warm-brown focus:ring-warm-brown"
+            />
+            <span className="text-sm text-gray-700">
+              Require assigned forms to be completed before the patient can confirm this appointment
+            </span>
+          </label>
+
           <p className="text-sm text-gray-500">
             Times are shown in Pacific Time (America/Los_Angeles).
           </p>

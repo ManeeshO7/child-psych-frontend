@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 export default function DoctorLoginPage() {
@@ -41,7 +40,6 @@ export default function DoctorLoginPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-cream-50">
-      <Header />
       <main className="flex flex-1 flex-col items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
         <div className="w-full max-w-sm">
           <h1 className="section-heading">Doctor Portal — Login</h1>

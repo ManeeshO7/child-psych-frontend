@@ -13,7 +13,7 @@ export default function DoctorLogoutButton() {
     <button
       type="button"
       onClick={handleLogout}
-      className="text-sm text-gray-600 hover:text-warm-brown"
+      className="rounded-lg border border-warm-brown/40 bg-white px-4 py-2 text-sm font-medium text-warm-brown shadow-sm transition-colors hover:bg-warm-brown hover:text-white focus:outline-none focus:ring-2 focus:ring-warm-brown focus:ring-offset-2"
     >
       Logout
     </button>

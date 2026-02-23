@@ -90,7 +90,7 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
     <div
       ref={ref}
       style={{ transitionDelay: inView ? `${120 + index * 90}ms` : "0ms" }}
-      className={`group flex min-h-[420px] flex-col overflow-hidden rounded-2xl bg-white shadow-[0_2px_12px_rgba(0,0,0,0.06)] transition-all duration-700 ease-out will-change-transform hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.12)] ${
+      className={`group flex min-h-[420px] flex-col overflow-hidden rounded-2xl bg-cream-200 shadow-[0_2px_12px_rgba(0,0,0,0.06)] transition-all duration-700 ease-out will-change-transform hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.12)] ${
         inView
           ? "translate-x-0 translate-y-0 scale-100 opacity-100 blur-0"
           : `${initialOffsetX} translate-y-6 scale-[0.96] opacity-0 blur-[2px]`

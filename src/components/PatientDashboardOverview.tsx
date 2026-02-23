@@ -17,6 +17,7 @@ type PendingAppointment = {
   durationMinutes: number;
   type: string;
   status: string;
+  hasPendingFormsForThisAppointment?: boolean;
 };
 
 const PRACTICE_TZ = "America/Los_Angeles";
@@ -222,9 +223,7 @@ export default function PatientDashboardOverview() {
               </p>
               <ul className="mt-4 space-y-3">
                 {pendingAppointments.map((a) => {
-                  const isClinicalIntake = a.type === "clinical_intake";
-                  const mustCompleteForms =
-                    isClinicalIntake && pendingFormsCheck?.hasPendingForms;
+                  const mustCompleteForms = a.hasPendingFormsForThisAppointment === true;
                   return (
                     <li
                       key={a.id}

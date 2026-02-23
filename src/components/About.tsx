@@ -11,7 +11,7 @@ export default function About() {
           alt="Calming background representing TelePsych care"
           fill
           sizes="100vw"
-          className="object-cover"
+          className="object-cover object-center"
           priority
         />
         {/* Softer overlay so the background is more visible */}

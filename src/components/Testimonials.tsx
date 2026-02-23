@@ -77,7 +77,7 @@ export default function Testimonials() {
                 className="object-cover object-center"
                 sizes="(max-width: 768px) 100vw, 33vw"
               />
-              <div className="absolute inset-0 bg-white/65" aria-hidden />
+              <div className="absolute inset-0 bg-cream-200/90" aria-hidden />
             </div>
             <div className="relative z-10 flex flex-1 flex-col p-6 md:p-8">
               <span className="text-5xl font-serif leading-none text-gray-400" style={{ fontFamily: "Georgia, serif" }}>
@@ -127,7 +127,7 @@ export default function Testimonials() {
                 className="object-cover object-center"
                 sizes="(max-width: 768px) 100vw, 33vw"
               />
-              <div className="absolute inset-0 bg-white/65" aria-hidden />
+              <div className="absolute inset-0 bg-cream-200/90" aria-hidden />
             </div>
             <div className="relative z-10 flex flex-1 flex-col p-6 md:p-8">
               <span className="text-5xl font-serif leading-none text-gray-400" style={{ fontFamily: "Georgia, serif" }}>

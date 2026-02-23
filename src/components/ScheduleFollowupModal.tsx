@@ -57,6 +57,7 @@ export default function ScheduleFollowupModal({
   const [currentMonthIndex, setCurrentMonthIndex] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [requireFormsBeforeConfirm, setRequireFormsBeforeConfirm] = useState(true);
   const prevOpenRef = useRef(false);
 
   const durationMinutes = type === "followup_med_therapy_45" ? 45 : 30;
@@ -86,33 +87,38 @@ export default function ScheduleFollowupModal({
     setSelectedSlot(null);
     setCurrentMonthIndex(0);
     setError(null);
-    // Defer slot fetch to next frame so overlay paints first (avoids Chrome hang)
-    const raf = requestAnimationFrame(() => {
+    // Defer slot fetch so overlay paints first and main thread stays responsive (avoids Chrome hang/crash)
+    let raf2Id: number | undefined;
+    const rafId = requestAnimationFrame(() => {
       if (cancelled) return;
-      async function loadSlots() {
-        try {
-          const res = await fetch(
-            `/api/availability/slots?durationMinutes=${durationMinutes}`,
-            { credentials: "include" }
-          );
-          if (cancelled) return;
-          if (res.ok) {
-            const data = await res.json();
-            if (!cancelled) setSlots(data.slots || []);
-          } else if (!cancelled) {
-            setSlots([]);
+      raf2Id = requestAnimationFrame(() => {
+        if (cancelled) return;
+        async function loadSlots() {
+          try {
+            const res = await fetch(
+              `/api/availability/slots?durationMinutes=${durationMinutes}`,
+              { credentials: "include" }
+            );
+            if (cancelled) return;
+            if (res.ok) {
+              const data = await res.json();
+              if (!cancelled) setSlots(data.slots || []);
+            } else if (!cancelled) {
+              setSlots([]);
+            }
+          } catch {
+            if (!cancelled) setSlots([]);
+          } finally {
+            if (!cancelled) setSlotsLoading(false);
           }
-        } catch {
-          if (!cancelled) setSlots([]);
-        } finally {
-          if (!cancelled) setSlotsLoading(false);
         }
-      }
-      loadSlots();
+        loadSlots();
+      });
     });
     return () => {
       cancelled = true;
-      cancelAnimationFrame(raf);
+      cancelAnimationFrame(rafId);
+      if (typeof raf2Id === "number") cancelAnimationFrame(raf2Id);
     };
   }, [isOpen, durationMinutes]);
 
@@ -173,6 +179,7 @@ export default function ScheduleFollowupModal({
           scheduledAt: selectedSlot.start,
           durationMinutes,
           type,
+          requireFormsBeforeConfirm,
         }),
       });
       if (!res.ok) {
@@ -219,6 +226,18 @@ export default function ScheduleFollowupModal({
               )}
             </select>
           </div>
+
+          <label className="flex items-start gap-3">
+            <input
+              type="checkbox"
+              checked={requireFormsBeforeConfirm}
+              onChange={(e) => setRequireFormsBeforeConfirm(e.target.checked)}
+              className="mt-1 h-4 w-4 rounded border-gray-300 text-warm-brown focus:ring-warm-brown"
+            />
+            <span className="text-sm text-gray-700">
+              Require assigned forms to be completed before the patient can confirm this appointment
+            </span>
+          </label>
 
           <p className="text-sm text-gray-500">
             Times are shown in Pacific Time (America/Los_Angeles).

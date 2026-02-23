@@ -34,6 +34,7 @@ type Appointment = {
   notes: string | null;
   doctor?: { id: string; email: string; name: string };
   meetLink?: string | null;
+  hasPendingFormsForThisAppointment?: boolean;
 };
 
 function formatAppointmentDateTime(iso: string): string {
@@ -208,12 +209,21 @@ export default function PatientAppointments() {
                     </p>
                     {a.status === "pending_confirmation" ? (
                         <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1">
-                          <Link
-                            href={`/patient/confirm-scheduled?appointmentId=${encodeURIComponent(a.id)}`}
-                            className="inline-flex items-center text-xs font-medium text-warm-brown hover:underline"
-                          >
-                            Confirm & add payment →
-                          </Link>
+                          {a.hasPendingFormsForThisAppointment ? (
+                            <Link
+                              href="/patient/forms"
+                              className="inline-flex items-center text-xs font-medium text-warm-brown hover:underline"
+                            >
+                              Complete forms first →
+                            </Link>
+                          ) : (
+                            <Link
+                              href={`/patient/confirm-scheduled?appointmentId=${encodeURIComponent(a.id)}`}
+                              className="inline-flex items-center text-xs font-medium text-warm-brown hover:underline"
+                            >
+                              Confirm & add payment →
+                            </Link>
+                          )}
                           <button
                             type="button"
                             onClick={(e) => {

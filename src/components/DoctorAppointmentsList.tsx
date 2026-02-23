@@ -43,6 +43,10 @@ type Appointment = {
   patientHasScheduledFollowup?: boolean;
   /** Present for clinical_intake/followup: true when forms are already assigned for this appointment */
   hasFormsForThisAppointment?: boolean;
+  /** Number of forms assigned to this appointment (clinical_intake / followup) */
+  formsAssignedCount?: number;
+  /** If false, doctor marked "no forms required" for this appointment */
+  requireFormsBeforeConfirm?: boolean;
 };
 
 type FormattedAppointment = {
@@ -227,6 +231,16 @@ export default function DoctorAppointmentsList() {
       return { appointment, formattedDate };
     });
   }, [appointments, tzLabel]);
+
+  // Latest completed appointment that can have "Schedule follow-up" (list is date desc, so first match)
+  const FOLLOWUP_ELIGIBLE_TYPES = ["clinical_intake", "intake", "followup_med_30", "followup_med_therapy_45"];
+  const latestScheduleFollowupId = useMemo(() => {
+    const found = formattedAppointments.find(
+      ({ appointment }) =>
+        appointment.status === "completed" && FOLLOWUP_ELIGIBLE_TYPES.includes(appointment.type),
+    );
+    return found?.appointment.id ?? null;
+  }, [formattedAppointments]);
 
   async function goNext() {
     if (!nextCursor) return;
@@ -576,18 +590,39 @@ export default function DoctorAppointmentsList() {
                         {completingId === a.id ? "Marking…" : "Mark as complete"}
                       </button>
                     )}
-                    {a.patient && (a.status === "scheduled" || a.status === "pending_confirmation" || a.status === "card_on_file" || a.status === "paid") && ["clinical_intake", "followup_med_30", "followup_med_therapy_45"].includes(a.type) && !a.hasFormsForThisAppointment && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setAssignFormsAppointment({ id: a.id, patientId: a.patient!.id });
-                          setAssignFormsModalOpen(true);
-                        }}
-                        className="inline-flex items-center rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                      >
-                        Assign forms →
-                      </button>
+                    {a.patient && (a.status === "scheduled" || a.status === "pending_confirmation" || a.status === "card_on_file" || a.status === "paid") && ["clinical_intake", "followup_med_30", "followup_med_therapy_45"].includes(a.type) && (
+                      (() => {
+                        const noFormsRequired = a.requireFormsBeforeConfirm === false;
+                        const hasForms = a.hasFormsForThisAppointment === true;
+                        const count = a.formsAssignedCount ?? 0;
+                        if (noFormsRequired) {
+                          return (
+                            <span className="inline-flex items-center rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 text-sm text-gray-600">
+                              No forms required
+                            </span>
+                          );
+                        }
+                        if (hasForms) {
+                          return (
+                            <span className="inline-flex items-center rounded-lg border border-teal-200 bg-teal-50 px-3 py-1.5 text-sm font-medium text-teal-800">
+                              {count === 1 ? "1 form assigned" : `${count} forms assigned`}
+                            </span>
+                          );
+                        }
+                        return (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setAssignFormsAppointment({ id: a.id, patientId: a.patient!.id });
+                              setAssignFormsModalOpen(true);
+                            }}
+                            className="inline-flex items-center rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-sm font-medium text-amber-800 hover:bg-amber-100 hover:border-amber-300"
+                          >
+                            No forms assigned
+                          </button>
+                        );
+                      })()
                     )}
                     {a.status === "completed" && a.type === "orientation_consult" && a.patient && (
                       <>
@@ -618,27 +653,33 @@ export default function DoctorAppointmentsList() {
                         </button>
                       </>
                     )}
-                    {a.status === "completed" && (a.type === "intake" || a.type === "clinical_intake") && a.patient && !a.patientHasScheduledFollowup && (
+                    {a.status === "completed" &&
+                      FOLLOWUP_ELIGIBLE_TYPES.includes(a.type) &&
+                      a.patient &&
+                      !a.patientHasScheduledFollowup &&
+                      a.id === latestScheduleFollowupId && (
                       <button
                         type="button"
-                        onClick={async (e) => {
+                        onClick={(e) => {
                           e.stopPropagation();
                           const patientId = a.patient!.id;
                           const patientName = a.patient!.name || "";
-                          try {
-                            const res = await fetch(`/api/appointments/patient/${patientId}/allowed-followup-types`, { credentials: "include" });
-                            const data = res.ok ? await res.json() : {};
-                            const allowedTypes = data.allowedTypes ?? ["followup_med_30", "followup_med_therapy_45"];
-                            startTransition(() => {
-                              setScheduleFollowupPatient({ patientId, patientName, allowedTypes });
-                              setScheduleFollowupOpen(true);
-                            });
-                          } catch {
-                            startTransition(() => {
-                              setScheduleFollowupPatient({ patientId, patientName, allowedTypes: ["followup_med_30", "followup_med_therapy_45"] });
-                              setScheduleFollowupOpen(true);
-                            });
-                          }
+                          // Defer fetch and modal open to avoid blocking the main thread (prevents Chrome hang/crash)
+                          const openModal = (allowedTypes: string[]) => {
+                            setScheduleFollowupPatient({ patientId, patientName, allowedTypes });
+                            setScheduleFollowupOpen(true);
+                          };
+                          requestAnimationFrame(() => {
+                            fetch(`/api/appointments/patient/${patientId}/allowed-followup-types`, { credentials: "include" })
+                              .then((res) => (res.ok ? res.json() : {}))
+                              .then((data: { allowedTypes?: string[] }) => {
+                                const allowed = data.allowedTypes ?? ["followup_med_30", "followup_med_therapy_45"];
+                                requestAnimationFrame(() => openModal(allowed));
+                              })
+                              .catch(() => {
+                                requestAnimationFrame(() => openModal(["followup_med_30", "followup_med_therapy_45"]));
+                              });
+                          });
                         }}
                         className="inline-flex items-center rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
                       >

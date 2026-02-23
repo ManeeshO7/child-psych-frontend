@@ -56,8 +56,20 @@ export default function DoctorRequestsList() {
     rejected: 1,
   });
   const [deletingQuestionnaireId, setDeletingQuestionnaireId] = useState<string | null>(null);
+  const [searchName, setSearchName] = useState("");
 
   const PAGE_SIZE = 10;
+
+  function filterByName(list: PatientRequest[]): PatientRequest[] {
+    const q = searchName.trim().toLowerCase();
+    if (!q) return list;
+    return list.filter(
+      (r) =>
+        `${(r.firstName || "").toLowerCase()} ${(r.lastName || "").toLowerCase()}`.includes(q) ||
+        (r.firstName || "").toLowerCase().includes(q) ||
+        (r.lastName || "").toLowerCase().includes(q)
+    );
+  }
 
   async function load() {
     const res = await fetch("/api/patient-requests/", { credentials: "include" });
@@ -149,14 +161,16 @@ export default function DoctorRequestsList() {
     }
   }
 
-  const pending = requests.filter(
-    (r) =>
-      r.status === "pending" &&
-      r.questionnaireData != null &&
-      Object.keys(r.questionnaireData).length > 0
+  const pending = filterByName(
+    requests.filter(
+      (r) =>
+        r.status === "pending" &&
+        r.questionnaireData != null &&
+        Object.keys(r.questionnaireData).length > 0
+    )
   );
-  const accepted = requests.filter((r) => r.status === "approved");
-  const rejected = requests.filter((r) => r.status === "rejected");
+  const accepted = filterByName(requests.filter((r) => r.status === "approved"));
+  const rejected = filterByName(requests.filter((r) => r.status === "rejected"));
 
   function paginate<T>(list: T[], tab: "pending" | "accepted" | "rejected") {
     const total = list.length;
@@ -334,6 +348,31 @@ export default function DoctorRequestsList() {
       <p className="mt-2 text-gray-600">
         Review new patient access requests. Approve to create their account and send login credentials; reject to decline.
       </p>
+
+      <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <label htmlFor="requests-search" className="sr-only">
+          Search by patient name
+        </label>
+        <div className="relative max-w-xs">
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" aria-hidden>
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+            </svg>
+          </span>
+          <input
+            id="requests-search"
+            type="search"
+            value={searchName}
+            onChange={(e) => {
+              setSearchName(e.target.value);
+              setPageByTab({ pending: 1, accepted: 1, rejected: 1 });
+            }}
+            placeholder="Search by patient name…"
+            className="w-full rounded-lg border border-cream-200 bg-white py-2 pl-10 pr-3 text-sm text-gray-900 placeholder-gray-500 focus:border-warm-brown focus:ring-warm-brown"
+            aria-label="Search by patient name"
+          />
+        </div>
+      </div>
 
       {loading ? (
         <p className="mt-10 text-gray-500">Loading…</p>

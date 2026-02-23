@@ -3,12 +3,14 @@
 @tailwind utilities;
 
 :root {
-  --cream: #fdfcfb;
-  --cream-100: #f9f7f4;
+  --cream: #f8f7f4;
+  --cream-100: #f0eeea;
+  --cream-200: #ebe9e4;
   --warm-brown: #8b7355;
   --warm-gold: #a68b5b;
   --warm-tan: #c4a574;
   --sand: #e8dcc8;
+  --warm-beige: #ebe9e4;
 }
 
 html {
@@ -16,7 +18,7 @@ html {
 }
 
 body {
-  @apply bg-cream-50 text-gray-800 antialiased;
+  @apply bg-cream-100 text-gray-800 antialiased;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -40,12 +42,16 @@ body {
   .section-heading-accent {
     @apply relative inline-block after:absolute after:bottom-[-6px] after:left-0 after:h-0.5 after:w-12 after:rounded-full after:bg-warm-tan/60 after:content-[''];
   }
-  /* Softer shadows, minimal border */
+  /* Softer shadows, warm beige card background (Grow Therapy–style) */
   .card {
-    @apply rounded-2xl border border-cream-200/80 bg-white p-6 shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-shadow duration-300 hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)];
+    @apply rounded-2xl border border-cream-300/60 bg-cream-200 p-6 shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-shadow duration-300 hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)];
   }
   .nav-link {
     @apply relative text-gray-700 after:absolute after:bottom-[-2px] after:left-0 after:h-0.5 after:w-0 after:bg-warm-brown after:transition-all after:duration-200 hover:text-warm-brown hover:after:w-full;
+  }
+  /* Minimum touch target for mobile (44px) */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
   }
 }
 

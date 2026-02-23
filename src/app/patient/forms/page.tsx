@@ -3,6 +3,16 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import {
+  PSC17_QUESTIONNAIRE_KEY,
+  PSC17_QUESTIONS,
+  PSC17_OPTIONS,
+} from "@/lib/psc17";
+import {
+  PHQA_QUESTIONNAIRE_KEY,
+  PHQA_QUESTIONS,
+  PHQA_OPTIONS,
+} from "@/lib/phqa";
 
 type FormAssignment = {
   id: string;
@@ -67,6 +77,22 @@ export default function PatientFormsPage() {
     if (!responses || Object.keys(responses).length === 0) {
       showNotice("error", "Please fill out the questionnaire before submitting.");
       return;
+    }
+    if (formKey === PSC17_QUESTIONNAIRE_KEY) {
+      const required = PSC17_QUESTIONS.map((q) => q.linkId);
+      const missing = required.filter((id) => responses[id] === undefined || responses[id] === "");
+      if (missing.length > 0) {
+        showNotice("error", "Please answer all 17 questions before submitting.");
+        return;
+      }
+    }
+    if (formKey === PHQA_QUESTIONNAIRE_KEY) {
+      const required = PHQA_QUESTIONS.map((q) => q.linkId);
+      const missing = required.filter((id) => responses[id] === undefined || responses[id] === "");
+      if (missing.length > 0) {
+        showNotice("error", "Please answer all 9 questions before submitting.");
+        return;
+      }
     }
 
     setSubmitting(assignmentId);
@@ -150,8 +176,104 @@ export default function PatientFormsPage() {
     const formKey = assignment.form.questionnaireKey || "default";
     const responses = questionnaireResponses[assignment.id] || {};
 
-    // Simple questionnaire UI - in production, you'd load the actual form definition
-    // For now, we'll create a basic form based on common fields
+    if (formKey === PSC17_QUESTIONNAIRE_KEY) {
+      return (
+        <div className="space-y-6">
+          <p className="text-sm text-gray-600">
+            For each item, please mark how often it applies: <strong>Never</strong>, <strong>Sometimes</strong>, or <strong>Often</strong>.
+          </p>
+          {["internalizing", "attention", "externalizing"].map((subscale) => {
+            const questions = PSC17_QUESTIONS.filter((q) => q.subscale === subscale);
+            const subscaleLabel =
+              subscale === "internalizing"
+                ? "Internalizing (emotional symptoms)"
+                : subscale === "attention"
+                  ? "Attention problems"
+                  : "Externalizing (behavior problems)";
+            return (
+              <div key={subscale} className="space-y-3">
+                <h4 className="text-sm font-semibold text-gray-800">{subscaleLabel}</h4>
+                <ul className="space-y-3">
+                  {questions.map((q) => (
+                    <li key={q.linkId} className="rounded-lg border border-gray-200 bg-white p-3">
+                      <p className="text-sm font-medium text-gray-700">{q.question}</p>
+                      <div className="mt-2 flex flex-wrap gap-4">
+                        {PSC17_OPTIONS.map((opt) => (
+                          <label key={opt.value} className="inline-flex items-center gap-2">
+                            <input
+                              type="radio"
+                              name={`${assignment.id}-${q.linkId}`}
+                              checked={Number(responses[q.linkId]) === opt.value}
+                              onChange={() =>
+                                updateQuestionnaireResponse(assignment.id, q.linkId, opt.value)
+                              }
+                              className="h-4 w-4 border-gray-300 text-warm-brown focus:ring-warm-brown"
+                            />
+                            <span className="text-sm text-gray-700">{opt.label}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
+          <button
+            type="button"
+            onClick={() => handleQuestionnaireSubmit(assignment.id, formKey)}
+            disabled={submitting === assignment.id}
+            className="rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90 disabled:opacity-50"
+          >
+            {submitting === assignment.id ? "Submitting…" : "Submit PSC-17"}
+          </button>
+        </div>
+      );
+    }
+
+    if (formKey === PHQA_QUESTIONNAIRE_KEY) {
+      return (
+        <div className="space-y-6">
+          <p className="text-sm text-gray-600">
+            Over the last 2 weeks, how often have you been bothered by the following problems? Choose:{" "}
+            <strong>Not at all</strong>, <strong>Several days</strong>, <strong>More than half the days</strong>, or{" "}
+            <strong>Nearly every day</strong>.
+          </p>
+          <ul className="space-y-3">
+            {PHQA_QUESTIONS.map((q) => (
+              <li key={q.linkId} className="rounded-lg border border-gray-200 bg-white p-3">
+                <p className="text-sm font-medium text-gray-700">{q.question}</p>
+                <div className="mt-2 flex flex-wrap gap-4">
+                  {PHQA_OPTIONS.map((opt) => (
+                    <label key={opt.value} className="inline-flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name={`${assignment.id}-${q.linkId}`}
+                        checked={Number(responses[q.linkId]) === opt.value}
+                        onChange={() =>
+                          updateQuestionnaireResponse(assignment.id, q.linkId, opt.value)
+                        }
+                        className="h-4 w-4 border-gray-300 text-warm-brown focus:ring-warm-brown"
+                      />
+                      <span className="text-sm text-gray-700">{opt.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </li>
+            ))}
+          </ul>
+          <button
+            type="button"
+            onClick={() => handleQuestionnaireSubmit(assignment.id, formKey)}
+            disabled={submitting === assignment.id}
+            className="rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90 disabled:opacity-50"
+          >
+            {submitting === assignment.id ? "Submitting…" : "Submit PHQ-A"}
+          </button>
+        </div>
+      );
+    }
+
     return (
       <div className="space-y-4">
         <div>

@@ -4,6 +4,18 @@ import { useEffect, useState, useTransition } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { questionnaireToQandA } from "@/lib/questionnaireLabels";
+import {
+  PSC17_QUESTIONNAIRE_KEY,
+  PSC17_QUESTIONS,
+  computePSC17Scores,
+  psc17ResponseToOptionLabel,
+} from "@/lib/psc17";
+import {
+  PHQA_QUESTIONNAIRE_KEY,
+  PHQA_QUESTIONS,
+  computePHQAScores,
+  phqaResponseToOptionLabel,
+} from "@/lib/phqa";
 import { formatPhone } from "@/lib/formatPhone";
 import AssignFormsModal from "@/components/AssignFormsModal";
 import ScheduleClinicalIntakeModal from "@/components/ScheduleClinicalIntakeModal";
@@ -51,6 +63,7 @@ type PatientOverview = {
     formId: string;
     formTitle: string;
     formType: string;
+    formQuestionnaireKey?: string | null;
     status: string;
     assignedAt: string;
     completedAt: string | null;
@@ -87,6 +100,10 @@ export default function PatientOverviewPage() {
   const [assignFormsAfterSchedule, setAssignFormsAfterSchedule] = useState(false);
   const [scheduleFollowupOpen, setScheduleFollowupOpen] = useState(false);
   const [followupAllowedTypes, setFollowupAllowedTypes] = useState<string[]>(["followup_med_30", "followup_med_therapy_45"]);
+  const [notesDraft, setNotesDraft] = useState<Record<string, string>>({});
+  const [savingNotesId, setSavingNotesId] = useState<string | null>(null);
+  const [notesError, setNotesError] = useState<string | null>(null);
+  const [editingNotesId, setEditingNotesId] = useState<string | null>(null);
 
   useEffect(() => {
     if (patientId) {
@@ -115,6 +132,41 @@ export default function PatientOverviewPage() {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function saveAppointmentNotes(apt: { id: string; notes: string | null }) {
+    const notes = (notesDraft[apt.id] ?? apt.notes ?? "").trim();
+    setNotesError(null);
+    setSavingNotesId(apt.id);
+    try {
+      const res = await fetch(`/api/appointments/${apt.id}`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notes }),
+      });
+      if (res.status === 401) {
+        router.push("/doctor/login");
+        return;
+      }
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setNotesError(err.detail || "Failed to save notes");
+        return;
+      }
+      setNotesDraft((prev) => {
+        const next = { ...prev };
+        delete next[apt.id];
+        return next;
+      });
+      setEditingNotesId(null);
+      await loadOverview();
+    } catch (e) {
+      console.error(e);
+      setNotesError("Network error. Please try again.");
+    } finally {
+      setSavingNotesId(null);
     }
   }
 
@@ -525,7 +577,71 @@ export default function PatientOverviewPage() {
                         Join video call →
                       </a>
                     )}
-                    {apt.notes && (
+                    {apt.status === "completed" && (
+                      <div className="mt-3 border-t border-gray-200 pt-3">
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <label className="block text-sm font-medium text-gray-700">Meeting notes</label>
+                          {editingNotesId !== apt.id && (
+                            <button
+                              type="button"
+                              onClick={() => setEditingNotesId(apt.id)}
+                              className="inline-flex items-center gap-1 rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-warm-brown"
+                              title="Edit notes"
+                              aria-label="Edit notes"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                                <path d="m5.433 13.917 1.262-3.155A4 4 0 0 1 7.58 9.42l6.92-6.918a2.121 2.121 0 0 1 3 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 0 1-.65-.65Z" />
+                                <path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0 0 10 3H4.75A2.75 2.75 0 0 0 2 5.75v9.5A2.75 2.75 0 0 0 4.75 18h9.5A2.75 2.75 0 0 0 17 15.25V10a.75.75 0 0 0-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5Z" />
+                              </svg>
+                            </button>
+                          )}
+                        </div>
+                        {editingNotesId === apt.id ? (
+                          <>
+                            <p className="text-xs text-gray-500 mb-1">Stored in FHIR for HIPAA compliance.</p>
+                            <textarea
+                              value={notesDraft[apt.id] ?? apt.notes ?? ""}
+                              onChange={(e) => setNotesDraft((prev) => ({ ...prev, [apt.id]: e.target.value }))}
+                              placeholder="Add or edit notes about this appointment..."
+                              rows={3}
+                              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-warm-brown focus:ring-warm-brown"
+                            />
+                            <div className="mt-2 flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => saveAppointmentNotes(apt)}
+                                disabled={savingNotesId !== null}
+                                className="rounded-md bg-warm-brown px-3 py-1.5 text-sm font-medium text-white hover:bg-warm-brown/90 disabled:opacity-50"
+                              >
+                                {savingNotesId === apt.id ? "Saving…" : "Save"}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditingNotesId(null);
+                                  setNotesDraft((prev) => {
+                                    const next = { ...prev };
+                                    delete next[apt.id];
+                                    return next;
+                                  });
+                                }}
+                                className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                            {notesError && savingNotesId === apt.id && (
+                              <p className="mt-2 text-sm text-red-600">{notesError}</p>
+                            )}
+                          </>
+                        ) : (
+                          <p className="text-sm text-gray-600 whitespace-pre-wrap">
+                            {apt.notes && apt.notes.trim() ? apt.notes : <span className="italic text-gray-400">No notes yet</span>}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                    {apt.status !== "completed" && apt.notes && (
                       <p className="mt-2 text-sm text-gray-600">
                         <span className="font-medium">Notes:</span> {apt.notes}
                       </p>
@@ -605,13 +721,95 @@ export default function PatientOverviewPage() {
                               </div>
                             </div>
                             {hasQuestionnaireData && isExpanded && (
-                              <div className="mt-4 space-y-3">
-                                {questionnaireToQandA(fa.questionnaireData!).map((qa, idx) => (
-                                  <div key={idx} className="rounded border border-gray-200 bg-white p-3">
-                                    <p className="text-xs font-medium text-gray-500">{qa.question}</p>
-                                    <p className="mt-1 text-sm text-gray-900">{qa.answer}</p>
-                                  </div>
-                                ))}
+                              <div className="mt-4 space-y-4">
+                                {fa.formQuestionnaireKey === PSC17_QUESTIONNAIRE_KEY ? (
+                                  <>
+                                    {(() => {
+                                      const scores = computePSC17Scores(fa.questionnaireData!);
+                                      return (
+                                        <div className="rounded-lg border border-gray-200 bg-white p-4 space-y-4">
+                                          <h4 className="text-sm font-semibold text-gray-800">PSC-17 Scoring</h4>
+                                          <div className="grid grid-cols-2 gap-3 text-sm">
+                                            <div>
+                                              <span className="font-medium text-gray-600">Total score:</span>{" "}
+                                              <span className={scores.total >= 15 ? "text-amber-700 font-medium" : ""}>
+                                                {scores.total}
+                                              </span>
+                                              <p className="text-xs text-gray-500 mt-0.5">{scores.totalInterpretation}</p>
+                                            </div>
+                                            <div>
+                                              <span className="font-medium text-gray-600">Internalizing:</span> {scores.internalizing}
+                                              {scores.internalizingInterpretation && (
+                                                <p className="text-xs text-amber-600">{scores.internalizingInterpretation}</p>
+                                              )}
+                                            </div>
+                                            <div>
+                                              <span className="font-medium text-gray-600">Attention:</span> {scores.attention}
+                                              {scores.attentionInterpretation && (
+                                                <p className="text-xs text-amber-600">{scores.attentionInterpretation}</p>
+                                              )}
+                                            </div>
+                                            <div>
+                                              <span className="font-medium text-gray-600">Externalizing:</span> {scores.externalizing}
+                                              {scores.externalizingInterpretation && (
+                                                <p className="text-xs text-amber-600">{scores.externalizingInterpretation}</p>
+                                              )}
+                                            </div>
+                                          </div>
+                                          <h4 className="text-sm font-semibold text-gray-800 pt-2 border-t border-gray-200">Responses</h4>
+                                          <ul className="space-y-2">
+                                            {PSC17_QUESTIONS.map((q) => (
+                                              <li key={q.linkId} className="flex justify-between gap-2 text-sm">
+                                                <span className="text-gray-700">{q.question}</span>
+                                                <span className="text-gray-900 shrink-0">
+                                                  {psc17ResponseToOptionLabel(fa.questionnaireData![q.linkId])}
+                                                </span>
+                                              </li>
+                                            ))}
+                                          </ul>
+                                        </div>
+                                      );
+                                    })()}
+                                  </>
+                                ) : fa.formQuestionnaireKey === PHQA_QUESTIONNAIRE_KEY ? (
+                                  (() => {
+                                    const scores = computePHQAScores(fa.questionnaireData!);
+                                    return (
+                                      <div className="rounded-lg border border-gray-200 bg-white p-4 space-y-4">
+                                        <h4 className="text-sm font-semibold text-gray-800">PHQ-A Scoring</h4>
+                                        <div className="text-sm">
+                                          <div>
+                                            <span className="font-medium text-gray-600">Total score:</span>{" "}
+                                            <span className={scores.total >= 10 ? "text-amber-700 font-medium" : ""}>
+                                              {scores.total}
+                                            </span>
+                                            <p className="text-xs text-gray-500 mt-0.5">
+                                              Depression severity: {scores.severityLabel}
+                                            </p>
+                                          </div>
+                                        </div>
+                                        <h4 className="text-sm font-semibold text-gray-800 pt-2 border-t border-gray-200">Responses</h4>
+                                        <ul className="space-y-2">
+                                          {PHQA_QUESTIONS.map((q) => (
+                                            <li key={q.linkId} className="flex justify-between gap-2 text-sm">
+                                              <span className="text-gray-700">{q.question}</span>
+                                              <span className="text-gray-900 shrink-0">
+                                                {phqaResponseToOptionLabel(fa.questionnaireData![q.linkId])}
+                                              </span>
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    );
+                                  })()
+                                ) : (
+                                  questionnaireToQandA(fa.questionnaireData!).map((qa, idx) => (
+                                    <div key={idx} className="rounded border border-gray-200 bg-white p-3">
+                                      <p className="text-xs font-medium text-gray-500">{qa.question}</p>
+                                      <p className="mt-1 text-sm text-gray-900">{qa.answer}</p>
+                                    </div>
+                                  ))
+                                )}
                               </div>
                             )}
                             {fa.formType === "questionnaire" && fa.fhirResponseId && !fa.questionnaireData && (
@@ -680,13 +878,93 @@ export default function PatientOverviewPage() {
                             </div>
                           </div>
                           {hasQuestionnaireData && isExpanded && (
-                            <div className="mt-4 space-y-3">
-                              {questionnaireToQandA(fa.questionnaireData!).map((qa, idx) => (
-                                <div key={idx} className="rounded border border-gray-200 bg-gray-50 p-3">
-                                  <p className="text-xs font-medium text-gray-500">{qa.question}</p>
-                                  <p className="mt-1 text-sm text-gray-900">{qa.answer}</p>
-                                </div>
-                              ))}
+                            <div className="mt-4 space-y-4">
+                              {fa.formQuestionnaireKey === PSC17_QUESTIONNAIRE_KEY ? (
+                                (() => {
+                                  const scores = computePSC17Scores(fa.questionnaireData!);
+                                  return (
+                                    <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 space-y-4">
+                                      <h4 className="text-sm font-semibold text-gray-800">PSC-17 Scoring</h4>
+                                      <div className="grid grid-cols-2 gap-3 text-sm">
+                                        <div>
+                                          <span className="font-medium text-gray-600">Total score:</span>{" "}
+                                          <span className={scores.total >= 15 ? "text-amber-700 font-medium" : ""}>
+                                            {scores.total}
+                                          </span>
+                                          <p className="text-xs text-gray-500 mt-0.5">{scores.totalInterpretation}</p>
+                                        </div>
+                                        <div>
+                                          <span className="font-medium text-gray-600">Internalizing:</span> {scores.internalizing}
+                                          {scores.internalizingInterpretation && (
+                                            <p className="text-xs text-amber-600">{scores.internalizingInterpretation}</p>
+                                          )}
+                                        </div>
+                                        <div>
+                                          <span className="font-medium text-gray-600">Attention:</span> {scores.attention}
+                                          {scores.attentionInterpretation && (
+                                            <p className="text-xs text-amber-600">{scores.attentionInterpretation}</p>
+                                          )}
+                                        </div>
+                                        <div>
+                                          <span className="font-medium text-gray-600">Externalizing:</span> {scores.externalizing}
+                                          {scores.externalizingInterpretation && (
+                                            <p className="text-xs text-amber-600">{scores.externalizingInterpretation}</p>
+                                          )}
+                                        </div>
+                                      </div>
+                                      <h4 className="text-sm font-semibold text-gray-800 pt-2 border-t border-gray-200">Responses</h4>
+                                      <ul className="space-y-2">
+                                        {PSC17_QUESTIONS.map((q) => (
+                                          <li key={q.linkId} className="flex justify-between gap-2 text-sm">
+                                            <span className="text-gray-700">{q.question}</span>
+                                            <span className="text-gray-900 shrink-0">
+                                              {psc17ResponseToOptionLabel(fa.questionnaireData![q.linkId])}
+                                            </span>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  );
+                                })()
+                              ) : fa.formQuestionnaireKey === PHQA_QUESTIONNAIRE_KEY ? (
+                                (() => {
+                                  const scores = computePHQAScores(fa.questionnaireData!);
+                                  return (
+                                    <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 space-y-4">
+                                      <h4 className="text-sm font-semibold text-gray-800">PHQ-A Scoring</h4>
+                                      <div className="text-sm">
+                                        <div>
+                                          <span className="font-medium text-gray-600">Total score:</span>{" "}
+                                          <span className={scores.total >= 10 ? "text-amber-700 font-medium" : ""}>
+                                            {scores.total}
+                                          </span>
+                                          <p className="text-xs text-gray-500 mt-0.5">
+                                            Depression severity: {scores.severityLabel}
+                                          </p>
+                                        </div>
+                                      </div>
+                                      <h4 className="text-sm font-semibold text-gray-800 pt-2 border-t border-gray-200">Responses</h4>
+                                      <ul className="space-y-2">
+                                        {PHQA_QUESTIONS.map((q) => (
+                                          <li key={q.linkId} className="flex justify-between gap-2 text-sm">
+                                            <span className="text-gray-700">{q.question}</span>
+                                            <span className="text-gray-900 shrink-0">
+                                              {phqaResponseToOptionLabel(fa.questionnaireData![q.linkId])}
+                                            </span>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  );
+                                })()
+                              ) : (
+                                questionnaireToQandA(fa.questionnaireData!).map((qa, idx) => (
+                                  <div key={idx} className="rounded border border-gray-200 bg-gray-50 p-3">
+                                    <p className="text-xs font-medium text-gray-500">{qa.question}</p>
+                                    <p className="mt-1 text-sm text-gray-900">{qa.answer}</p>
+                                  </div>
+                                ))
+                              )}
                             </div>
                           )}
                           {fa.formType === "questionnaire" && fa.fhirResponseId && !fa.questionnaireData && (

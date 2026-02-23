@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { slugToType } from "../types";
@@ -67,6 +67,7 @@ export default function PatientBookTypePage() {
   const [pendingForms, setPendingForms] = useState<{ hasPendingForms: boolean; pendingCount: number } | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [currentMonthIndex, setCurrentMonthIndex] = useState(0);
+  const timeSlotSectionRef = useRef<HTMLDivElement>(null);
 
   // Resolve type info from allowed-types (so we get label + duration from API)
   useEffect(() => {
@@ -104,6 +105,13 @@ export default function PatientBookTypePage() {
   }, [backendType]);
 
   const isAllowed = typeInfo ? allowedTypes.some((a) => a.type === typeInfo.type) : false;
+
+  // Scroll to time slot section when user selects a date
+  useEffect(() => {
+    if (selectedDate && timeSlotSectionRef.current) {
+      timeSlotSectionRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [selectedDate]);
 
   useEffect(() => {
     if (!typeInfo || !isAllowed) {
@@ -349,7 +357,7 @@ export default function PatientBookTypePage() {
           </div>
 
           {selectedDate && (
-            <div className="rounded-xl border border-cream-200 bg-white p-4 shadow-sm">
+            <div ref={timeSlotSectionRef} className="rounded-xl border border-cream-200 bg-white p-4 shadow-sm">
               <h2 className="text-base font-semibold text-gray-900">2. Select a time slot</h2>
               <p className="mt-1 text-sm text-gray-600">
                 {formatSlotDate(slotsForSelected[0]?.start ?? selectedDate)} · {typeInfo?.durationMinutes}-min {typeInfo?.label}

@@ -10,16 +10,17 @@ const config: Config = {
     extend: {
       colors: {
         cream: {
-          50: "#fdfcfb",
-          100: "#f9f7f4",
-          200: "#f2ede6",
-          300: "#e8e0d4",
+          50: "#f8f7f4",
+          100: "#f0eeea",
+          200: "#ebe9e4",
+          300: "#e0ddd6",
         },
         warm: {
           brown: "#8b7355",
           gold: "#a68b5b",
           tan: "#c4a574",
           sand: "#e8dcc8",
+          beige: "#ebe9e4",
         },
       },
     },

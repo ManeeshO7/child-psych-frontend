@@ -12,6 +12,7 @@ type Appointment = {
   durationMinutes: number;
   type: string;
   status: string;
+  requireFormsBeforeConfirm?: boolean;
 };
 
 type Pricing = {
@@ -175,8 +176,8 @@ export default function ConfirmScheduledPage() {
   };
   const typeLabel = typeLabels[appointment.type] ?? appointment.type.replace(/_/g, " ");
   const visitPrice = pricing?.pricing?.[appointment.type];
-  const isClinicalIntake = appointment.type === "clinical_intake";
-  const mustCompleteForms = isClinicalIntake && pendingForms?.hasPendingForms;
+  const requireForms = appointment.requireFormsBeforeConfirm !== false;
+  const mustCompleteForms = requireForms && pendingForms?.hasPendingForms === true;
 
   return (
     <main className="mx-auto max-w-xl px-4 py-10 sm:px-6 lg:px-8">
