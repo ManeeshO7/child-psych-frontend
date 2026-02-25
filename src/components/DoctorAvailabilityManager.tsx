@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 
 const DURATION_OPTIONS = [30, 45, 75] as const;
@@ -89,6 +89,13 @@ export default function DoctorAvailabilityManager() {
   const [slotsSaveMessage, setSlotsSaveMessage] = useState<"saved" | "error" | null>(null);
   const [offeredSlotsMonthIndex, setOfferedSlotsMonthIndex] = useState(INITIAL_MONTH_INDEX);
   const [selectedStartTimes, setSelectedStartTimes] = useState<string[]>([]);
+  const saveMessageTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (saveMessageTimeoutRef.current) clearTimeout(saveMessageTimeoutRef.current);
+    };
+  }, []);
 
   async function loadCandidateAndOfferedSlots() {
     setSlotsLoading(true);
@@ -173,7 +180,11 @@ export default function DoctorAvailabilityManager() {
       setOfferedStartTimes(data.startTimes || []);
       setSelectedStartTimes(data.startTimes || []);
       setSlotsSaveMessage("saved");
-      setTimeout(() => setSlotsSaveMessage(null), 3000);
+      if (saveMessageTimeoutRef.current) clearTimeout(saveMessageTimeoutRef.current);
+      saveMessageTimeoutRef.current = setTimeout(() => {
+        setSlotsSaveMessage(null);
+        saveMessageTimeoutRef.current = null;
+      }, 3000);
     } catch (e) {
       setSlotsSaveMessage("error");
       alert("Could not save. Is the backend running?");
@@ -297,7 +308,11 @@ export default function DoctorAvailabilityManager() {
         setBlocks(refetchData.blocks || []);
       }
       setSaveMessage("saved");
-      setTimeout(() => setSaveMessage(null), 3000);
+      if (saveMessageTimeoutRef.current) clearTimeout(saveMessageTimeoutRef.current);
+      saveMessageTimeoutRef.current = setTimeout(() => {
+        setSaveMessage(null);
+        saveMessageTimeoutRef.current = null;
+      }, 3000);
     } catch (e) {
       setSaveMessage("error");
       alert("Could not save. Is the backend running? In frontend .env, set BACKEND_URL to where the backend runs (e.g. http://localhost:8002).");

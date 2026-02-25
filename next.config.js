@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: "standalone",
   reactStrictMode: true,
   // Ensure Turbopack uses the frontend folder as root (avoids bundling the whole home dir)
   turbopack: {

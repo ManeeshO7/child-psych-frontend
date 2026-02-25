@@ -165,7 +165,7 @@ export default function DoctorPatientsListPage() {
           <p className="text-red-800">{error}</p>
           <button
             type="button"
-            onClick={loadPatients}
+            onClick={() => loadPatients()}
             className="mt-2 text-sm font-medium text-red-800 hover:underline"
           >
             Try again

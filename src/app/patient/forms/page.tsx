@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { startTransition, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -39,15 +39,71 @@ export default function PatientFormsPage() {
   const [uploading, setUploading] = useState<string | null>(null);
   const [notice, setNotice] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [questionnaireResponses, setQuestionnaireResponses] = useState<Record<string, Record<string, any>>>({});
+  const [completedSectionReady, setCompletedSectionReady] = useState(false);
+  const [expandedPendingId, setExpandedPendingId] = useState<string | null>(null);
+  const lastNavAtRef = useRef(0);
+  const lastExpandClickAtRef = useRef(0);
+  const lastCompletedClickAtRef = useRef(0);
+
+  const NAV_THROTTLE_MS = 1500;
+  const CLICK_THROTTLE_MS = 1500;
+
+  function handleBackToDashboard(e: React.MouseEvent) {
+    e.preventDefault();
+    const now = Date.now();
+    if (now - lastNavAtRef.current < NAV_THROTTLE_MS) return;
+    lastNavAtRef.current = now;
+    router.push("/patient");
+  }
+
+  function handleExpandPending(assignmentId: string) {
+    const now = Date.now();
+    if (now - lastExpandClickAtRef.current < CLICK_THROTTLE_MS) return;
+    lastExpandClickAtRef.current = now;
+    setExpandedPendingId(assignmentId);
+  }
+
+  function handleCompletedSectionClick(e: React.MouseEvent) {
+    const now = Date.now();
+    if (now - lastCompletedClickAtRef.current < CLICK_THROTTLE_MS) {
+      e.preventDefault();
+      e.stopPropagation();
+    } else {
+      lastCompletedClickAtRef.current = now;
+    }
+  }
 
   useEffect(() => {
     loadAssignments();
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    const id = requestAnimationFrame(() => {
+      if (!cancelled) setCompletedSectionReady(true);
+    });
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(id);
+    };
+  }, []);
+
+  const noticeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   function showNotice(type: "success" | "error", message: string) {
+    if (noticeTimeoutRef.current) clearTimeout(noticeTimeoutRef.current);
     setNotice({ type, message });
-    setTimeout(() => setNotice(null), 5000);
+    noticeTimeoutRef.current = setTimeout(() => {
+      setNotice(null);
+      noticeTimeoutRef.current = null;
+    }, 5000);
   }
+
+  useEffect(() => {
+    return () => {
+      if (noticeTimeoutRef.current) clearTimeout(noticeTimeoutRef.current);
+    };
+  }, []);
 
   async function loadAssignments() {
     setLoading(true);
@@ -163,13 +219,15 @@ export default function PatientFormsPage() {
   }
 
   function updateQuestionnaireResponse(assignmentId: string, key: string, value: any) {
-    setQuestionnaireResponses((prev) => ({
-      ...prev,
-      [assignmentId]: {
-        ...prev[assignmentId],
-        [key]: value,
-      },
-    }));
+    startTransition(() => {
+      setQuestionnaireResponses((prev) => ({
+        ...prev,
+        [assignmentId]: {
+          ...prev[assignmentId],
+          [key]: value,
+        },
+      }));
+    });
   }
 
   function renderQuestionnaireForm(assignment: FormAssignment) {
@@ -356,8 +414,21 @@ export default function PatientFormsPage() {
     );
   }
 
-  const pendingCount = assignments.filter((a) => a.status === "pending" && a.form).length;
-  const completedCount = assignments.filter((a) => a.status === "completed" && a.form).length;
+  const pendingAssignments = useMemo(
+    () => assignments.filter((a) => a.status === "pending" && a.form),
+    [assignments]
+  );
+  const completedAssignments = useMemo(
+    () => assignments.filter((a) => a.status === "completed" && a.form),
+    [assignments]
+  );
+  const pendingCount = pendingAssignments.length;
+  const completedCount = completedAssignments.length;
+
+  const effectiveExpandedId =
+    expandedPendingId && pendingAssignments.some((a) => a.id === expandedPendingId)
+      ? expandedPendingId
+      : pendingAssignments[0]?.id ?? null;
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
@@ -386,16 +457,21 @@ export default function PatientFormsPage() {
         </div>
       )}
 
-      <p className="mb-6">
-        <Link href="/patient" className="text-sm text-warm-brown hover:underline">
-          ← Back to dashboard
-        </Link>
-      </p>
-
-      <h1 className="section-heading">Forms & Documents</h1>
-      <p className="mt-2 text-gray-600">
-        Complete the forms assigned by your doctor before booking your next appointment.
-      </p>
+      <div className="sticky top-0 z-10 -mx-4 bg-cream-50 px-4 py-3 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+        <p className="mb-2">
+          <a
+            href="/patient"
+            onClick={handleBackToDashboard}
+            className="text-sm text-warm-brown hover:underline cursor-pointer"
+          >
+            ← Back to dashboard
+          </a>
+        </p>
+        <h1 className="section-heading">Forms & Documents</h1>
+        <p className="mt-2 text-gray-600">
+          Complete the forms assigned by your doctor before booking your next appointment.
+        </p>
+      </div>
 
       {pendingCount > 0 && (
         <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4">
@@ -413,12 +489,13 @@ export default function PatientFormsPage() {
           <p className="mt-2 text-sm text-gray-500">
             After your orientation consult, your doctor will assign forms for you to complete. They will appear here.
           </p>
-          <Link
+          <a
             href="/patient"
-            className="mt-4 inline-block text-sm font-medium text-warm-brown hover:underline"
+            onClick={handleBackToDashboard}
+            className="mt-4 inline-block text-sm font-medium text-warm-brown hover:underline cursor-pointer"
           >
             ← Back to dashboard
-          </Link>
+          </a>
         </div>
       ) : (
         <div className="mt-10 space-y-6">
@@ -426,9 +503,9 @@ export default function PatientFormsPage() {
             <div>
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Pending Forms</h2>
               <div className="space-y-4">
-                {assignments
-                  .filter((a) => a.status === "pending" && a.form)
-                  .map((assignment) => (
+                {pendingAssignments.map((assignment) => {
+                  const isExpanded = assignment.id === effectiveExpandedId;
+                  return (
                     <div key={assignment.id} className="card">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
@@ -438,30 +515,44 @@ export default function PatientFormsPage() {
                           {assignment.form?.description && (
                             <p className="mt-1 text-sm text-gray-600">{assignment.form.description}</p>
                           )}
-                          <div className="mt-4">
-                            {assignment.form?.type === "questionnaire"
-                              ? renderQuestionnaireForm(assignment)
-                              : renderPdfForm(assignment)}
-                          </div>
+                          {isExpanded ? (
+                            <div className="mt-4">
+                              {assignment.form?.type === "questionnaire"
+                                ? renderQuestionnaireForm(assignment)
+                                : renderPdfForm(assignment)}
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handleExpandPending(assignment.id)}
+                              className="mt-3 text-sm font-medium text-warm-brown hover:underline"
+                            >
+                              Fill out this form →
+                            </button>
+                          )}
                         </div>
                         <span className="shrink-0 rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">
                           Pending
                         </span>
                       </div>
                     </div>
-                  ))}
+                  );
+                })}
               </div>
             </div>
           )}
 
-          {completedCount > 0 && (
-            <div>
+          {completedSectionReady && completedCount > 0 && (
+            <div
+              role="region"
+              aria-label="Completed forms"
+              onClick={handleCompletedSectionClick}
+              className="select-none"
+            >
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Completed Forms</h2>
               <div className="space-y-4">
-                {assignments
-                  .filter((a) => a.status === "completed" && a.form)
-                  .map((assignment) => (
-                    <div key={assignment.id} className="card">
+                {completedAssignments.map((assignment) => (
+                    <div key={assignment.id} className="card pointer-events-auto">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
                           <h3 className="text-lg font-semibold text-gray-900">

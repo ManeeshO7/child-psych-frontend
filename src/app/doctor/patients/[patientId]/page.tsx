@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition, startTransition } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { questionnaireToQandA } from "@/lib/questionnaireLabels";
@@ -20,6 +20,8 @@ import { formatPhone } from "@/lib/formatPhone";
 import AssignFormsModal from "@/components/AssignFormsModal";
 import ScheduleClinicalIntakeModal from "@/components/ScheduleClinicalIntakeModal";
 import ScheduleFollowupModal from "@/components/ScheduleFollowupModal";
+import RescheduleModal from "@/components/RescheduleModal";
+import ConfirmChargeModal from "@/components/ConfirmChargeModal";
 
 type PatientProfileData = {
   sex?: string | null;
@@ -57,6 +59,7 @@ type PatientOverview = {
     type: string;
     notes: string | null;
     meetLink: string | null;
+    durationMinutes?: number;
   }>;
   formAssignments: Array<{
     id: string;
@@ -83,7 +86,29 @@ type PatientOverview = {
     createdAt: string;
     downloadUrl?: string | null;
   }>;
+  intakeSubmission?: {
+    id: string;
+    formData: Record<string, unknown> | null;
+    status: string;
+    reviewedAt: string | null;
+  } | null;
 };
+
+const RESCHEDULABLE_STATUSES = ["scheduled", "card_on_file", "paid"];
+const RESCHEDULE_MIN_HOURS = 48;
+
+function canReschedule(a: { scheduledAt: string; status: string }): boolean {
+  if (!RESCHEDULABLE_STATUSES.includes(a.status)) return false;
+  try {
+    const scheduledAt = new Date(a.scheduledAt);
+    if (isNaN(scheduledAt.getTime())) return false;
+    const now = new Date();
+    const hoursUntil = (scheduledAt.getTime() - now.getTime()) / (1000 * 60 * 60);
+    return hoursUntil >= RESCHEDULE_MIN_HOURS;
+  } catch {
+    return false;
+  }
+}
 
 export default function PatientOverviewPage() {
   const params = useParams();
@@ -104,12 +129,23 @@ export default function PatientOverviewPage() {
   const [savingNotesId, setSavingNotesId] = useState<string | null>(null);
   const [notesError, setNotesError] = useState<string | null>(null);
   const [editingNotesId, setEditingNotesId] = useState<string | null>(null);
+  const [rescheduleAppointment, setRescheduleAppointment] = useState<PatientOverview["appointments"][0] | null>(null);
+  const [chargeConfirmAppointment, setChargeConfirmAppointment] = useState<PatientOverview["appointments"][0] | null>(null);
+  const [completingId, setCompletingId] = useState<string | null>(null);
+  const [openingMeetId, setOpeningMeetId] = useState<string | null>(null);
+  const openingMeetTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (patientId) {
       loadOverview();
     }
   }, [patientId]);
+
+  useEffect(() => {
+    return () => {
+      if (openingMeetTimeoutRef.current) clearTimeout(openingMeetTimeoutRef.current);
+    };
+  }, []);
 
   async function loadOverview() {
     setLoading(true);
@@ -167,6 +203,35 @@ export default function PatientOverviewPage() {
       setNotesError("Network error. Please try again.");
     } finally {
       setSavingNotesId(null);
+    }
+  }
+
+  async function completeAppointment(id: string) {
+    if (completingId !== null) return;
+    setCompletingId(id);
+    try {
+      const res = await fetch(`/api/appointments/${id}/complete`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      if (res.status === 401) {
+        router.push("/doctor/login");
+        return;
+      }
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setError(err.detail || "Failed to mark as completed");
+        setCompletingId(null);
+        return;
+      }
+      await loadOverview();
+    } catch (err) {
+      console.error(err);
+      setError("Network error. Please try again.");
+    } finally {
+      setCompletingId(null);
     }
   }
 
@@ -396,10 +461,7 @@ export default function PatientOverviewPage() {
                       <button
                         type="button"
                         onClick={() => {
-                          const orientationApt = overview.appointments.find(
-                            (a) => a.type === "orientation_consult" && a.status === "completed"
-                          );
-                          setAssignFormsForAppointmentId(orientationApt?.id ?? null);
+                          setAssignFormsForAppointmentId(clinicalIntakeForForms?.id ?? null);
                           setAssignFormsOpen(true);
                         }}
                         className="inline-flex rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90"
@@ -565,18 +627,65 @@ export default function PatientOverviewPage() {
                   <div className="flex-1">
                     <p className="font-medium text-gray-900">{formatDate(apt.scheduledAt)}</p>
                     <p className="mt-1 text-sm text-gray-600">
-                      {apt.type.replace(/_/g, " ")} · {apt.status}
+                      {(apt.durationMinutes ?? 30)} min · {apt.type.replace(/_/g, " ")} · {apt.status}
                     </p>
-                    {apt.meetLink && (
-                      <a
-                        href={apt.meetLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-2 inline-block text-sm font-medium text-warm-brown hover:underline"
-                      >
-                        Join video call →
-                      </a>
-                    )}
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                      {apt.meetLink && (apt.status === "scheduled" || apt.status === "card_on_file" || apt.status === "paid") && (
+                        <a
+                          href={apt.meetLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => {
+                            if (openingMeetTimeoutRef.current) clearTimeout(openingMeetTimeoutRef.current);
+                            setOpeningMeetId(apt.id);
+                            openingMeetTimeoutRef.current = window.setTimeout(() => {
+                              setOpeningMeetId(null);
+                              openingMeetTimeoutRef.current = null;
+                            }, 2000);
+                          }}
+                          className="inline-flex items-center rounded-lg border border-warm-brown/50 bg-warm-brown/5 px-3 py-1.5 text-sm font-medium text-warm-brown hover:bg-warm-brown/10"
+                        >
+                          {openingMeetId === apt.id ? "Opening…" : "Join video call →"}
+                        </a>
+                      )}
+                      {apt.status === "pending_confirmation" && (
+                        <button
+                          type="button"
+                          onClick={() => setRescheduleAppointment(apt)}
+                          className="inline-flex items-center rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                        >
+                          Change time
+                        </button>
+                      )}
+                      {canReschedule(apt) && (
+                        <button
+                          type="button"
+                          onClick={() => setRescheduleAppointment(apt)}
+                          className="inline-flex items-center rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                        >
+                          Reschedule
+                        </button>
+                      )}
+                      {apt.status === "card_on_file" && (
+                        <button
+                          type="button"
+                          onClick={() => setChargeConfirmAppointment(apt)}
+                          className="inline-flex items-center rounded-lg border border-amber-300 bg-amber-50 px-3 py-1.5 text-sm font-medium text-amber-800 hover:bg-amber-100"
+                        >
+                          Charge now
+                        </button>
+                      )}
+                      {apt.status === "paid" && (
+                        <button
+                          type="button"
+                          onClick={() => completeAppointment(apt.id)}
+                          disabled={completingId !== null}
+                          className="inline-flex items-center rounded-lg border border-green-300 bg-green-50 px-3 py-1.5 text-sm font-medium text-green-800 hover:bg-green-100 disabled:opacity-50"
+                        >
+                          {completingId === apt.id ? "Marking…" : "Mark as complete"}
+                        </button>
+                      )}
+                    </div>
                     {apt.status === "completed" && (
                       <div className="mt-3 border-t border-gray-200 pt-3">
                         <div className="flex items-center justify-between gap-2 mb-1">
@@ -676,7 +785,7 @@ export default function PatientOverviewPage() {
                               : "bg-gray-100 text-gray-600"
                     }`}
                   >
-                    {apt.status === "card_on_file" ? "Card on file" : apt.status}
+                    {apt.status === "card_on_file" ? "Card on file" : apt.status === "paid" ? "Paid" : apt.status}
                   </span>
                 </div>
                 {formsForApt.length > 0 && (
@@ -1031,6 +1140,37 @@ export default function PatientOverviewPage() {
         onSuccess={() => {
           setScheduleFollowupOpen(false);
           loadOverview();
+        }}
+      />
+      <RescheduleModal
+        isOpen={!!rescheduleAppointment}
+        onClose={() => setRescheduleAppointment(null)}
+        appointmentId={rescheduleAppointment?.id ?? ""}
+        durationMinutes={rescheduleAppointment?.durationMinutes ?? 30}
+        appointmentType={rescheduleAppointment?.type}
+        variant={rescheduleAppointment?.status === "pending_confirmation" ? "change-proposed-time" : "reschedule"}
+        onSuccess={() => {
+          loadOverview();
+          setRescheduleAppointment(null);
+        }}
+      />
+      <ConfirmChargeModal
+        isOpen={!!chargeConfirmAppointment}
+        onClose={() => setChargeConfirmAppointment(null)}
+        appointment={
+          chargeConfirmAppointment
+            ? {
+                id: chargeConfirmAppointment.id,
+                type: chargeConfirmAppointment.type,
+                scheduledAt: chargeConfirmAppointment.scheduledAt,
+                durationMinutes: chargeConfirmAppointment.durationMinutes,
+                patient: overview ? { name: overview.patientName } : undefined,
+              }
+            : null
+        }
+        onSuccess={() => {
+          loadOverview();
+          setChargeConfirmAppointment(null);
         }}
       />
     </main>

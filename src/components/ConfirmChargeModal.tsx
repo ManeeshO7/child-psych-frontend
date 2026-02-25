@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const PRACTICE_TZ = "America/Los_Angeles";
 
@@ -47,6 +47,7 @@ export default function ConfirmChargeModal({
   const [linkCopied, setLinkCopied] = useState(false);
   const [emailSending, setEmailSending] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const linkCopiedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const updateCardUrl =
     typeof window !== "undefined" ? `${window.location.origin}/patient/save-card` : "/patient/save-card";
@@ -63,7 +64,10 @@ export default function ConfirmChargeModal({
   }
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      if (linkCopiedTimeoutRef.current) clearTimeout(linkCopiedTimeoutRef.current);
+      return;
+    }
     setError(null);
     setEmailSent(false);
     setPricing(null);
@@ -74,6 +78,12 @@ export default function ConfirmChargeModal({
       .catch(() => setPricing(null))
       .finally(() => setPricingLoading(false));
   }, [isOpen]);
+
+  useEffect(() => {
+    return () => {
+      if (linkCopiedTimeoutRef.current) clearTimeout(linkCopiedTimeoutRef.current);
+    };
+  }, []);
 
   async function handleEmailRequestCardUpdate() {
     if (!appointment?.id) return;

@@ -122,8 +122,9 @@ export default function PatientBookTypePage() {
     setSlotsLoading(true);
     async function loadSlots() {
       try {
+        const duration = typeInfo?.durationMinutes ?? 30;
         const res = await fetch(
-          `/api/availability/slots?durationMinutes=${typeInfo.durationMinutes}`,
+          `/api/availability/slots?durationMinutes=${duration}`,
           { credentials: "include" }
         );
         if (cancelled) return;

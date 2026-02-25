@@ -186,7 +186,7 @@ export function CaliforniaAddressAutocomplete({
     const widget = new PlaceAutocompleteElement({
       placeholder,
       includedRegionCodes: ["us"],
-      ...(bounds && { locationRestriction: bounds }),
+      ...(bounds ? { locationRestriction: bounds } : {}),
     }) as PlaceAutocompleteElementInstance;
 
     widget.addEventListener("gmp-select", async (ev: { placePrediction: { toPlace: () => PlaceInstance } }) => {

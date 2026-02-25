@@ -130,7 +130,12 @@ export default function AssignFormsModal({
               {error}
             </div>
           ) : forms.length === 0 ? (
-            <p className="text-center text-gray-500">No forms available.</p>
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-center">
+              <p className="text-sm font-medium text-amber-900">No forms available</p>
+              <p className="mt-1 text-xs text-amber-800">
+                No forms have been added to the system yet. An administrator can add forms (e.g. PSC-17, PHQ-A, PDF templates) by running the form seed script from the backend.
+              </p>
+            </div>
           ) : (
             <div className="space-y-3">
               {forms.map((form) => {

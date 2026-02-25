@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import ConfirmChargeModal from "@/components/ConfirmChargeModal";
+import { formatPhone } from "@/lib/formatPhone";
 
 type PatientRequest = {
   id: string;
@@ -35,6 +36,8 @@ export default function DoctorDashboard() {
   const router = useRouter();
   const [requests, setRequests] = useState<PatientRequest[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [intakes, setIntakes] = useState<unknown[]>([]);
+  const [intakesLoading, setIntakesLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [appointmentsLoading, setAppointmentsLoading] = useState(true);
   const [rejectingId, setRejectingId] = useState<string | null>(null);
@@ -48,13 +51,22 @@ export default function DoctorDashboard() {
     type: "success" | "error" | "info";
     message: string;
   } | null>(null);
+  const noticeTimeoutRef = useRef<number | null>(null);
 
   function showNotice(type: "success" | "error" | "info", message: string) {
+    if (noticeTimeoutRef.current) clearTimeout(noticeTimeoutRef.current);
     setNotice({ type, message });
-    window.setTimeout(() => {
+    noticeTimeoutRef.current = window.setTimeout(() => {
       setNotice((curr) => (curr?.message === message ? null : curr));
+      noticeTimeoutRef.current = null;
     }, 4000);
   }
+
+  useEffect(() => {
+    return () => {
+      if (noticeTimeoutRef.current) clearTimeout(noticeTimeoutRef.current);
+    };
+  }, []);
 
   async function load() {
     const res = await fetch("/api/patient-requests/", { credentials: "include" });

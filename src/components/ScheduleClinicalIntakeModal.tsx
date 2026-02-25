@@ -32,7 +32,7 @@ type ScheduleClinicalIntakeModalProps = {
   onClose: () => void;
   patientId: string;
   patientName?: string;
-  onSuccess?: () => void;
+  onSuccess?: (appointmentId?: string) => void;
 };
 
 export default function ScheduleClinicalIntakeModal({

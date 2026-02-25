@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import RescheduleModal from "@/components/RescheduleModal";
@@ -82,6 +82,16 @@ export default function PatientDashboardOverview() {
   const [loading, setLoading] = useState(true);
   const [changeTimeAppointment, setChangeTimeAppointment] = useState<PendingAppointment | null>(null);
   const [profileComplete, setProfileComplete] = useState<boolean | null>(null);
+  const lastNavAtRef = useRef(0);
+  const NAV_THROTTLE_MS = 1500;
+
+  function handleNav(e: React.MouseEvent, path: string) {
+    e.preventDefault();
+    const now = Date.now();
+    if (now - lastNavAtRef.current < NAV_THROTTLE_MS) return;
+    lastNavAtRef.current = now;
+    router.push(path);
+  }
 
   async function refreshData() {
     try {
@@ -278,9 +288,10 @@ export default function PatientDashboardOverview() {
       )}
 
       <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Link
+        <a
           href="/patient/profile"
-          className="card flex flex-col gap-2 transition hover:border-warm-brown/40 hover:shadow-md"
+          onClick={(e) => handleNav(e, "/patient/profile")}
+          className="card flex flex-col gap-2 transition hover:border-warm-brown/40 hover:shadow-md cursor-pointer"
         >
           <h2 className="text-lg font-semibold text-warm-brown">Profile</h2>
           <p className="text-sm text-gray-600">Your profile details.</p>
@@ -292,11 +303,12 @@ export default function PatientDashboardOverview() {
             <p className="text-xs text-amber-700">Profile incomplete — complete to book orientation.</p>
           )}
           <p className="mt-auto text-sm font-medium text-warm-brown">View profile →</p>
-        </Link>
+        </a>
 
-        <Link
+        <a
           href="/patient/appointments"
-          className="card flex flex-col gap-2 transition hover:border-warm-brown/40 hover:shadow-md"
+          onClick={(e) => handleNav(e, "/patient/appointments")}
+          className="card flex flex-col gap-2 transition hover:border-warm-brown/40 hover:shadow-md cursor-pointer"
         >
           <h2 className="text-lg font-semibold text-warm-brown">Appointments</h2>
           <p className="text-sm text-gray-600">
@@ -306,31 +318,33 @@ export default function PatientDashboardOverview() {
             {appointmentCount === null ? "—" : appointmentCount}
           </p>
           <p className="text-xs text-gray-500">appointments</p>
-        </Link>
+        </a>
 
         {hasAssignedForms && (
-          <Link
+          <a
             href="/patient/forms"
-            className="card flex flex-col gap-2 transition hover:border-warm-brown/40 hover:shadow-md"
+            onClick={(e) => handleNav(e, "/patient/forms")}
+            className="card flex flex-col gap-2 transition hover:border-warm-brown/40 hover:shadow-md cursor-pointer"
           >
             <h2 className="text-lg font-semibold text-warm-brown">Forms & Documents</h2>
             <p className="text-sm text-gray-600">
               Complete forms assigned by your doctor.
             </p>
             <p className="mt-auto text-sm font-medium text-warm-brown">View forms →</p>
-          </Link>
+          </a>
         )}
 
-        <Link
+        <a
           href="/patient/book"
-          className="card flex flex-col gap-2 transition hover:border-warm-brown/40 hover:shadow-md"
+          onClick={(e) => handleNav(e, "/patient/book")}
+          className="card flex flex-col gap-2 transition hover:border-warm-brown/40 hover:shadow-md cursor-pointer"
         >
           <h2 className="text-lg font-semibold text-warm-brown">Book appointment</h2>
           <p className="text-sm text-gray-600">
             Request a follow-up appointment time.
           </p>
           <p className="mt-auto text-sm font-medium text-warm-brown">Request now →</p>
-        </Link>
+        </a>
       </div>
 
       <RescheduleModal

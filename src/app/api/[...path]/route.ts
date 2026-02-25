@@ -53,7 +53,13 @@ async function proxy(
   let apiPath = pathname.startsWith("/api") ? pathname.slice(4) || "/" : pathname;
   if (
     !apiPath.endsWith("/") &&
-    ["/appointments", "/patient-requests", "/request-access", "/availability"].includes(apiPath)
+    [
+      "/appointments",
+      "/patient-requests",
+      "/request-access",
+      "/availability",
+      "/patient-profile",
+    ].includes(apiPath)
   ) {
     apiPath += "/";
   }

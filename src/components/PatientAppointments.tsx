@@ -63,6 +63,8 @@ export default function PatientAppointments() {
   const [tzLabel, setTzLabel] = useState("PT");
   const [rescheduleAppointment, setRescheduleAppointment] = useState<Appointment | null>(null);
   const lastInteractionAtRef = useRef<Record<string, number>>({});
+  const lastPastSectionClickRef = useRef(0);
+  const PAST_CLICK_THROTTLE_MS = 1500;
 
   // Cache timezone label to avoid recalculating on every render
   useEffect(() => {
@@ -312,7 +314,20 @@ export default function PatientAppointments() {
         <p className="text-gray-500">No appointments yet. Book one when you’re ready.</p>
       )}
       {past.length > 0 && (
-        <section>
+        <section
+          className="select-none"
+          role="region"
+          aria-label="Past appointments"
+          onClick={(e) => {
+            const now = Date.now();
+            if (now - lastPastSectionClickRef.current < PAST_CLICK_THROTTLE_MS) {
+              e.preventDefault();
+              e.stopPropagation();
+            } else {
+              lastPastSectionClickRef.current = now;
+            }
+          }}
+        >
           <h3 className="text-sm font-medium text-gray-600">Past</h3>
           <ul className="mt-2 space-y-2">
             {past.slice(0, 10).map((a) => {
@@ -324,7 +339,7 @@ export default function PatientAppointments() {
                 onClickCapture={(e) => {
                   const now = Date.now();
                   const last = lastInteractionAtRef.current[a.id] ?? 0;
-                  if (now - last < 1200) {
+                  if (now - last < PAST_CLICK_THROTTLE_MS) {
                     e.preventDefault();
                     e.stopPropagation();
                     return;

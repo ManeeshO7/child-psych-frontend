@@ -98,12 +98,24 @@ export default function DoctorAppointmentsList() {
   const mountedRef = useRef(true); // Track if component is mounted
   const lastInteractionAtRef = useRef<Record<string, number>>({});
 
+  const noticeTimeoutRef = useRef<number | null>(null);
+  const openingMeetTimeoutRef = useRef<number | null>(null);
+
   function showNotice(type: "success" | "error" | "info", message: string) {
+    if (noticeTimeoutRef.current) clearTimeout(noticeTimeoutRef.current);
     setNotice({ type, message });
-    window.setTimeout(() => {
+    noticeTimeoutRef.current = window.setTimeout(() => {
       setNotice((curr) => (curr?.message === message ? null : curr));
+      noticeTimeoutRef.current = null;
     }, 4000);
   }
+
+  useEffect(() => {
+    return () => {
+      if (noticeTimeoutRef.current) clearTimeout(noticeTimeoutRef.current);
+      if (openingMeetTimeoutRef.current) clearTimeout(openingMeetTimeoutRef.current);
+    };
+  }, []);
 
   // Cache timezone label to avoid recalculating in render loop
   useEffect(() => {
@@ -545,8 +557,12 @@ export default function DoctorAppointmentsList() {
                             e.stopPropagation();
                             return;
                           }
+                          if (openingMeetTimeoutRef.current) clearTimeout(openingMeetTimeoutRef.current);
                           setOpeningMeetId(a.id);
-                          window.setTimeout(() => setOpeningMeetId((curr) => (curr === a.id ? null : curr)), 2000);
+                          openingMeetTimeoutRef.current = window.setTimeout(() => {
+                            setOpeningMeetId((curr) => (curr === a.id ? null : curr));
+                            openingMeetTimeoutRef.current = null;
+                          }, 2000);
                         }}
                         className="inline-flex items-center rounded-lg border border-warm-brown/50 bg-warm-brown/5 px-3 py-1.5 text-sm font-medium text-warm-brown hover:bg-warm-brown/10"
                       >
