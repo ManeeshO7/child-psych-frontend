@@ -69,6 +69,7 @@ export default function DoctorAppointmentsList() {
   const [chargingId, setChargingId] = useState<string | null>(null);
   const [completingId, setCompletingId] = useState<string | null>(null);
   const [openingMeetId, setOpeningMeetId] = useState<string | null>(null);
+  const [openingChargeModalId, setOpeningChargeModalId] = useState<string | null>(null);
   const [assignFormsModalOpen, setAssignFormsModalOpen] = useState(false);
   const [assignFormsAppointment, setAssignFormsAppointment] = useState<{ id: string; patientId: string } | null>(null);
   const [setFollowupModalOpen, setSetFollowupModalOpen] = useState(false);
@@ -100,6 +101,7 @@ export default function DoctorAppointmentsList() {
 
   const noticeTimeoutRef = useRef<number | null>(null);
   const openingMeetTimeoutRef = useRef<number | null>(null);
+  const openingChargeModalTimeoutRef = useRef<number | null>(null);
 
   function showNotice(type: "success" | "error" | "info", message: string) {
     if (noticeTimeoutRef.current) clearTimeout(noticeTimeoutRef.current);
@@ -114,6 +116,7 @@ export default function DoctorAppointmentsList() {
     return () => {
       if (noticeTimeoutRef.current) clearTimeout(noticeTimeoutRef.current);
       if (openingMeetTimeoutRef.current) clearTimeout(openingMeetTimeoutRef.current);
+      if (openingChargeModalTimeoutRef.current) clearTimeout(openingChargeModalTimeoutRef.current);
     };
   }, []);
 
@@ -315,6 +318,19 @@ export default function DoctorAppointmentsList() {
     }
   }
 
+  function openChargeModal(appointment: Appointment) {
+    if (openingChargeModalId === appointment.id || chargeConfirmAppointment?.id === appointment.id) {
+      return;
+    }
+    if (openingChargeModalTimeoutRef.current) clearTimeout(openingChargeModalTimeoutRef.current);
+    setOpeningChargeModalId(appointment.id);
+    setChargeConfirmAppointment(appointment);
+    openingChargeModalTimeoutRef.current = window.setTimeout(() => {
+      setOpeningChargeModalId((curr) => (curr === appointment.id ? null : curr));
+      openingChargeModalTimeoutRef.current = null;
+    }, 800);
+  }
+
   async function completeAppointment(id: string) {
     if (completingId !== null) {
       return; // Prevent multiple simultaneous completions
@@ -402,7 +418,7 @@ export default function DoctorAppointmentsList() {
   }
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+    <main className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
       {notice && (
         <div className="fixed inset-x-0 top-4 z-50 flex justify-center px-4">
           <div
@@ -590,10 +606,14 @@ export default function DoctorAppointmentsList() {
                     {a.status === "card_on_file" && (
                       <button
                         type="button"
-                        onClick={(e) => { e.stopPropagation(); setChargeConfirmAppointment(a); }}
-                        className="inline-flex items-center rounded-lg border border-amber-300 bg-amber-50 px-3 py-1.5 text-sm font-medium text-amber-800 hover:bg-amber-100"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openChargeModal(a);
+                        }}
+                        disabled={openingChargeModalId === a.id}
+                        className="inline-flex items-center rounded-lg border border-amber-300 bg-amber-50 px-3 py-1.5 text-sm font-medium text-amber-800 hover:bg-amber-100 disabled:opacity-50"
                       >
-                        Charge now
+                        {openingChargeModalId === a.id ? "Opening…" : "Charge now"}
                       </button>
                     )}
                     {a.status === "paid" && (

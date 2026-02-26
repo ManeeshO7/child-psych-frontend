@@ -91,23 +91,6 @@ export default function DoctorPatientsListPage() {
             <span className="font-medium text-gray-900">{patient.name || "—"}</span>
           </td>
           <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">{patient.email}</td>
-          <td className="whitespace-nowrap px-4 py-3">
-            {patient.intakeStatus ? (
-              <span
-                className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
-                  patient.intakeStatus === "submitted"
-                    ? "bg-blue-100 text-blue-800"
-                    : patient.intakeStatus === "reviewed"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-gray-100 text-gray-800"
-                }`}
-              >
-                {patient.intakeStatus}
-              </span>
-            ) : (
-              <span className="text-sm text-gray-400">—</span>
-            )}
-          </td>
           <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">{patient.appointmentCount}</td>
           <td className="whitespace-nowrap px-4 py-3 text-right">
             <Link
@@ -122,7 +105,7 @@ export default function DoctorPatientsListPage() {
     );
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+    <main className="mx-auto w-full max-w-[1400px] px-4 py-10 sm:px-6 lg:px-8">
       <p className="mb-6">
         <Link href="/doctor" className="text-sm text-warm-brown hover:underline">
           ← Back to dashboard

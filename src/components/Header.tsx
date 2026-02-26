@@ -27,10 +27,64 @@ export default function Header() {
   const [patientCenterOpen, setPatientCenterOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [doctorUnreadMessages, setDoctorUnreadMessages] = useState(0);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const isDoctorPath = pathname?.startsWith("/doctor");
+
+    async function loadDoctorUnreadMessages() {
+      if (!isDoctorPath) return;
+      try {
+        const res = await fetch("/api/messages/summary", { credentials: "include" });
+        if (!res.ok) {
+          if (!cancelled) setDoctorUnreadMessages(0);
+          return;
+        }
+        const data = await res.json().catch(() => null);
+        if (!cancelled) {
+          setDoctorUnreadMessages(typeof data?.unreadCount === "number" ? data.unreadCount : 0);
+        }
+      } catch {
+        if (!cancelled) setDoctorUnreadMessages(0);
+      }
+    }
+
+    if (!isDoctorPath) {
+      setDoctorUnreadMessages(0);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    void loadDoctorUnreadMessages();
+
+    const intervalId = window.setInterval(() => {
+      void loadDoctorUnreadMessages();
+    }, 15000);
+
+    const handleFocus = () => {
+      void loadDoctorUnreadMessages();
+    };
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        void loadDoctorUnreadMessages();
+      }
+    };
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [pathname]);
 
   // Close mobile menu on route change (e.g. after clicking a link)
   useEffect(() => {
@@ -111,7 +165,17 @@ export default function Header() {
         {pathname?.startsWith("/patient") ? (
           <LogoutButton />
         ) : pathname?.startsWith("/doctor") ? (
-          <DoctorLogoutButton />
+          <>
+            <Link href="/doctor/messages" className="relative text-sm font-medium text-gray-700 hover:text-warm-brown">
+              Messages
+              {doctorUnreadMessages > 0 && (
+                <span className="absolute -right-3 -top-2 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-red-500 px-1.5 text-[11px] font-semibold text-white">
+                  {doctorUnreadMessages}
+                </span>
+              )}
+            </Link>
+            <DoctorLogoutButton />
+          </>
         ) : (
           <>
             <Link href="/#contact" className="text-base font-medium text-gray-700 transition hover:text-warm-brown">

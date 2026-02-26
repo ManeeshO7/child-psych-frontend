@@ -21,6 +21,8 @@ type Pricing = {
   };
 };
 
+let pricingCache: Pricing | null = null;
+
 type ConfirmChargeModalProps = {
   isOpen: boolean;
   onClose: () => void;
@@ -70,13 +72,31 @@ export default function ConfirmChargeModal({
     }
     setError(null);
     setEmailSent(false);
+    if (pricingCache) {
+      setPricing(pricingCache);
+      setPricingLoading(false);
+      return;
+    }
+
+    const controller = new AbortController();
     setPricing(null);
     setPricingLoading(true);
-    fetch("/api/payments/pricing", { credentials: "include" })
+    fetch("/api/payments/pricing", { credentials: "include", signal: controller.signal })
       .then((res) => (res.ok ? res.json() : null))
-      .then((data) => setPricing(data))
+      .then((data) => {
+        if (!data) {
+          setPricing(null);
+          return;
+        }
+        pricingCache = data as Pricing;
+        setPricing(pricingCache);
+      })
       .catch(() => setPricing(null))
       .finally(() => setPricingLoading(false));
+
+    return () => {
+      controller.abort();
+    };
   }, [isOpen]);
 
   useEffect(() => {

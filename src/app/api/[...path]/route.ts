@@ -128,7 +128,7 @@ async function proxy(
   const sessionToken =
     res.headers.get("x-session-token") ?? res.headers.get("X-Session-Token");
   if (sessionToken) {
-    const maxAge = 60 * 60 * 24 * 7; // 7 days, match backend
+    const maxAge = 60 * 30; // 30 minutes, match backend inactivity timeout
     const secure = process.env.NODE_ENV === "production";
     nextResponse.cookies.set(SESSION_COOKIE, sessionToken, {
       path: "/",

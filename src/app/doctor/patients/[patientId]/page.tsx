@@ -253,7 +253,7 @@ export default function PatientOverviewPage() {
 
   if (loading) {
     return (
-      <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+      <main className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
         <p className="text-gray-500">Loading patient overview…</p>
       </main>
     );
@@ -261,7 +261,7 @@ export default function PatientOverviewPage() {
 
   if (error || !overview) {
     return (
-      <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+      <main className="mx-auto w-full max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="rounded-lg border border-red-200 bg-red-50 p-4">
           <p className="text-red-800">{error || "Patient not found"}</p>
           <Link href="/doctor/patients" className="mt-2 inline-block text-sm text-red-800 hover:underline">
@@ -273,7 +273,7 @@ export default function PatientOverviewPage() {
   }
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+    <main className="mx-auto w-full max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
       <p className="mb-6">
         <Link href="/doctor/patients" className="text-sm text-warm-brown hover:underline">
           ← Back to patients

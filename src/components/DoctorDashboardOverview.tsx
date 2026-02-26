@@ -10,12 +10,67 @@ type PatientRequest = {
   questionnaireData: Record<string, unknown> | null;
 };
 
+type DashboardAppointment = {
+  id: string;
+  scheduledAt: string;
+  type: string;
+  status: string;
+  meetLink?: string | null;
+  patient?: { id: string; name: string; email?: string };
+};
+
+type ThreadSummary = {
+  id: string;
+  counterparty?: { name?: string | null };
+  lastMessage?: { body?: string | null; createdAt?: string | null } | null;
+};
+
+const PRACTICE_TZ = "America/Los_Angeles";
+const JOINABLE_STATUSES = ["scheduled", "card_on_file", "paid"];
+
+function dateKeyInPracticeTz(iso: string): string {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: PRACTICE_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(d);
+  const year = parts.find((p) => p.type === "year")?.value;
+  const month = parts.find((p) => p.type === "month")?.value;
+  const day = parts.find((p) => p.type === "day")?.value;
+  return year && month && day ? `${year}-${month}-${day}` : "";
+}
+
+function formatTimeInPracticeTz(iso: string): string {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "Time TBD";
+  return d.toLocaleTimeString("en-US", {
+    timeZone: PRACTICE_TZ,
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+}
+
+function typeLabel(type: string): string {
+  if (type === "clinical_intake") return "Clinical intake";
+  if (type === "orientation_consult") return "Initial eval";
+  if (type === "followup_med_30") return "Follow-up (30 min)";
+  if (type === "followup_med_therapy_45") return "Medication review";
+  return type?.replaceAll("_", " ") || "Appointment";
+}
+
 export default function DoctorDashboardOverview() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [pendingCount, setPendingCount] = useState<number | null>(null);
   const [appointmentCount, setAppointmentCount] = useState<number | null>(null);
+  const [appointments, setAppointments] = useState<DashboardAppointment[]>([]);
   const [patientCount, setPatientCount] = useState<number | null>(null);
+  const [unreadMessages, setUnreadMessages] = useState<number>(0);
+  const [latestMessagePreview, setLatestMessagePreview] = useState<string>("No recent messages.");
   const [calendarConnected, setCalendarConnected] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -23,11 +78,13 @@ export default function DoctorDashboardOverview() {
     let cancelled = false;
     async function load() {
       try {
-        const [reqRes, appRes, calRes, patientsRes] = await Promise.all([
+        const [reqRes, appRes, calRes, patientsRes, messagesRes, threadsRes] = await Promise.all([
           fetch("/api/patient-requests/", { credentials: "include" }),
           fetch("/api/appointments/", { credentials: "include" }),
           fetch("/api/auth/calendar-status", { credentials: "include" }),
           fetch("/api/patient-forms/patients", { credentials: "include" }),
+          fetch("/api/messages/summary", { credentials: "include" }),
+          fetch("/api/messages/", { credentials: "include" }),
         ]);
         if (reqRes.status === 401 || appRes.status === 401) {
           router.push("/doctor/login");
@@ -45,6 +102,7 @@ export default function DoctorDashboardOverview() {
         );
         setPendingCount(pending.length);
         setAppointmentCount(Array.isArray(appointments) ? appointments.length : 0);
+        setAppointments(Array.isArray(appointments) ? (appointments as DashboardAppointment[]) : []);
         const count =
           typeof patientsData.total === "number"
             ? patientsData.total
@@ -57,6 +115,25 @@ export default function DoctorDashboardOverview() {
           setCalendarConnected(cal.connected === true);
         } else {
           setCalendarConnected(false);
+        }
+        if (messagesRes.ok) {
+          const msgData = await messagesRes.json().catch(() => null);
+          setUnreadMessages(typeof msgData?.unreadCount === "number" ? msgData.unreadCount : 0);
+        } else {
+          setUnreadMessages(0);
+        }
+        if (threadsRes.ok) {
+          const threadsData = await threadsRes.json().catch(() => null);
+          const firstThread = (Array.isArray(threadsData?.threads) ? threadsData.threads[0] : null) as ThreadSummary | null;
+          const body = firstThread?.lastMessage?.body?.trim();
+          const name = firstThread?.counterparty?.name?.trim();
+          if (body) {
+            setLatestMessagePreview(name ? `${name}: ${body}` : body);
+          } else {
+            setLatestMessagePreview("No recent messages.");
+          }
+        } else {
+          setLatestMessagePreview("No recent messages.");
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -76,12 +153,67 @@ export default function DoctorDashboardOverview() {
     );
   }
 
+  const todayKey = dateKeyInPracticeTz(new Date().toISOString());
+  const todaysAppointments = appointments
+    .filter((a) => a.status !== "cancelled" && dateKeyInPracticeTz(a.scheduledAt) === todayKey)
+    .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
+
   return (
     <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
       <h1 className="section-heading">Dashboard</h1>
       <p className="mt-2 text-gray-600">
         Review patient requests and appointments.
       </p>
+
+      <section className="mt-6 rounded-xl border border-cream-200 bg-white p-5 shadow-sm">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold text-warm-brown">Today&apos;s Appointments</h2>
+          <Link href="/doctor/appointments" className="text-sm font-medium text-warm-brown hover:underline">
+            View all
+          </Link>
+        </div>
+        {todaysAppointments.length === 0 ? (
+          <p className="mt-3 text-sm text-gray-600">No appointments scheduled for today.</p>
+        ) : (
+          <ul className="mt-4 space-y-3">
+            {todaysAppointments.map((apt) => (
+              <li
+                key={apt.id}
+                className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-cream-200 bg-cream-50 px-4 py-3"
+              >
+                <div className="min-w-0">
+                  <p className="font-medium text-gray-900">
+                    {formatTimeInPracticeTz(apt.scheduledAt)} - {apt.patient?.name || "Patient"}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {typeLabel(apt.type)} · {apt.status.replaceAll("_", " ")}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  {apt.meetLink && JOINABLE_STATUSES.includes(apt.status) && (
+                    <a
+                      href={apt.meetLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex rounded-lg bg-warm-brown px-3 py-1.5 text-sm font-medium text-white hover:bg-warm-brown/90"
+                    >
+                      Join
+                    </a>
+                  )}
+                  {apt.patient?.id && (
+                    <Link
+                      href={`/doctor/patients/${encodeURIComponent(apt.patient.id)}`}
+                      className="inline-flex rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    >
+                      View notes
+                    </Link>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       {searchParams.get("calendar") === "connected" && (
         <div className="mt-6 rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-800">
@@ -163,6 +295,23 @@ export default function DoctorDashboardOverview() {
           <p className="text-sm text-gray-600">
             Set your available blocks for the next 7 days. Patients book 30-minute slots within these times.
           </p>
+        </Link>
+
+        <Link
+          href="/doctor/messages"
+          className="card flex flex-col gap-2 transition hover:border-warm-brown/40 hover:shadow-md"
+        >
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="text-lg font-semibold text-warm-brown">Messages</h2>
+            {unreadMessages > 0 && (
+              <span className="inline-flex h-6 min-w-[1.5rem] items-center justify-center rounded-full bg-red-500 px-2 text-xs font-semibold text-white">
+                {unreadMessages}
+              </span>
+            )}
+          </div>
+          <p className="text-sm text-gray-600">Secure conversations with patients.</p>
+          <p className="line-clamp-2 text-sm text-gray-700">{latestMessagePreview}</p>
+          <p className="mt-auto text-sm font-medium text-warm-brown">Open inbox →</p>
         </Link>
       </div>
     </main>
