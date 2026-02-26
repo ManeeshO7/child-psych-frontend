@@ -39,7 +39,7 @@ export default function DoctorLoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-cream-50">
+    <div className="flex flex-1 flex-col bg-cream-50">
       <main className="flex flex-1 flex-col items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
         <div className="w-full max-w-sm">
           <h1 className="section-heading">Doctor Portal — Login</h1>

@@ -33,8 +33,8 @@ export default function DoctorForgotPasswordPage() {
   }
 
   return (
-    <>
-      <main className="min-h-screen bg-cream-50 py-16">
+    <div className="flex flex-1 flex-col bg-cream-50">
+      <main className="flex-1 py-16">
         <div className="mx-auto max-w-md px-4 sm:px-6 lg:px-8">
           <h1 className="section-heading">Doctor Portal — Reset password</h1>
           <p className="mt-2 text-gray-600">
@@ -80,7 +80,7 @@ export default function DoctorForgotPasswordPage() {
         </div>
       </main>
       <Footer />
-    </>
+    </div>
   );
 }
 

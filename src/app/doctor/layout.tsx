@@ -6,9 +6,9 @@ export default function DoctorLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-cream-50">
+    <div className="flex min-h-screen flex-col bg-cream-50">
       <Header />
-      {children}
+      <div className="flex flex-1 flex-col">{children}</div>
     </div>
   );
 }
