@@ -57,7 +57,7 @@ function IntroCard() {
   return (
     <div
       ref={ref}
-      className={`relative flex min-h-[420px] flex-col overflow-hidden rounded-2xl bg-[#d4c4a8] p-8 text-white shadow-[0_4px_20px_rgba(0,0,0,0.08)] transition-all duration-700 ease-out will-change-transform ${
+      className={`relative col-span-2 flex min-h-[260px] flex-col overflow-hidden rounded-2xl bg-[#d4c4a8] p-6 text-white shadow-[0_4px_20px_rgba(0,0,0,0.08)] transition-all duration-700 ease-out will-change-transform sm:col-span-1 sm:min-h-[420px] sm:p-8 ${
         inView
           ? "translate-x-0 translate-y-0 scale-100 opacity-100 blur-0"
           : "-translate-x-8 translate-y-6 scale-[0.96] opacity-0 blur-[2px]"
@@ -96,7 +96,7 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
     <div
       ref={ref}
       style={{ transitionDelay: inView ? `${120 + index * 90}ms` : "0ms" }}
-      className={`group flex min-h-[480px] flex-col overflow-hidden rounded-2xl bg-cream-200 shadow-[0_2px_12px_rgba(0,0,0,0.06)] transition-all duration-700 ease-out will-change-transform hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.12)] ${
+      className={`group flex min-h-[340px] flex-col overflow-hidden rounded-2xl bg-cream-200 shadow-[0_2px_12px_rgba(0,0,0,0.06)] transition-all duration-700 ease-out will-change-transform hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.12)] sm:min-h-[480px] ${
         inView
           ? "translate-x-0 translate-y-0 scale-100 opacity-100 blur-0"
           : `${initialOffsetX} translate-y-6 scale-[0.96] opacity-0 blur-[2px]`
@@ -105,7 +105,7 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
       <button
         type="button"
         onClick={() => setFlipped((v) => !v)}
-        className="relative flex h-full min-h-[480px] w-full flex-1 cursor-pointer flex-col text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-tan/60"
+        className="relative flex h-full min-h-[340px] w-full flex-1 cursor-pointer flex-col text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-tan/60 sm:min-h-[480px]"
         aria-pressed={flipped}
         aria-label={`${service.title}. ${flipped ? "Hide details" : "Show details"}`}
       >
@@ -122,8 +122,8 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
                   src={service.image}
                   alt={service.alt}
                   fill
-                  className="object-cover transition duration-500 group-hover:scale-105"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 22vw"
+                  className="object-cover object-[50%_18%] transition duration-500 group-hover:scale-105 sm:object-[50%_28%] lg:object-center"
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 22vw"
                 />
                 <div className="absolute bottom-5 right-5">
                   <div
@@ -178,7 +178,7 @@ export default function Services() {
       </div>
       <div className="relative z-10 mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8">
         <h2 className="section-heading section-heading-accent mb-12 text-3xl md:mb-16 md:text-4xl">Services</h2>
-        <div className="grid gap-8 sm:grid-cols-2 lg:gap-6 lg:items-stretch lg:[grid-template-columns:0.85fr_repeat(4,1.15fr)]">
+        <div className="grid grid-cols-2 gap-4 sm:gap-8 lg:gap-6 lg:items-stretch lg:[grid-template-columns:0.85fr_repeat(4,1.15fr)]">
           <IntroCard />
           {services.map((service, index) => (
             <ServiceCard key={service.title} service={service} index={index} />

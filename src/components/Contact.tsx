@@ -30,7 +30,7 @@ export default function Contact() {
     <section id="contact" className="relative overflow-hidden py-28 sm:py-36">
       <div className="absolute inset-0 z-0">
         <Image
-          src="/6.jpeg"
+          src="/contact.png"
           alt=""
           fill
           className="object-cover object-center"

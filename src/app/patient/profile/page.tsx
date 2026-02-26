@@ -45,6 +45,7 @@ export default function PatientProfilePage() {
   const [saving, setSaving] = useState(false);
   const [documents, setDocuments] = useState<PatientDocument[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [removingDocumentId, setRemovingDocumentId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [data, setData] = useState<ProfileData | null>(null);
@@ -160,6 +161,31 @@ export default function PatientProfilePage() {
       setError(e instanceof Error ? e.message : "Upload failed");
     } finally {
       setUploading(false);
+    }
+  }
+
+  async function handleRemoveDocument(documentId: string) {
+    if (removingDocumentId) return;
+    setRemovingDocumentId(documentId);
+    setError(null);
+    try {
+      const res = await fetch(`/api/patient-documents/${documentId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (res.status === 401) {
+        router.push("/login");
+        return;
+      }
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || "Failed to remove document");
+      }
+      setDocuments((prev) => prev.filter((d) => d.id !== documentId));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to remove document");
+    } finally {
+      setRemovingDocumentId(null);
     }
   }
 
@@ -624,11 +650,21 @@ export default function PatientProfilePage() {
             {documents.map((doc) => (
               <li key={doc.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-gray-200 bg-gray-50/50 px-3 py-2 text-sm">
                 <span className="font-medium text-gray-900">{doc.fileName}</span>
-                {doc.downloadUrl && (
-                  <a href={doc.downloadUrl} target="_blank" rel="noopener noreferrer" className="text-warm-brown hover:underline">
-                    View
-                  </a>
-                )}
+                <div className="flex items-center gap-3">
+                  {doc.downloadUrl && (
+                    <a href={doc.downloadUrl} target="_blank" rel="noopener noreferrer" className="text-warm-brown hover:underline">
+                      View
+                    </a>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveDocument(doc.id)}
+                    disabled={removingDocumentId === doc.id}
+                    className="text-red-700 hover:underline disabled:opacity-50"
+                  >
+                    {removingDocumentId === doc.id ? "Removing…" : "Remove"}
+                  </button>
+                </div>
               </li>
             ))}
           </ul>
