@@ -11,19 +11,9 @@ import RescheduleModal from "@/components/RescheduleModal";
 import ConfirmChargeModal from "@/components/ConfirmChargeModal";
 
 const RESCHEDULABLE_STATUSES = ["scheduled", "card_on_file", "paid"];
-const RESCHEDULE_MIN_HOURS = 48;
 
 function canReschedule(a: { scheduledAt: string; status: string }): boolean {
-  if (!RESCHEDULABLE_STATUSES.includes(a.status)) return false;
-  try {
-    const scheduledAt = new Date(a.scheduledAt);
-    if (isNaN(scheduledAt.getTime())) return false;
-    const now = new Date();
-    const hoursUntil = (scheduledAt.getTime() - now.getTime()) / (1000 * 60 * 60);
-    return hoursUntil >= RESCHEDULE_MIN_HOURS;
-  } catch {
-    return false;
-  }
+  return RESCHEDULABLE_STATUSES.includes(a.status);
 }
 
 type Appointment = {
@@ -80,6 +70,7 @@ export default function DoctorAppointmentsList() {
     patientName: string;
     allowedTypes: string[];
   } | null>(null);
+  const [openingFollowupForPatientId, setOpeningFollowupForPatientId] = useState<string | null>(null);
   const [scheduleClinicalIntakeOpen, setScheduleClinicalIntakeOpen] = useState(false);
   const [scheduleClinicalIntakeAppointment, setScheduleClinicalIntakeAppointment] = useState<{
     id: string;
@@ -95,9 +86,10 @@ export default function DoctorAppointmentsList() {
   } | null>(null);
   const [tzLabel, setTzLabel] = useState("PT");
   const [, startTransition] = useTransition();
-  const loadingRef = useRef(false); // Prevent concurrent load() calls
+  const loadingRef = useRef(false);
   const mountedRef = useRef(true); // Track if component is mounted
-  const lastInteractionAtRef = useRef<Record<string, number>>({});
+  const activeLoadControllerRef = useRef<AbortController | null>(null);
+  const latestLoadRequestIdRef = useRef(0);
 
   const noticeTimeoutRef = useRef<number | null>(null);
   const openingMeetTimeoutRef = useRef<number | null>(null);
@@ -111,6 +103,7 @@ export default function DoctorAppointmentsList() {
       noticeTimeoutRef.current = null;
     }, 4000);
   }
+
 
   useEffect(() => {
     return () => {
@@ -140,10 +133,17 @@ export default function DoctorAppointmentsList() {
     nextView?: "active" | "completed",
     patientSearch?: string,
   ) {
-    // Prevent concurrent load() calls - critical for preventing crashes
-    if (loadingRef.current || !mountedRef.current) {
+    if (!mountedRef.current) {
       return;
     }
+    // Cancel any in-flight load so stale responses cannot overwrite current tab state.
+    if (activeLoadControllerRef.current) {
+      activeLoadControllerRef.current.abort();
+    }
+    const requestId = latestLoadRequestIdRef.current + 1;
+    latestLoadRequestIdRef.current = requestId;
+    const controller = new AbortController();
+    activeLoadControllerRef.current = controller;
     loadingRef.current = true;
     try {
       const qs = new URLSearchParams();
@@ -154,13 +154,13 @@ export default function DoctorAppointmentsList() {
       if (patientSearch?.trim()) qs.set("patient_search", patientSearch.trim());
       const res = await fetch(`/api/appointments/paged?${qs.toString()}`, {
         credentials: "include",
+        signal: controller.signal,
       });
-      if (!mountedRef.current) return;
+      if (!mountedRef.current || requestId !== latestLoadRequestIdRef.current) return;
       
       if (res.status === 401) {
         router.push("/doctor/login");
         if (mountedRef.current) setLoading(false);
-        loadingRef.current = false;
         return;
       }
       if (!res.ok) {
@@ -171,22 +171,35 @@ export default function DoctorAppointmentsList() {
           setHasMore(false);
           setLoading(false);
         }
-        loadingRef.current = false;
         return;
       }
       const data = await res.json();
-      if (mountedRef.current) {
+      if (mountedRef.current && requestId === latestLoadRequestIdRef.current) {
         const items = Array.isArray(data?.items) ? data.items : [];
-        // Validate items shape defensively
+        // Validate + dedupe items defensively. Duplicate/malformed IDs can cause unstable React reconciliation.
         const validAppointments = items.filter(
-          (a: unknown) => a && typeof a === "object" && "id" in a,
+          (a: unknown) =>
+            a &&
+            typeof a === "object" &&
+            typeof (a as { id?: unknown }).id === "string" &&
+            (a as { id: string }).id.trim().length > 0,
         ) as Appointment[];
-        setAppointments(validAppointments);
+        const seenIds = new Set<string>();
+        const dedupedAppointments: Appointment[] = [];
+        for (const apt of validAppointments) {
+          if (seenIds.has(apt.id)) continue;
+          seenIds.add(apt.id);
+          dedupedAppointments.push(apt);
+        }
+        setAppointments(dedupedAppointments);
         setNextCursor(typeof data?.nextCursor === "string" ? data.nextCursor : null);
         setHasMore(Boolean(data?.hasMore));
         setLoading(false);
       }
     } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") {
+        return;
+      }
       console.error("Error loading appointments:", err);
       if (mountedRef.current) {
         setAppointments([]);
@@ -195,7 +208,9 @@ export default function DoctorAppointmentsList() {
         setLoading(false);
       }
     } finally {
-      loadingRef.current = false;
+      if (requestId === latestLoadRequestIdRef.current) {
+        loadingRef.current = false;
+      }
     }
   }
 
@@ -209,6 +224,9 @@ export default function DoctorAppointmentsList() {
     return () => {
       mountedRef.current = false;
       loadingRef.current = false;
+      if (activeLoadControllerRef.current) {
+        activeLoadControllerRef.current.abort();
+      }
     };
   }, []);
 
@@ -403,20 +421,6 @@ export default function DoctorAppointmentsList() {
     }
   }
 
-  function handleTileClickCapture(appointmentId: string, e: React.MouseEvent) {
-    // If the user double/triple-clicks rapidly, browsers can spawn multiple navigations/tabs
-    // (via nested <a> / <button> elements), which can crash Chrome.
-    // Throttle interactions per appointment tile.
-    const now = Date.now();
-    const last = lastInteractionAtRef.current[appointmentId] ?? 0;
-    if (now - last < 1200) {
-      e.preventDefault();
-      e.stopPropagation();
-      return;
-    }
-    lastInteractionAtRef.current[appointmentId] = now;
-  }
-
   return (
     <main className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
       {notice && (
@@ -528,30 +532,30 @@ export default function DoctorAppointmentsList() {
         </div>
       </div>
 
-      {loading ? (
-        <p className="mt-10 text-gray-500">Loading…</p>
-      ) : appointments.length === 0 ? (
-        <p className="mt-10 text-gray-500">
-          {searchApplied
-            ? `No appointments found for patient "${searchApplied}".`
-            : filterDate
-              ? `No appointments on ${new Date(filterDate + "T12:00:00").toLocaleDateString("en-US", {
-                  timeZone: "America/Los_Angeles",
-                  weekday: "short",
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })}.`
-              : "No appointments yet."}
-        </p>
-      ) : (
-        <div className="mt-10 space-y-6">
-          <ul className="space-y-3">
-            {formattedAppointments.map(({ appointment: a, formattedDate }) => (
+      <div key={`appointments-${view}-${pageCursor ?? "root"}-${filterDate ?? "all"}-${searchApplied || "none"}`}>
+        {loading ? (
+          <p className="mt-10 text-gray-500">Loading…</p>
+        ) : appointments.length === 0 ? (
+          <p className="mt-10 text-gray-500">
+            {searchApplied
+              ? `No appointments found for patient "${searchApplied}".`
+              : filterDate
+                ? `No appointments on ${new Date(filterDate + "T12:00:00").toLocaleDateString("en-US", {
+                    timeZone: "America/Los_Angeles",
+                    weekday: "short",
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })}.`
+                : "No appointments yet."}
+          </p>
+        ) : (
+          <div className="mt-10 space-y-6">
+            <ul className="space-y-3">
+              {formattedAppointments.map(({ appointment: a, formattedDate }, idx) => (
               <li
-                key={a.id}
-                className="card flex flex-wrap items-center justify-between gap-4"
-                onClickCapture={(e) => handleTileClickCapture(a.id, e)}
+                key={`${a.id}-${a.status}-${a.type}-${a.scheduledAt ?? "na"}-${idx}`}
+                className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-cream-300/60 bg-cream-200 p-6"
               >
                 <div className="min-w-0 flex-1">
                   <p className="font-medium text-gray-900">
@@ -700,6 +704,8 @@ export default function DoctorAppointmentsList() {
                           e.stopPropagation();
                           const patientId = a.patient!.id;
                           const patientName = a.patient!.name || "";
+                          if (openingFollowupForPatientId === patientId || scheduleFollowupOpen) return;
+                          setOpeningFollowupForPatientId(patientId);
                           // Defer fetch and modal open to avoid blocking the main thread (prevents Chrome hang/crash)
                           const openModal = (allowedTypes: string[]) => {
                             setScheduleFollowupPatient({ patientId, patientName, allowedTypes });
@@ -714,12 +720,16 @@ export default function DoctorAppointmentsList() {
                               })
                               .catch(() => {
                                 requestAnimationFrame(() => openModal(["followup_med_30", "followup_med_therapy_45"]));
+                              })
+                              .finally(() => {
+                                setOpeningFollowupForPatientId((curr) => (curr === patientId ? null : curr));
                               });
                           });
                         }}
+                        disabled={openingFollowupForPatientId === a.patient.id}
                         className="inline-flex items-center rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
                       >
-                        Schedule follow-up →
+                        {openingFollowupForPatientId === a.patient.id ? "Opening…" : "Schedule follow-up →"}
                       </button>
                     )}
                     {a.patient && (
@@ -752,29 +762,30 @@ export default function DoctorAppointmentsList() {
                   {a.status === "card_on_file" ? "Card on file" : a.status === "paid" ? "Paid" : a.status}
                 </span>
               </li>
-            ))}
-          </ul>
+              ))}
+            </ul>
 
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            <button
-              type="button"
-              onClick={goPrev}
-              disabled={loading || prevStack.length === 0}
-              className="rounded-lg border border-cream-200 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-cream-50 disabled:opacity-50"
-            >
-              Previous
-            </button>
-            <button
-              type="button"
-              onClick={goNext}
-              disabled={loading || !hasMore || !nextCursor}
-              className="rounded-lg border border-cream-200 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-cream-50 disabled:opacity-50"
-            >
-              Next
-            </button>
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={goPrev}
+                disabled={loading || prevStack.length === 0}
+                className="rounded-lg border border-cream-200 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-cream-50 disabled:opacity-50"
+              >
+                Previous
+              </button>
+              <button
+                type="button"
+                onClick={goNext}
+                disabled={loading || !hasMore || !nextCursor}
+                className="rounded-lg border border-cream-200 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-cream-50 disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       <AssignFormsModal
         isOpen={assignFormsModalOpen}
@@ -826,7 +837,13 @@ export default function DoctorAppointmentsList() {
         allowedTypes={scheduleFollowupPatient?.allowedTypes}
         onSuccess={() => {
           showNotice("success", "Follow-up scheduled. Patient will confirm and add card.");
-          load(pageCursor);
+          // Data changed; reload from page 1 to avoid stale cursor inconsistencies.
+          setPageCursor(null);
+          setPrevStack([]);
+          setNextCursor(null);
+          setHasMore(false);
+          setLoading(true);
+          load(null, view, searchApplied);
         }}
       />
       <ConfirmChargeModal

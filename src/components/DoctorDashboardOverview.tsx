@@ -13,16 +13,11 @@ type PatientRequest = {
 type DashboardAppointment = {
   id: string;
   scheduledAt: string;
+  durationMinutes?: number;
   type: string;
   status: string;
   meetLink?: string | null;
   patient?: { id: string; name: string; email?: string };
-};
-
-type ThreadSummary = {
-  id: string;
-  counterparty?: { name?: string | null };
-  lastMessage?: { body?: string | null; createdAt?: string | null } | null;
 };
 
 const PRACTICE_TZ = "America/Los_Angeles";
@@ -54,11 +49,26 @@ function formatTimeInPracticeTz(iso: string): string {
   });
 }
 
+function formatTimeRangeInPracticeTz(iso: string, durationMinutes?: number): string {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "Time TBD";
+  const start = formatTimeInPracticeTz(iso);
+  const dur = typeof durationMinutes === "number" && durationMinutes > 0 ? durationMinutes : 30;
+  const end = new Date(d.getTime() + dur * 60 * 1000);
+  const endLabel = end.toLocaleTimeString("en-US", {
+    timeZone: PRACTICE_TZ,
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+  return `${start} - ${endLabel}`;
+}
+
 function typeLabel(type: string): string {
-  if (type === "clinical_intake") return "Clinical intake";
-  if (type === "orientation_consult") return "Initial eval";
+  if (type === "clinical_intake") return "Clinical intake appointment";
+  if (type === "orientation_consult") return "Orientation consultation";
   if (type === "followup_med_30") return "Follow-up (30 min)";
-  if (type === "followup_med_therapy_45") return "Medication review";
+  if (type === "followup_med_therapy_45") return "Follow-up (med + therapy, 45 min)";
   return type?.replaceAll("_", " ") || "Appointment";
 }
 
@@ -69,8 +79,6 @@ export default function DoctorDashboardOverview() {
   const [appointmentCount, setAppointmentCount] = useState<number | null>(null);
   const [appointments, setAppointments] = useState<DashboardAppointment[]>([]);
   const [patientCount, setPatientCount] = useState<number | null>(null);
-  const [unreadMessages, setUnreadMessages] = useState<number>(0);
-  const [latestMessagePreview, setLatestMessagePreview] = useState<string>("No recent messages.");
   const [calendarConnected, setCalendarConnected] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -78,13 +86,11 @@ export default function DoctorDashboardOverview() {
     let cancelled = false;
     async function load() {
       try {
-        const [reqRes, appRes, calRes, patientsRes, messagesRes, threadsRes] = await Promise.all([
+        const [reqRes, appRes, calRes, patientsRes] = await Promise.all([
           fetch("/api/patient-requests/", { credentials: "include" }),
           fetch("/api/appointments/", { credentials: "include" }),
           fetch("/api/auth/calendar-status", { credentials: "include" }),
           fetch("/api/patient-forms/patients", { credentials: "include" }),
-          fetch("/api/messages/summary", { credentials: "include" }),
-          fetch("/api/messages/", { credentials: "include" }),
         ]);
         if (reqRes.status === 401 || appRes.status === 401) {
           router.push("/doctor/login");
@@ -115,25 +121,6 @@ export default function DoctorDashboardOverview() {
           setCalendarConnected(cal.connected === true);
         } else {
           setCalendarConnected(false);
-        }
-        if (messagesRes.ok) {
-          const msgData = await messagesRes.json().catch(() => null);
-          setUnreadMessages(typeof msgData?.unreadCount === "number" ? msgData.unreadCount : 0);
-        } else {
-          setUnreadMessages(0);
-        }
-        if (threadsRes.ok) {
-          const threadsData = await threadsRes.json().catch(() => null);
-          const firstThread = (Array.isArray(threadsData?.threads) ? threadsData.threads[0] : null) as ThreadSummary | null;
-          const body = firstThread?.lastMessage?.body?.trim();
-          const name = firstThread?.counterparty?.name?.trim();
-          if (body) {
-            setLatestMessagePreview(name ? `${name}: ${body}` : body);
-          } else {
-            setLatestMessagePreview("No recent messages.");
-          }
-        } else {
-          setLatestMessagePreview("No recent messages.");
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -183,7 +170,7 @@ export default function DoctorDashboardOverview() {
               >
                 <div className="min-w-0">
                   <p className="font-medium text-gray-900">
-                    {formatTimeInPracticeTz(apt.scheduledAt)} - {apt.patient?.name || "Patient"}
+                    {formatTimeRangeInPracticeTz(apt.scheduledAt, apt.durationMinutes)} - {apt.patient?.name || "Patient"}
                   </p>
                   <p className="text-sm text-gray-600">
                     {typeLabel(apt.type)} · {apt.status.replaceAll("_", " ")}
@@ -297,22 +284,6 @@ export default function DoctorDashboardOverview() {
           </p>
         </Link>
 
-        <Link
-          href="/doctor/messages"
-          className="card flex flex-col gap-2 transition hover:border-warm-brown/40 hover:shadow-md"
-        >
-          <div className="flex items-center justify-between gap-2">
-            <h2 className="text-lg font-semibold text-warm-brown">Messages</h2>
-            {unreadMessages > 0 && (
-              <span className="inline-flex h-6 min-w-[1.5rem] items-center justify-center rounded-full bg-red-500 px-2 text-xs font-semibold text-white">
-                {unreadMessages}
-              </span>
-            )}
-          </div>
-          <p className="text-sm text-gray-600">Secure conversations with patients.</p>
-          <p className="line-clamp-2 text-sm text-gray-700">{latestMessagePreview}</p>
-          <p className="mt-auto text-sm font-medium text-warm-brown">Open inbox →</p>
-        </Link>
       </div>
     </main>
   );

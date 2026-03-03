@@ -33,6 +33,17 @@ function SaveCardForm({
   const elements = useElements();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [billingDetails, setBillingDetails] = useState<{
+    name?: string;
+    address?: {
+      line1?: string;
+      line2?: string;
+      city?: string;
+      state?: string;
+      postal_code?: string;
+      country?: string;
+    };
+  }>({});
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -52,10 +63,36 @@ function SaveCardForm({
       if (appointmentId && returnTo) {
         sessionStorage.setItem("saveCardReturnTo", returnTo);
       }
-      const { error: submitError, setupIntent } = await stripe.confirmSetup({
+      // Ensure AddressElement/PaymentElement validates and finalizes collected values.
+      const submitResult = await elements.submit();
+      if (submitResult.error) {
+        setError(submitResult.error.message || "Please check card and billing details.");
+        setLoading(false);
+        return;
+      }
+      const hasBillingName = Boolean(billingDetails.name?.trim());
+      const addr = billingDetails.address;
+      const hasBillingAddress = Boolean(
+        addr &&
+          (addr.line1 || addr.city || addr.state || addr.postal_code || addr.country)
+      );
+      const confirmOptions: any = {
         elements,
         redirect: "if_required",
-      });
+      };
+      // Only pass explicit billing_details when we actually have values.
+      // Passing empty fields can overwrite AddressElement-collected values in Stripe.
+      if (hasBillingName || hasBillingAddress) {
+        confirmOptions.confirmParams = {
+          payment_method_data: {
+            billing_details: {
+              ...(hasBillingName ? { name: billingDetails.name } : {}),
+              ...(hasBillingAddress ? { address: billingDetails.address } : {}),
+            },
+          },
+        };
+      }
+      const { error: submitError, setupIntent } = await stripe.confirmSetup(confirmOptions);
       if (submitError) {
         setError(submitError.message || "Failed to save card");
         setLoading(false);
@@ -90,6 +127,29 @@ function SaveCardForm({
     <form onSubmit={handleSubmit} className="mt-6 space-y-4">
       <div className="mb-4">
         <AddressElement
+          onChange={(event) => {
+            const value = (event as { value?: { name?: string; address?: {
+              line1?: string;
+              line2?: string;
+              city?: string;
+              state?: string;
+              postal_code?: string;
+              country?: string;
+            } } }).value;
+            setBillingDetails({
+              name: value?.name,
+              address: value?.address
+                ? {
+                    line1: value.address.line1,
+                    line2: value.address.line2,
+                    city: value.address.city,
+                    state: value.address.state,
+                    postal_code: value.address.postal_code,
+                    country: value.address.country,
+                  }
+                : undefined,
+            });
+          }}
           options={{
             mode: "billing",
             fields: {

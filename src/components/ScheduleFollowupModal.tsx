@@ -6,6 +6,7 @@ import { createPortal } from "react-dom";
 type Slot = { start: string; end: string };
 
 const PRACTICE_TZ = "America/Los_Angeles";
+const MAX_SLOTS_TO_RENDER = 2000;
 
 function formatSlotTime(iso: string): string {
   const d = new Date(iso);
@@ -82,6 +83,7 @@ export default function ScheduleFollowupModal({
   useEffect(() => {
     if (!isOpen) return;
     let cancelled = false;
+    const controller = new AbortController();
     setSlotsLoading(true);
     setSelectedDate(null);
     setSelectedSlot(null);
@@ -97,12 +99,16 @@ export default function ScheduleFollowupModal({
           try {
             const res = await fetch(
               `/api/availability/slots?durationMinutes=${durationMinutes}`,
-              { credentials: "include" }
+              { credentials: "include", signal: controller.signal }
             );
             if (cancelled) return;
             if (res.ok) {
               const data = await res.json();
-              if (!cancelled) setSlots(data.slots || []);
+              if (!cancelled) {
+                const incoming = Array.isArray(data?.slots) ? data.slots : [];
+                // Guard the calendar UI against unusually large payloads that can freeze the tab.
+                setSlots(incoming.slice(0, MAX_SLOTS_TO_RENDER));
+              }
             } else if (!cancelled) {
               setSlots([]);
             }
@@ -117,6 +123,7 @@ export default function ScheduleFollowupModal({
     });
     return () => {
       cancelled = true;
+      controller.abort();
       cancelAnimationFrame(rafId);
       if (typeof raf2Id === "number") cancelAnimationFrame(raf2Id);
     };

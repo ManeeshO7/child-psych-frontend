@@ -27,64 +27,10 @@ export default function Header() {
   const [patientCenterOpen, setPatientCenterOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [doctorUnreadMessages, setDoctorUnreadMessages] = useState(0);
 
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-    const isDoctorPath = pathname?.startsWith("/doctor");
-
-    async function loadDoctorUnreadMessages() {
-      if (!isDoctorPath) return;
-      try {
-        const res = await fetch("/api/messages/summary", { credentials: "include" });
-        if (!res.ok) {
-          if (!cancelled) setDoctorUnreadMessages(0);
-          return;
-        }
-        const data = await res.json().catch(() => null);
-        if (!cancelled) {
-          setDoctorUnreadMessages(typeof data?.unreadCount === "number" ? data.unreadCount : 0);
-        }
-      } catch {
-        if (!cancelled) setDoctorUnreadMessages(0);
-      }
-    }
-
-    if (!isDoctorPath) {
-      setDoctorUnreadMessages(0);
-      return () => {
-        cancelled = true;
-      };
-    }
-
-    void loadDoctorUnreadMessages();
-
-    const intervalId = window.setInterval(() => {
-      void loadDoctorUnreadMessages();
-    }, 15000);
-
-    const handleFocus = () => {
-      void loadDoctorUnreadMessages();
-    };
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") {
-        void loadDoctorUnreadMessages();
-      }
-    };
-    window.addEventListener("focus", handleFocus);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
-    return () => {
-      cancelled = true;
-      window.clearInterval(intervalId);
-      window.removeEventListener("focus", handleFocus);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, [pathname]);
 
   // Close mobile menu on route change (e.g. after clicking a link)
   useEffect(() => {
@@ -166,14 +112,6 @@ export default function Header() {
           <LogoutButton />
         ) : pathname?.startsWith("/doctor") ? (
           <>
-            <Link href="/doctor/messages" className="relative text-sm font-medium text-gray-700 hover:text-warm-brown">
-              Messages
-              {doctorUnreadMessages > 0 && (
-                <span className="absolute -right-3 -top-2 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-red-500 px-1.5 text-[11px] font-semibold text-white">
-                  {doctorUnreadMessages}
-                </span>
-              )}
-            </Link>
             <DoctorLogoutButton />
           </>
         ) : (
@@ -197,7 +135,7 @@ export default function Header() {
   );
 
   return (
-    <header className="sticky top-0 z-50 border-b border-cream-300/80 bg-cream-100 shadow-sm backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-cream-300/80 bg-cream-100">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:h-24 lg:gap-6 lg:px-8">
         <Link href="/" className="flex shrink-0 flex-col items-start">
           <span className="text-xl font-semibold tracking-tight text-warm-brown sm:text-2xl">TP</span>

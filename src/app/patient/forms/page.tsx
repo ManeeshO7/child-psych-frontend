@@ -4,15 +4,43 @@ import { startTransition, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  PSC17_QUESTIONNAIRE_KEY,
-  PSC17_QUESTIONS,
-  PSC17_OPTIONS,
-} from "@/lib/psc17";
-import {
   PHQA_QUESTIONNAIRE_KEY,
   PHQA_QUESTIONS,
   PHQA_OPTIONS,
+  PHQA_FUNCTIONAL_IMPAIRMENT_OPTIONS,
+  PHQA_FUNCTIONAL_IMPAIRMENT_QUESTION,
 } from "@/lib/phqa";
+import {
+  PHQ9_QUESTIONNAIRE_KEY,
+  PHQ9_QUESTIONS,
+  PHQ9_OPTIONS,
+} from "@/lib/phq9";
+import {
+  SCARED_CHILD_QUESTIONNAIRE_KEY,
+  SCARED_CHILD_QUESTIONS,
+  SCARED_CHILD_OPTIONS,
+} from "@/lib/scaredChild";
+import {
+  SCARED_PARENT_QUESTIONNAIRE_KEY,
+  SCARED_PARENT_QUESTIONS,
+  SCARED_PARENT_OPTIONS,
+} from "@/lib/scaredParent";
+import {
+  ADHD_PARENT_RATING_QUESTIONNAIRE_KEY,
+  ADHD_PARENT_RATING_OPTIONS,
+  ADHD_PARENT_INATTENTION_QUESTIONS,
+  ADHD_PARENT_HYPERACTIVITY_QUESTIONS,
+  ADHD_PARENT_FUNCTIONAL_IMPACT_QUESTIONS,
+  ADHD_PARENT_ALL_QUESTIONS,
+} from "@/lib/adhdParentRating";
+import {
+  ADHD_TEACHER_RATING_QUESTIONNAIRE_KEY,
+  ADHD_TEACHER_RATING_OPTIONS,
+  ADHD_TEACHER_INATTENTION_QUESTIONS,
+  ADHD_TEACHER_HYPERACTIVITY_QUESTIONS,
+  ADHD_TEACHER_FUNCTIONAL_IMPACT_QUESTIONS,
+  ADHD_TEACHER_ALL_QUESTIONS,
+} from "@/lib/adhdTeacherRating";
 
 type FormAssignment = {
   id: string;
@@ -134,19 +162,51 @@ export default function PatientFormsPage() {
       showNotice("error", "Please fill out the questionnaire before submitting.");
       return;
     }
-    if (formKey === PSC17_QUESTIONNAIRE_KEY) {
-      const required = PSC17_QUESTIONS.map((q) => q.linkId);
-      const missing = required.filter((id) => responses[id] === undefined || responses[id] === "");
-      if (missing.length > 0) {
-        showNotice("error", "Please answer all 17 questions before submitting.");
-        return;
-      }
-    }
     if (formKey === PHQA_QUESTIONNAIRE_KEY) {
       const required = PHQA_QUESTIONS.map((q) => q.linkId);
       const missing = required.filter((id) => responses[id] === undefined || responses[id] === "");
       if (missing.length > 0) {
         showNotice("error", "Please answer all 9 questions before submitting.");
+        return;
+      }
+    }
+    if (formKey === PHQ9_QUESTIONNAIRE_KEY) {
+      const required = PHQ9_QUESTIONS.map((q) => q.linkId);
+      const missing = required.filter((id) => responses[id] === undefined || responses[id] === "");
+      if (missing.length > 0) {
+        showNotice("error", "Please answer all 9 questions before submitting.");
+        return;
+      }
+    }
+    if (formKey === SCARED_CHILD_QUESTIONNAIRE_KEY) {
+      const required = SCARED_CHILD_QUESTIONS.map((q) => q.linkId);
+      const missing = required.filter((id) => responses[id] === undefined || responses[id] === "");
+      if (missing.length > 0) {
+        showNotice("error", "Please answer all 41 questions before submitting.");
+        return;
+      }
+    }
+    if (formKey === SCARED_PARENT_QUESTIONNAIRE_KEY) {
+      const required = SCARED_PARENT_QUESTIONS.map((q) => q.linkId);
+      const missing = required.filter((id) => responses[id] === undefined || responses[id] === "");
+      if (missing.length > 0) {
+        showNotice("error", "Please answer all 41 questions before submitting.");
+        return;
+      }
+    }
+    if (formKey === ADHD_PARENT_RATING_QUESTIONNAIRE_KEY) {
+      const required = ADHD_PARENT_ALL_QUESTIONS.map((q) => q.linkId);
+      const missing = required.filter((id) => responses[id] === undefined || responses[id] === "");
+      if (missing.length > 0) {
+        showNotice("error", "Please answer all questions before submitting.");
+        return;
+      }
+    }
+    if (formKey === ADHD_TEACHER_RATING_QUESTIONNAIRE_KEY) {
+      const required = ADHD_TEACHER_ALL_QUESTIONS.map((q) => q.linkId);
+      const missing = required.filter((id) => responses[id] === undefined || responses[id] === "");
+      if (missing.length > 0) {
+        showNotice("error", "Please answer all questions before submitting.");
         return;
       }
     }
@@ -234,66 +294,11 @@ export default function PatientFormsPage() {
     const formKey = assignment.form.questionnaireKey || "default";
     const responses = questionnaireResponses[assignment.id] || {};
 
-    if (formKey === PSC17_QUESTIONNAIRE_KEY) {
-      return (
-        <div className="space-y-6">
-          <p className="text-sm text-gray-600">
-            For each item, please mark how often it applies: <strong>Never</strong>, <strong>Sometimes</strong>, or <strong>Often</strong>.
-          </p>
-          {["internalizing", "attention", "externalizing"].map((subscale) => {
-            const questions = PSC17_QUESTIONS.filter((q) => q.subscale === subscale);
-            const subscaleLabel =
-              subscale === "internalizing"
-                ? "Internalizing (emotional symptoms)"
-                : subscale === "attention"
-                  ? "Attention problems"
-                  : "Externalizing (behavior problems)";
-            return (
-              <div key={subscale} className="space-y-3">
-                <h4 className="text-sm font-semibold text-gray-800">{subscaleLabel}</h4>
-                <ul className="space-y-3">
-                  {questions.map((q) => (
-                    <li key={q.linkId} className="rounded-lg border border-gray-200 bg-white p-3">
-                      <p className="text-sm font-medium text-gray-700">{q.question}</p>
-                      <div className="mt-2 flex flex-wrap gap-4">
-                        {PSC17_OPTIONS.map((opt) => (
-                          <label key={opt.value} className="inline-flex items-center gap-2">
-                            <input
-                              type="radio"
-                              name={`${assignment.id}-${q.linkId}`}
-                              checked={Number(responses[q.linkId]) === opt.value}
-                              onChange={() =>
-                                updateQuestionnaireResponse(assignment.id, q.linkId, opt.value)
-                              }
-                              className="h-4 w-4 border-gray-300 text-warm-brown focus:ring-warm-brown"
-                            />
-                            <span className="text-sm text-gray-700">{opt.label}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            );
-          })}
-          <button
-            type="button"
-            onClick={() => handleQuestionnaireSubmit(assignment.id, formKey)}
-            disabled={submitting === assignment.id}
-            className="rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90 disabled:opacity-50"
-          >
-            {submitting === assignment.id ? "Submitting…" : "Submit PSC-17"}
-          </button>
-        </div>
-      );
-    }
-
     if (formKey === PHQA_QUESTIONNAIRE_KEY) {
       return (
         <div className="space-y-6">
           <p className="text-sm text-gray-600">
-            Over the last 2 weeks, how often have you been bothered by the following problems? Choose:{" "}
+            <strong>Timeframe: 2 weeks.</strong> Choose one response for each item:{" "}
             <strong>Not at all</strong>, <strong>Several days</strong>, <strong>More than half the days</strong>, or{" "}
             <strong>Nearly every day</strong>.
           </p>
@@ -320,6 +325,34 @@ export default function PatientFormsPage() {
               </li>
             ))}
           </ul>
+          <div className="rounded-lg border border-gray-200 bg-white p-3">
+            <p className="text-sm font-medium text-gray-700">
+              Optional functional impairment question
+            </p>
+            <p className="mt-1 text-sm text-gray-700">{PHQA_FUNCTIONAL_IMPAIRMENT_QUESTION.question}</p>
+            <div className="mt-2 flex flex-wrap gap-4">
+              {PHQA_FUNCTIONAL_IMPAIRMENT_OPTIONS.map((opt) => (
+                <label key={opt.value} className="inline-flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name={`${assignment.id}-${PHQA_FUNCTIONAL_IMPAIRMENT_QUESTION.linkId}`}
+                    checked={
+                      Number(responses[PHQA_FUNCTIONAL_IMPAIRMENT_QUESTION.linkId]) === opt.value
+                    }
+                    onChange={() =>
+                      updateQuestionnaireResponse(
+                        assignment.id,
+                        PHQA_FUNCTIONAL_IMPAIRMENT_QUESTION.linkId,
+                        opt.value
+                      )
+                    }
+                    className="h-4 w-4 border-gray-300 text-warm-brown focus:ring-warm-brown"
+                  />
+                  <span className="text-sm text-gray-700">{opt.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
           <button
             type="button"
             onClick={() => handleQuestionnaireSubmit(assignment.id, formKey)}
@@ -327,6 +360,311 @@ export default function PatientFormsPage() {
             className="rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90 disabled:opacity-50"
           >
             {submitting === assignment.id ? "Submitting…" : "Submit PHQ-A"}
+          </button>
+        </div>
+      );
+    }
+
+    if (formKey === PHQ9_QUESTIONNAIRE_KEY) {
+      return (
+        <div className="space-y-6">
+          <p className="text-sm text-gray-600">
+            Over the past 2 weeks, please choose one response for each question: Not at all, Several days, More than half the days, or Nearly every day. Your answers help your care team understand your current emotional well-being and provide the right support.
+          </p>
+          <ul className="space-y-3">
+            {PHQ9_QUESTIONS.map((q) => (
+              <li key={q.linkId} className="rounded-lg border border-gray-200 bg-white p-3">
+                <p className="text-sm font-medium text-gray-700">{q.question}</p>
+                <div className="mt-2 flex flex-wrap gap-4">
+                  {PHQ9_OPTIONS.map((opt) => (
+                    <label key={opt.value} className="inline-flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name={`${assignment.id}-${q.linkId}`}
+                        checked={Number(responses[q.linkId]) === opt.value}
+                        onChange={() =>
+                          updateQuestionnaireResponse(assignment.id, q.linkId, opt.value)
+                        }
+                        className="h-4 w-4 border-gray-300 text-warm-brown focus:ring-warm-brown"
+                      />
+                      <span className="text-sm text-gray-700">{opt.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </li>
+            ))}
+          </ul>
+          <button
+            type="button"
+            onClick={() => handleQuestionnaireSubmit(assignment.id, formKey)}
+            disabled={submitting === assignment.id}
+            className="rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90 disabled:opacity-50"
+          >
+            {submitting === assignment.id ? "Submitting…" : "Submit PHQ-9"}
+          </button>
+        </div>
+      );
+    }
+
+    if (formKey === SCARED_CHILD_QUESTIONNAIRE_KEY) {
+      return (
+        <div className="space-y-6">
+          <p className="text-sm text-gray-600">
+            <strong>Timeframe: Past 3 months.</strong> Response scale:{" "}
+            <strong>Not true</strong>, <strong>Somewhat true</strong>, or <strong>Very true</strong>.
+          </p>
+          <ul className="space-y-3">
+            {SCARED_CHILD_QUESTIONS.map((q, idx) => (
+              <li key={q.linkId} className="rounded-lg border border-gray-200 bg-white p-3">
+                <p className="text-sm font-medium text-gray-700">{idx + 1}. {q.question}</p>
+                <div className="mt-2 flex flex-wrap gap-4">
+                  {SCARED_CHILD_OPTIONS.map((opt) => (
+                    <label key={opt.value} className="inline-flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name={`${assignment.id}-${q.linkId}`}
+                        checked={Number(responses[q.linkId]) === opt.value}
+                        onChange={() =>
+                          updateQuestionnaireResponse(assignment.id, q.linkId, opt.value)
+                        }
+                        className="h-4 w-4 border-gray-300 text-warm-brown focus:ring-warm-brown"
+                      />
+                      <span className="text-sm text-gray-700">{opt.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </li>
+            ))}
+          </ul>
+          <button
+            type="button"
+            onClick={() => handleQuestionnaireSubmit(assignment.id, formKey)}
+            disabled={submitting === assignment.id}
+            className="rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90 disabled:opacity-50"
+          >
+            {submitting === assignment.id ? "Submitting…" : "Submit SCARED Child"}
+          </button>
+        </div>
+      );
+    }
+
+    if (formKey === SCARED_PARENT_QUESTIONNAIRE_KEY) {
+      return (
+        <div className="space-y-6">
+          <p className="text-sm text-gray-600">
+            <strong>Timeframe: Past 3 months.</strong> Response scale:{" "}
+            <strong>Not true</strong>, <strong>Somewhat true</strong>, or <strong>Very true</strong>.
+          </p>
+          <ul className="space-y-3">
+            {SCARED_PARENT_QUESTIONS.map((q, idx) => (
+              <li key={q.linkId} className="rounded-lg border border-gray-200 bg-white p-3">
+                <p className="text-sm font-medium text-gray-700">{idx + 1}. {q.question}</p>
+                <div className="mt-2 flex flex-wrap gap-4">
+                  {SCARED_PARENT_OPTIONS.map((opt) => (
+                    <label key={opt.value} className="inline-flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name={`${assignment.id}-${q.linkId}`}
+                        checked={Number(responses[q.linkId]) === opt.value}
+                        onChange={() =>
+                          updateQuestionnaireResponse(assignment.id, q.linkId, opt.value)
+                        }
+                        className="h-4 w-4 border-gray-300 text-warm-brown focus:ring-warm-brown"
+                      />
+                      <span className="text-sm text-gray-700">{opt.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </li>
+            ))}
+          </ul>
+          <button
+            type="button"
+            onClick={() => handleQuestionnaireSubmit(assignment.id, formKey)}
+            disabled={submitting === assignment.id}
+            className="rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90 disabled:opacity-50"
+          >
+            {submitting === assignment.id ? "Submitting…" : "Submit SCARED Parent"}
+          </button>
+        </div>
+      );
+    }
+
+    if (formKey === ADHD_PARENT_RATING_QUESTIONNAIRE_KEY) {
+      const renderQuestionList = (
+        title: string,
+        questions: { linkId: string; question: string }[],
+        startIndex: number
+      ) => (
+        <div className="space-y-3">
+          <h4 className="text-sm font-semibold text-gray-800">{title}</h4>
+          <ul className="space-y-3">
+            {questions.map((q, i) => (
+              <li key={q.linkId} className="rounded-lg border border-gray-200 bg-white p-3">
+                <p className="text-sm font-medium text-gray-700">
+                  {startIndex + i}. {q.question}
+                </p>
+                <div className="mt-2 flex flex-wrap gap-4">
+                  {ADHD_PARENT_RATING_OPTIONS.map((opt) => (
+                    <label key={opt.value} className="inline-flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name={`${assignment.id}-${q.linkId}`}
+                        checked={Number(responses[q.linkId]) === opt.value}
+                        onChange={() =>
+                          updateQuestionnaireResponse(assignment.id, q.linkId, opt.value)
+                        }
+                        className="h-4 w-4 border-gray-300 text-warm-brown focus:ring-warm-brown"
+                      />
+                      <span className="text-sm text-gray-700">{opt.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      );
+
+      return (
+        <div className="space-y-6">
+          <p className="text-sm text-gray-600">
+            <strong>Timeframe: Past 6 months.</strong> Response scale:{" "}
+            <strong>Never/Rarely</strong>, <strong>Sometimes</strong>, <strong>Often</strong>, or{" "}
+            <strong>Very Often</strong>.
+          </p>
+
+          {renderQuestionList("Section A: Inattention (Items 1–9)", ADHD_PARENT_INATTENTION_QUESTIONS, 1)}
+          {renderQuestionList(
+            "Section B: Hyperactivity / Impulsivity (Items 10–18)",
+            ADHD_PARENT_HYPERACTIVITY_QUESTIONS,
+            10
+          )}
+
+          <div className="space-y-3">
+            <h4 className="text-sm font-semibold text-gray-800">Section C: Functional Impact</h4>
+            <ul className="space-y-3">
+              {ADHD_PARENT_FUNCTIONAL_IMPACT_QUESTIONS.map((q) => (
+                <li key={q.linkId} className="rounded-lg border border-gray-200 bg-white p-3">
+                  <p className="text-sm font-medium text-gray-700">{q.question}</p>
+                  <div className="mt-2 flex flex-wrap gap-4">
+                    {ADHD_PARENT_RATING_OPTIONS.map((opt) => (
+                      <label key={opt.value} className="inline-flex items-center gap-2">
+                        <input
+                          type="radio"
+                          name={`${assignment.id}-${q.linkId}`}
+                          checked={Number(responses[q.linkId]) === opt.value}
+                          onChange={() =>
+                            updateQuestionnaireResponse(assignment.id, q.linkId, opt.value)
+                          }
+                          className="h-4 w-4 border-gray-300 text-warm-brown focus:ring-warm-brown"
+                        />
+                        <span className="text-sm text-gray-700">{opt.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => handleQuestionnaireSubmit(assignment.id, formKey)}
+            disabled={submitting === assignment.id}
+            className="rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90 disabled:opacity-50"
+          >
+            {submitting === assignment.id ? "Submitting…" : "Submit ADHD Parent Rating"}
+          </button>
+        </div>
+      );
+    }
+
+    if (formKey === ADHD_TEACHER_RATING_QUESTIONNAIRE_KEY) {
+      const renderQuestionList = (
+        title: string,
+        questions: { linkId: string; question: string }[],
+        startIndex: number
+      ) => (
+        <div className="space-y-3">
+          <h4 className="text-sm font-semibold text-gray-800">{title}</h4>
+          <ul className="space-y-3">
+            {questions.map((q, i) => (
+              <li key={q.linkId} className="rounded-lg border border-gray-200 bg-white p-3">
+                <p className="text-sm font-medium text-gray-700">
+                  {startIndex + i}. {q.question}
+                </p>
+                <div className="mt-2 flex flex-wrap gap-4">
+                  {ADHD_TEACHER_RATING_OPTIONS.map((opt) => (
+                    <label key={opt.value} className="inline-flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name={`${assignment.id}-${q.linkId}`}
+                        checked={Number(responses[q.linkId]) === opt.value}
+                        onChange={() =>
+                          updateQuestionnaireResponse(assignment.id, q.linkId, opt.value)
+                        }
+                        className="h-4 w-4 border-gray-300 text-warm-brown focus:ring-warm-brown"
+                      />
+                      <span className="text-sm text-gray-700">{opt.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      );
+
+      return (
+        <div className="space-y-6">
+          <p className="text-sm text-gray-600">
+            <strong>Timeframe: Past 6 months.</strong> Response scale:{" "}
+            <strong>Never/Rarely</strong>, <strong>Sometimes</strong>, <strong>Often</strong>, or{" "}
+            <strong>Very Often</strong>.
+          </p>
+
+          {renderQuestionList("Section A: Inattention (Items 1–9)", ADHD_TEACHER_INATTENTION_QUESTIONS, 1)}
+          {renderQuestionList(
+            "Section B: Hyperactivity / Impulsivity (Items 10–18)",
+            ADHD_TEACHER_HYPERACTIVITY_QUESTIONS,
+            10
+          )}
+
+          <div className="space-y-3">
+            <h4 className="text-sm font-semibold text-gray-800">Section C: Functional Impact</h4>
+            <ul className="space-y-3">
+              {ADHD_TEACHER_FUNCTIONAL_IMPACT_QUESTIONS.map((q) => (
+                <li key={q.linkId} className="rounded-lg border border-gray-200 bg-white p-3">
+                  <p className="text-sm font-medium text-gray-700">{q.question}</p>
+                  <div className="mt-2 flex flex-wrap gap-4">
+                    {ADHD_TEACHER_RATING_OPTIONS.map((opt) => (
+                      <label key={opt.value} className="inline-flex items-center gap-2">
+                        <input
+                          type="radio"
+                          name={`${assignment.id}-${q.linkId}`}
+                          checked={Number(responses[q.linkId]) === opt.value}
+                          onChange={() =>
+                            updateQuestionnaireResponse(assignment.id, q.linkId, opt.value)
+                          }
+                          className="h-4 w-4 border-gray-300 text-warm-brown focus:ring-warm-brown"
+                        />
+                        <span className="text-sm text-gray-700">{opt.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => handleQuestionnaireSubmit(assignment.id, formKey)}
+            disabled={submitting === assignment.id}
+            className="rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90 disabled:opacity-50"
+          >
+            {submitting === assignment.id ? "Submitting…" : "Submit ADHD Teacher Rating"}
           </button>
         </div>
       );

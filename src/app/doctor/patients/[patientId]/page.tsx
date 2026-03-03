@@ -5,17 +5,47 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { questionnaireToQandA } from "@/lib/questionnaireLabels";
 import {
-  PSC17_QUESTIONNAIRE_KEY,
-  PSC17_QUESTIONS,
-  computePSC17Scores,
-  psc17ResponseToOptionLabel,
-} from "@/lib/psc17";
-import {
   PHQA_QUESTIONNAIRE_KEY,
   PHQA_QUESTIONS,
+  PHQA_FUNCTIONAL_IMPAIRMENT_QUESTION,
   computePHQAScores,
   phqaResponseToOptionLabel,
+  phqaFunctionalImpairmentToOptionLabel,
 } from "@/lib/phqa";
+import {
+  PHQ9_QUESTIONNAIRE_KEY,
+  PHQ9_QUESTIONS,
+  computePHQ9Scores,
+  phq9ResponseToOptionLabel,
+} from "@/lib/phq9";
+import {
+  SCARED_CHILD_QUESTIONNAIRE_KEY,
+  SCARED_CHILD_QUESTIONS,
+  computeScaredChildScores,
+  scaredChildResponseToOptionLabel,
+} from "@/lib/scaredChild";
+import {
+  SCARED_PARENT_QUESTIONNAIRE_KEY,
+  SCARED_PARENT_QUESTIONS,
+  computeScaredParentScores,
+  scaredParentResponseToOptionLabel,
+} from "@/lib/scaredParent";
+import {
+  ADHD_PARENT_RATING_QUESTIONNAIRE_KEY,
+  ADHD_PARENT_INATTENTION_QUESTIONS,
+  ADHD_PARENT_HYPERACTIVITY_QUESTIONS,
+  ADHD_PARENT_FUNCTIONAL_IMPACT_QUESTIONS,
+  computeADHDParentScores,
+  adhdParentResponseToOptionLabel,
+} from "@/lib/adhdParentRating";
+import {
+  ADHD_TEACHER_RATING_QUESTIONNAIRE_KEY,
+  ADHD_TEACHER_INATTENTION_QUESTIONS,
+  ADHD_TEACHER_HYPERACTIVITY_QUESTIONS,
+  ADHD_TEACHER_FUNCTIONAL_IMPACT_QUESTIONS,
+  computeADHDTeacherScores,
+  adhdTeacherResponseToOptionLabel,
+} from "@/lib/adhdTeacherRating";
 import { formatPhone } from "@/lib/formatPhone";
 import AssignFormsModal from "@/components/AssignFormsModal";
 import ScheduleClinicalIntakeModal from "@/components/ScheduleClinicalIntakeModal";
@@ -95,19 +125,9 @@ type PatientOverview = {
 };
 
 const RESCHEDULABLE_STATUSES = ["scheduled", "card_on_file", "paid"];
-const RESCHEDULE_MIN_HOURS = 48;
 
 function canReschedule(a: { scheduledAt: string; status: string }): boolean {
-  if (!RESCHEDULABLE_STATUSES.includes(a.status)) return false;
-  try {
-    const scheduledAt = new Date(a.scheduledAt);
-    if (isNaN(scheduledAt.getTime())) return false;
-    const now = new Date();
-    const hoursUntil = (scheduledAt.getTime() - now.getTime()) / (1000 * 60 * 60);
-    return hoursUntil >= RESCHEDULE_MIN_HOURS;
-  } catch {
-    return false;
-  }
+  return RESCHEDULABLE_STATUSES.includes(a.status);
 }
 
 export default function PatientOverviewPage() {
@@ -236,6 +256,18 @@ export default function PatientOverviewPage() {
   }
 
   const PRACTICE_TZ = "America/Los_Angeles";
+
+  function getPatientAgeYears(): number | null {
+    const dob = overview?.patientProfile?.dateOfBirth;
+    if (!dob) return null;
+    const dt = new Date(dob);
+    if (Number.isNaN(dt.getTime())) return null;
+    const now = new Date();
+    let age = now.getFullYear() - dt.getFullYear();
+    const m = now.getMonth() - dt.getMonth();
+    if (m < 0 || (m === 0 && now.getDate() < dt.getDate())) age -= 1;
+    return age;
+  }
 
   function formatDate(iso: string | null): string {
     if (!iso) return "—";
@@ -831,83 +863,517 @@ export default function PatientOverviewPage() {
                             </div>
                             {hasQuestionnaireData && isExpanded && (
                               <div className="mt-4 space-y-4">
-                                {fa.formQuestionnaireKey === PSC17_QUESTIONNAIRE_KEY ? (
-                                  <>
-                                    {(() => {
-                                      const scores = computePSC17Scores(fa.questionnaireData!);
-                                      return (
-                                        <div className="rounded-lg border border-gray-200 bg-white p-4 space-y-4">
-                                          <h4 className="text-sm font-semibold text-gray-800">PSC-17 Scoring</h4>
-                                          <div className="grid grid-cols-2 gap-3 text-sm">
-                                            <div>
-                                              <span className="font-medium text-gray-600">Total score:</span>{" "}
-                                              <span className={scores.total >= 15 ? "text-amber-700 font-medium" : ""}>
-                                                {scores.total}
-                                              </span>
-                                              <p className="text-xs text-gray-500 mt-0.5">{scores.totalInterpretation}</p>
-                                            </div>
-                                            <div>
-                                              <span className="font-medium text-gray-600">Internalizing:</span> {scores.internalizing}
-                                              {scores.internalizingInterpretation && (
-                                                <p className="text-xs text-amber-600">{scores.internalizingInterpretation}</p>
-                                              )}
-                                            </div>
-                                            <div>
-                                              <span className="font-medium text-gray-600">Attention:</span> {scores.attention}
-                                              {scores.attentionInterpretation && (
-                                                <p className="text-xs text-amber-600">{scores.attentionInterpretation}</p>
-                                              )}
-                                            </div>
-                                            <div>
-                                              <span className="font-medium text-gray-600">Externalizing:</span> {scores.externalizing}
-                                              {scores.externalizingInterpretation && (
-                                                <p className="text-xs text-amber-600">{scores.externalizingInterpretation}</p>
-                                              )}
-                                            </div>
-                                          </div>
-                                          <h4 className="text-sm font-semibold text-gray-800 pt-2 border-t border-gray-200">Responses</h4>
-                                          <ul className="space-y-2">
-                                            {PSC17_QUESTIONS.map((q) => (
-                                              <li key={q.linkId} className="flex justify-between gap-2 text-sm">
-                                                <span className="text-gray-700">{q.question}</span>
-                                                <span className="text-gray-900 shrink-0">
-                                                  {psc17ResponseToOptionLabel(fa.questionnaireData![q.linkId])}
-                                                </span>
-                                              </li>
-                                            ))}
-                                          </ul>
-                                        </div>
-                                      );
-                                    })()}
-                                  </>
-                                ) : fa.formQuestionnaireKey === PHQA_QUESTIONNAIRE_KEY ? (
+                                {fa.formQuestionnaireKey === PHQA_QUESTIONNAIRE_KEY ? (
                                   (() => {
                                     const scores = computePHQAScores(fa.questionnaireData!);
                                     return (
-                                      <div className="rounded-lg border border-gray-200 bg-white p-4 space-y-4">
-                                        <h4 className="text-sm font-semibold text-gray-800">PHQ-A Scoring</h4>
-                                        <div className="text-sm">
-                                          <div>
-                                            <span className="font-medium text-gray-600">Total score:</span>{" "}
-                                            <span className={scores.total >= 10 ? "text-amber-700 font-medium" : ""}>
+                                      <div className="rounded-lg border border-amber-200 bg-amber-50/40 p-4 space-y-4">
+                                        <h4 className="text-sm font-semibold text-gray-900">PHQ-A Scoring</h4>
+                                        <div className="grid gap-2 text-sm">
+                                          <div className="flex items-center gap-2">
+                                            <span className="font-semibold text-gray-800">Total score:</span>
+                                            <span
+                                              className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
+                                                scores.total >= 10
+                                                  ? "bg-amber-100 text-amber-900"
+                                                  : "bg-gray-100 text-gray-900"
+                                              }`}
+                                            >
                                               {scores.total}
                                             </span>
-                                            <p className="text-xs text-gray-500 mt-0.5">
-                                              Depression severity: {scores.severityLabel}
-                                            </p>
+                                          </div>
+                                          <div className="flex items-center gap-2">
+                                            <span className="font-semibold text-gray-800">Depression severity:</span>
+                                            <span className="inline-flex rounded-md bg-blue-100 px-2 py-0.5 text-sm font-semibold text-blue-900">
+                                              {scores.severityLabel}
+                                            </span>
+                                          </div>
+                                          <div className="flex items-center gap-2">
+                                            <span className="font-semibold text-gray-800">Suicide safety trigger:</span>
+                                            <span
+                                              className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
+                                                scores.suicideSafetyTrigger
+                                                  ? "bg-red-100 text-red-900"
+                                                  : "bg-green-100 text-green-900"
+                                              }`}
+                                            >
+                                              {scores.suicideSafetyTrigger
+                                                ? "Yes (item 9 is 1 or higher)"
+                                                : "No"}
+                                            </span>
+                                          </div>
+                                          <div className="flex items-center gap-2">
+                                            <span className="font-semibold text-gray-800">
+                                              Functional impairment (optional):
+                                            </span>
+                                            <span className="inline-flex rounded-md bg-purple-100 px-2 py-0.5 text-sm font-semibold text-purple-900">
+                                              {phqaFunctionalImpairmentToOptionLabel(
+                                                scores.functionalImpairment
+                                              )}
+                                            </span>
                                           </div>
                                         </div>
                                         <h4 className="text-sm font-semibold text-gray-800 pt-2 border-t border-gray-200">Responses</h4>
-                                        <ul className="space-y-2">
-                                          {PHQA_QUESTIONS.map((q) => (
-                                            <li key={q.linkId} className="flex justify-between gap-2 text-sm">
-                                              <span className="text-gray-700">{q.question}</span>
-                                              <span className="text-gray-900 shrink-0">
+                                        <ul className="space-y-2.5">
+                                          {PHQA_QUESTIONS.map((q, idx) => (
+                                            <li
+                                              key={q.linkId}
+                                              className="flex items-start justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
+                                            >
+                                              <span className="pr-3 leading-5 text-gray-800">
+                                                {idx + 1}. {q.question}
+                                              </span>
+                                              <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-900">
                                                 {phqaResponseToOptionLabel(fa.questionnaireData![q.linkId])}
                                               </span>
                                             </li>
                                           ))}
+                                          <li className="flex items-start justify-between gap-3 rounded-md border border-purple-200 bg-purple-50/40 px-3 py-2 text-sm">
+                                            <span className="pr-3 leading-5 text-gray-800">
+                                              10. (Optional) {PHQA_FUNCTIONAL_IMPAIRMENT_QUESTION.question}
+                                            </span>
+                                            <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-purple-100 px-2 py-0.5 text-xs font-semibold text-purple-900">
+                                              {phqaFunctionalImpairmentToOptionLabel(
+                                                fa.questionnaireData![
+                                                  PHQA_FUNCTIONAL_IMPAIRMENT_QUESTION.linkId
+                                                ]
+                                              )}
+                                            </span>
+                                          </li>
                                         </ul>
+                                      </div>
+                                    );
+                                  })()
+                                ) : fa.formQuestionnaireKey === PHQ9_QUESTIONNAIRE_KEY ? (
+                                  (() => {
+                                    const scores = computePHQ9Scores(fa.questionnaireData!);
+                                    return (
+                                      <div className="rounded-lg border border-amber-200 bg-amber-50/40 p-4 space-y-4">
+                                        <h4 className="text-sm font-semibold text-gray-900">PHQ-9 Scoring</h4>
+                                        <div className="grid gap-2 text-sm">
+                                          <div className="flex items-center gap-2">
+                                            <span className="font-semibold text-gray-800">Total score:</span>
+                                            <span
+                                              className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
+                                                scores.total >= 10
+                                                  ? "bg-amber-100 text-amber-900"
+                                                  : "bg-gray-100 text-gray-900"
+                                              }`}
+                                            >
+                                              {scores.total}
+                                            </span>
+                                          </div>
+                                          <div className="flex items-center gap-2">
+                                            <span className="font-semibold text-gray-800">Depression severity:</span>
+                                            <span className="inline-flex rounded-md bg-blue-100 px-2 py-0.5 text-sm font-semibold text-blue-900">
+                                              {scores.severityLabel}
+                                            </span>
+                                          </div>
+                                          <div className="flex items-center gap-2">
+                                            <span className="font-semibold text-gray-800">Suicide safety trigger:</span>
+                                            <span
+                                              className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
+                                                scores.suicideSafetyTrigger
+                                                  ? "bg-red-100 text-red-900"
+                                                  : "bg-green-100 text-green-900"
+                                              }`}
+                                            >
+                                              {scores.suicideSafetyTrigger
+                                                ? "Yes (item 9 is 1 or higher)"
+                                                : "No"}
+                                            </span>
+                                          </div>
+                                        </div>
+                                        <h4 className="text-sm font-semibold text-gray-800 pt-2 border-t border-gray-200">Responses</h4>
+                                        <ul className="space-y-2.5">
+                                          {PHQ9_QUESTIONS.map((q, idx) => (
+                                            <li
+                                              key={q.linkId}
+                                              className="flex items-start justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
+                                            >
+                                              <span className="pr-3 leading-5 text-gray-800">
+                                                {idx + 1}. {q.question}
+                                              </span>
+                                              <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                                {phq9ResponseToOptionLabel(fa.questionnaireData![q.linkId])}
+                                              </span>
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    );
+                                  })()
+                                ) : fa.formQuestionnaireKey === SCARED_CHILD_QUESTIONNAIRE_KEY ? (
+                                  (() => {
+                                    const scores = computeScaredChildScores(fa.questionnaireData!);
+                                    return (
+                                      <div className="rounded-lg border border-amber-200 bg-amber-50/40 p-4 space-y-4">
+                                        <h4 className="text-sm font-semibold text-gray-900">SCARED Child Scoring</h4>
+                                        <div className="grid gap-2 text-sm">
+                                          <div className="flex items-center gap-2">
+                                            <span className="font-semibold text-gray-800">Total score:</span>
+                                            <span
+                                              className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
+                                                scores.total >= 25
+                                                  ? "bg-amber-100 text-amber-900"
+                                                  : "bg-gray-100 text-gray-900"
+                                              }`}
+                                            >
+                                              {scores.total}
+                                            </span>
+                                          </div>
+                                          <div className="flex items-center gap-2">
+                                            <span className="font-semibold text-gray-800">Clinical cutoff (&gt;=25):</span>
+                                            <span
+                                              className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
+                                                scores.clinicallySignificantAnxiety
+                                                  ? "bg-red-100 text-red-900"
+                                                  : "bg-green-100 text-green-900"
+                                              }`}
+                                            >
+                                              {scores.clinicallySignificantAnxiety ? "Meets cutoff" : "Below cutoff"}
+                                            </span>
+                                          </div>
+                                          <div className="grid grid-cols-1 gap-2 pt-1 text-xs text-gray-700 sm:grid-cols-2">
+                                            <p>Panic/Somatic: {scores.panicSomatic} (cutoff &gt;= 7)</p>
+                                            <p>Generalized Anxiety: {scores.generalizedAnxiety} (cutoff &gt;= 9)</p>
+                                            <p>Separation Anxiety: {scores.separationAnxiety} (cutoff &gt;= 5)</p>
+                                            <p>Social Anxiety: {scores.socialAnxiety} (cutoff &gt;= 8)</p>
+                                            <p>School Avoidance: {scores.schoolAvoidance} (cutoff &gt;= 3)</p>
+                                          </div>
+                                        </div>
+                                        <h4 className="text-sm font-semibold text-gray-800 pt-2 border-t border-gray-200">Responses</h4>
+                                        <ul className="space-y-2.5">
+                                          {SCARED_CHILD_QUESTIONS.map((q, idx) => (
+                                            <li
+                                              key={q.linkId}
+                                              className="flex items-start justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
+                                            >
+                                              <span className="pr-3 leading-5 text-gray-800">
+                                                {idx + 1}. {q.question}
+                                              </span>
+                                              <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                                {scaredChildResponseToOptionLabel(fa.questionnaireData![q.linkId])}
+                                              </span>
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    );
+                                  })()
+                                ) : fa.formQuestionnaireKey === SCARED_PARENT_QUESTIONNAIRE_KEY ? (
+                                  (() => {
+                                    const scores = computeScaredParentScores(fa.questionnaireData!);
+                                    return (
+                                      <div className="rounded-lg border border-amber-200 bg-amber-50/40 p-4 space-y-4">
+                                        <h4 className="text-sm font-semibold text-gray-900">SCARED Parent Scoring</h4>
+                                        <div className="grid gap-2 text-sm">
+                                          <div className="flex items-center gap-2">
+                                            <span className="font-semibold text-gray-800">Total score:</span>
+                                            <span
+                                              className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
+                                                scores.total >= 25
+                                                  ? "bg-amber-100 text-amber-900"
+                                                  : "bg-gray-100 text-gray-900"
+                                              }`}
+                                            >
+                                              {scores.total}
+                                            </span>
+                                          </div>
+                                          <div className="flex items-center gap-2">
+                                            <span className="font-semibold text-gray-800">Clinical cutoff (&gt;=25):</span>
+                                            <span
+                                              className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
+                                                scores.clinicallySignificantAnxiety
+                                                  ? "bg-red-100 text-red-900"
+                                                  : "bg-green-100 text-green-900"
+                                              }`}
+                                            >
+                                              {scores.clinicallySignificantAnxiety ? "Meets cutoff" : "Below cutoff"}
+                                            </span>
+                                          </div>
+                                          <div className="grid grid-cols-1 gap-2 pt-1 text-xs text-gray-700 sm:grid-cols-2">
+                                            <p>Panic/Somatic: {scores.panicSomatic} (cutoff &gt;= 7)</p>
+                                            <p>Generalized Anxiety: {scores.generalizedAnxiety} (cutoff &gt;= 9)</p>
+                                            <p>Separation Anxiety: {scores.separationAnxiety} (cutoff &gt;= 5)</p>
+                                            <p>Social Anxiety: {scores.socialAnxiety} (cutoff &gt;= 8)</p>
+                                            <p>School Avoidance: {scores.schoolAvoidance} (cutoff &gt;= 3)</p>
+                                          </div>
+                                        </div>
+                                        <h4 className="text-sm font-semibold text-gray-800 pt-2 border-t border-gray-200">Responses</h4>
+                                        <ul className="space-y-2.5">
+                                          {SCARED_PARENT_QUESTIONS.map((q, idx) => (
+                                            <li
+                                              key={q.linkId}
+                                              className="flex items-start justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
+                                            >
+                                              <span className="pr-3 leading-5 text-gray-800">
+                                                {idx + 1}. {q.question}
+                                              </span>
+                                              <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                                {scaredParentResponseToOptionLabel(fa.questionnaireData![q.linkId])}
+                                              </span>
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    );
+                                  })()
+                                ) : fa.formQuestionnaireKey === ADHD_PARENT_RATING_QUESTIONNAIRE_KEY ? (
+                                  (() => {
+                                    const ageYears = getPatientAgeYears();
+                                    const scores = computeADHDParentScores(fa.questionnaireData!, ageYears);
+                                    return (
+                                      <div className="rounded-lg border border-amber-200 bg-amber-50/40 p-4 space-y-4">
+                                        <h4 className="text-sm font-semibold text-gray-900">ADHD Parent Rating Scoring</h4>
+                                        <div className="grid gap-2 text-sm">
+                                          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                            <div className="flex items-center gap-2">
+                                              <span className="font-semibold text-gray-800">Inattention count:</span>
+                                              <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-gray-900">
+                                                {scores.inattentiveCount}
+                                              </span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                              <span className="font-semibold text-gray-800">Hyperactivity/Impulsivity count:</span>
+                                              <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-gray-900">
+                                                {scores.hyperactiveImpulsiveCount}
+                                              </span>
+                                            </div>
+                                          </div>
+                                          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                            <div className="flex items-center gap-2">
+                                              <span className="font-semibold text-gray-800">Inattention total:</span>
+                                              <span className="inline-flex rounded-md bg-blue-100 px-2 py-0.5 text-sm font-semibold text-blue-900">
+                                                {scores.inattentiveTotal}
+                                              </span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                              <span className="font-semibold text-gray-800">Hyperactivity/Impulsivity total:</span>
+                                              <span className="inline-flex rounded-md bg-blue-100 px-2 py-0.5 text-sm font-semibold text-blue-900">
+                                                {scores.hyperactiveImpulsiveTotal}
+                                              </span>
+                                            </div>
+                                          </div>
+                                          <div className="flex items-center gap-2">
+                                            <span className="font-semibold text-gray-800">Overall severity total:</span>
+                                            <span className="inline-flex rounded-md bg-amber-100 px-2 py-0.5 text-sm font-semibold text-amber-900">
+                                              {scores.overallSeverityTotal}
+                                            </span>
+                                          </div>
+                                          <div className="flex items-center gap-2">
+                                            <span className="font-semibold text-gray-800">Symptom threshold:</span>
+                                            <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-gray-900">
+                                              {scores.threshold.ageGroup === "unknown"
+                                                ? "Unknown age (using >=6)"
+                                                : scores.threshold.ageGroup === "child_or_teen_upto_16"
+                                                  ? "Age <=16 (>=6)"
+                                                  : "Age 17+ (>=5)"}
+                                            </span>
+                                            <span
+                                              className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
+                                                scores.meetsSymptomThreshold ? "bg-green-100 text-green-900" : "bg-gray-100 text-gray-900"
+                                              }`}
+                                            >
+                                              {scores.meetsSymptomThreshold ? "Meets threshold" : "Below threshold"}
+                                            </span>
+                                          </div>
+                                          <div className="flex items-center gap-2">
+                                            <span className="font-semibold text-gray-800">Functional impairment present:</span>
+                                            <span
+                                              className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
+                                                scores.functionalImpairmentPresent ? "bg-red-100 text-red-900" : "bg-gray-100 text-gray-900"
+                                              }`}
+                                            >
+                                              {scores.functionalImpairmentPresent ? "Yes (impact item >= 2)" : "No"}
+                                            </span>
+                                          </div>
+                                        </div>
+
+                                        <h4 className="text-sm font-semibold text-gray-800 pt-2 border-t border-gray-200">Responses</h4>
+                                        <div className="space-y-4">
+                                          <div>
+                                            <p className="text-xs font-semibold text-gray-700 mb-2">Section A: Inattention</p>
+                                            <ul className="space-y-2.5">
+                                              {ADHD_PARENT_INATTENTION_QUESTIONS.map((q, idx) => (
+                                                <li
+                                                  key={q.linkId}
+                                                  className="flex items-start justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
+                                                >
+                                                  <span className="pr-3 leading-5 text-gray-800">
+                                                    {idx + 1}. {q.question}
+                                                  </span>
+                                                  <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                                    {adhdParentResponseToOptionLabel(fa.questionnaireData![q.linkId])}
+                                                  </span>
+                                                </li>
+                                              ))}
+                                            </ul>
+                                          </div>
+                                          <div>
+                                            <p className="text-xs font-semibold text-gray-700 mb-2">Section B: Hyperactivity / Impulsivity</p>
+                                            <ul className="space-y-2.5">
+                                              {ADHD_PARENT_HYPERACTIVITY_QUESTIONS.map((q, idx) => (
+                                                <li
+                                                  key={q.linkId}
+                                                  className="flex items-start justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
+                                                >
+                                                  <span className="pr-3 leading-5 text-gray-800">
+                                                    {idx + 10}. {q.question}
+                                                  </span>
+                                                  <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                                    {adhdParentResponseToOptionLabel(fa.questionnaireData![q.linkId])}
+                                                  </span>
+                                                </li>
+                                              ))}
+                                            </ul>
+                                          </div>
+                                          <div>
+                                            <p className="text-xs font-semibold text-gray-700 mb-2">Section C: Functional Impact</p>
+                                            <ul className="space-y-2.5">
+                                              {ADHD_PARENT_FUNCTIONAL_IMPACT_QUESTIONS.map((q) => (
+                                                <li
+                                                  key={q.linkId}
+                                                  className="flex items-start justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
+                                                >
+                                                  <span className="pr-3 leading-5 text-gray-800">{q.question}</span>
+                                                  <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                                    {adhdParentResponseToOptionLabel(fa.questionnaireData![q.linkId])}
+                                                  </span>
+                                                </li>
+                                              ))}
+                                            </ul>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    );
+                                  })()
+                                ) : fa.formQuestionnaireKey === ADHD_TEACHER_RATING_QUESTIONNAIRE_KEY ? (
+                                  (() => {
+                                    const ageYears = getPatientAgeYears();
+                                    const scores = computeADHDTeacherScores(fa.questionnaireData!, ageYears);
+                                    return (
+                                      <div className="rounded-lg border border-amber-200 bg-amber-50/40 p-4 space-y-4">
+                                        <h4 className="text-sm font-semibold text-gray-900">ADHD Teacher Rating Scoring</h4>
+                                        <div className="grid gap-2 text-sm">
+                                          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                            <div className="flex items-center gap-2">
+                                              <span className="font-semibold text-gray-800">Inattention count:</span>
+                                              <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-gray-900">
+                                                {scores.inattentiveCount}
+                                              </span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                              <span className="font-semibold text-gray-800">Hyperactivity/Impulsivity count:</span>
+                                              <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-gray-900">
+                                                {scores.hyperactiveImpulsiveCount}
+                                              </span>
+                                            </div>
+                                          </div>
+                                          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                            <div className="flex items-center gap-2">
+                                              <span className="font-semibold text-gray-800">Inattention total:</span>
+                                              <span className="inline-flex rounded-md bg-blue-100 px-2 py-0.5 text-sm font-semibold text-blue-900">
+                                                {scores.inattentiveTotal}
+                                              </span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                              <span className="font-semibold text-gray-800">Hyperactivity/Impulsivity total:</span>
+                                              <span className="inline-flex rounded-md bg-blue-100 px-2 py-0.5 text-sm font-semibold text-blue-900">
+                                                {scores.hyperactiveImpulsiveTotal}
+                                              </span>
+                                            </div>
+                                          </div>
+                                          <div className="flex items-center gap-2">
+                                            <span className="font-semibold text-gray-800">Overall severity total:</span>
+                                            <span className="inline-flex rounded-md bg-amber-100 px-2 py-0.5 text-sm font-semibold text-amber-900">
+                                              {scores.overallSeverityTotal}
+                                            </span>
+                                          </div>
+                                          <div className="flex items-center gap-2">
+                                            <span className="font-semibold text-gray-800">Symptom threshold:</span>
+                                            <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-gray-900">
+                                              {scores.threshold.ageGroup === "unknown"
+                                                ? "Unknown age (using >=6)"
+                                                : scores.threshold.ageGroup === "child_or_teen_upto_16"
+                                                  ? "Age <=16 (>=6)"
+                                                  : "Age 17+ (>=5)"}
+                                            </span>
+                                            <span
+                                              className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
+                                                scores.meetsSymptomThreshold ? "bg-green-100 text-green-900" : "bg-gray-100 text-gray-900"
+                                              }`}
+                                            >
+                                              {scores.meetsSymptomThreshold ? "Meets threshold" : "Below threshold"}
+                                            </span>
+                                          </div>
+                                          <div className="flex items-center gap-2">
+                                            <span className="font-semibold text-gray-800">Functional impairment present:</span>
+                                            <span
+                                              className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
+                                                scores.functionalImpairmentPresent ? "bg-red-100 text-red-900" : "bg-gray-100 text-gray-900"
+                                              }`}
+                                            >
+                                              {scores.functionalImpairmentPresent ? "Yes (impact item >= 2)" : "No"}
+                                            </span>
+                                          </div>
+                                        </div>
+
+                                        <h4 className="text-sm font-semibold text-gray-800 pt-2 border-t border-gray-200">Responses</h4>
+                                        <div className="space-y-4">
+                                          <div>
+                                            <p className="text-xs font-semibold text-gray-700 mb-2">Section A: Inattention</p>
+                                            <ul className="space-y-2.5">
+                                              {ADHD_TEACHER_INATTENTION_QUESTIONS.map((q, idx) => (
+                                                <li
+                                                  key={q.linkId}
+                                                  className="flex items-start justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
+                                                >
+                                                  <span className="pr-3 leading-5 text-gray-800">
+                                                    {idx + 1}. {q.question}
+                                                  </span>
+                                                  <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                                    {adhdTeacherResponseToOptionLabel(fa.questionnaireData![q.linkId])}
+                                                  </span>
+                                                </li>
+                                              ))}
+                                            </ul>
+                                          </div>
+                                          <div>
+                                            <p className="text-xs font-semibold text-gray-700 mb-2">Section B: Hyperactivity / Impulsivity</p>
+                                            <ul className="space-y-2.5">
+                                              {ADHD_TEACHER_HYPERACTIVITY_QUESTIONS.map((q, idx) => (
+                                                <li
+                                                  key={q.linkId}
+                                                  className="flex items-start justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
+                                                >
+                                                  <span className="pr-3 leading-5 text-gray-800">
+                                                    {idx + 10}. {q.question}
+                                                  </span>
+                                                  <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                                    {adhdTeacherResponseToOptionLabel(fa.questionnaireData![q.linkId])}
+                                                  </span>
+                                                </li>
+                                              ))}
+                                            </ul>
+                                          </div>
+                                          <div>
+                                            <p className="text-xs font-semibold text-gray-700 mb-2">Section C: Functional Impact</p>
+                                            <ul className="space-y-2.5">
+                                              {ADHD_TEACHER_FUNCTIONAL_IMPACT_QUESTIONS.map((q) => (
+                                                <li
+                                                  key={q.linkId}
+                                                  className="flex items-start justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
+                                                >
+                                                  <span className="pr-3 leading-5 text-gray-800">{q.question}</span>
+                                                  <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                                    {adhdTeacherResponseToOptionLabel(fa.questionnaireData![q.linkId])}
+                                                  </span>
+                                                </li>
+                                              ))}
+                                            </ul>
+                                          </div>
+                                        </div>
                                       </div>
                                     );
                                   })()
@@ -988,46 +1454,139 @@ export default function PatientOverviewPage() {
                           </div>
                           {hasQuestionnaireData && isExpanded && (
                             <div className="mt-4 space-y-4">
-                              {fa.formQuestionnaireKey === PSC17_QUESTIONNAIRE_KEY ? (
+                              {fa.formQuestionnaireKey === PHQA_QUESTIONNAIRE_KEY ? (
                                 (() => {
-                                  const scores = computePSC17Scores(fa.questionnaireData!);
+                                  const scores = computePHQAScores(fa.questionnaireData!);
                                   return (
-                                    <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 space-y-4">
-                                      <h4 className="text-sm font-semibold text-gray-800">PSC-17 Scoring</h4>
-                                      <div className="grid grid-cols-2 gap-3 text-sm">
-                                        <div>
-                                          <span className="font-medium text-gray-600">Total score:</span>{" "}
-                                          <span className={scores.total >= 15 ? "text-amber-700 font-medium" : ""}>
+                                    <div className="rounded-lg border border-amber-200 bg-amber-50/40 p-4 space-y-4">
+                                      <h4 className="text-sm font-semibold text-gray-900">PHQ-A Scoring</h4>
+                                      <div className="grid gap-2 text-sm">
+                                        <div className="flex items-center gap-2">
+                                          <span className="font-semibold text-gray-800">Total score:</span>
+                                          <span
+                                            className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
+                                              scores.total >= 10
+                                                ? "bg-amber-100 text-amber-900"
+                                                : "bg-gray-100 text-gray-900"
+                                            }`}
+                                          >
                                             {scores.total}
                                           </span>
-                                          <p className="text-xs text-gray-500 mt-0.5">{scores.totalInterpretation}</p>
                                         </div>
-                                        <div>
-                                          <span className="font-medium text-gray-600">Internalizing:</span> {scores.internalizing}
-                                          {scores.internalizingInterpretation && (
-                                            <p className="text-xs text-amber-600">{scores.internalizingInterpretation}</p>
-                                          )}
+                                        <div className="flex items-center gap-2">
+                                          <span className="font-semibold text-gray-800">Depression severity:</span>
+                                          <span className="inline-flex rounded-md bg-blue-100 px-2 py-0.5 text-sm font-semibold text-blue-900">
+                                            {scores.severityLabel}
+                                          </span>
                                         </div>
-                                        <div>
-                                          <span className="font-medium text-gray-600">Attention:</span> {scores.attention}
-                                          {scores.attentionInterpretation && (
-                                            <p className="text-xs text-amber-600">{scores.attentionInterpretation}</p>
-                                          )}
+                                        <div className="flex items-center gap-2">
+                                          <span className="font-semibold text-gray-800">Suicide safety trigger:</span>
+                                          <span
+                                            className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
+                                              scores.suicideSafetyTrigger
+                                                ? "bg-red-100 text-red-900"
+                                                : "bg-green-100 text-green-900"
+                                            }`}
+                                          >
+                                            {scores.suicideSafetyTrigger
+                                              ? "Yes (item 9 is 1 or higher)"
+                                              : "No"}
+                                          </span>
                                         </div>
-                                        <div>
-                                          <span className="font-medium text-gray-600">Externalizing:</span> {scores.externalizing}
-                                          {scores.externalizingInterpretation && (
-                                            <p className="text-xs text-amber-600">{scores.externalizingInterpretation}</p>
-                                          )}
+                                        <div className="flex items-center gap-2">
+                                          <span className="font-semibold text-gray-800">
+                                            Functional impairment (optional):
+                                          </span>
+                                          <span className="inline-flex rounded-md bg-purple-100 px-2 py-0.5 text-sm font-semibold text-purple-900">
+                                            {phqaFunctionalImpairmentToOptionLabel(
+                                              scores.functionalImpairment
+                                            )}
+                                          </span>
                                         </div>
                                       </div>
                                       <h4 className="text-sm font-semibold text-gray-800 pt-2 border-t border-gray-200">Responses</h4>
-                                      <ul className="space-y-2">
-                                        {PSC17_QUESTIONS.map((q) => (
-                                          <li key={q.linkId} className="flex justify-between gap-2 text-sm">
-                                            <span className="text-gray-700">{q.question}</span>
-                                            <span className="text-gray-900 shrink-0">
-                                              {psc17ResponseToOptionLabel(fa.questionnaireData![q.linkId])}
+                                      <ul className="space-y-2.5">
+                                        {PHQA_QUESTIONS.map((q, idx) => (
+                                          <li
+                                            key={q.linkId}
+                                            className="flex items-start justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
+                                          >
+                                            <span className="pr-3 leading-5 text-gray-800">
+                                              {idx + 1}. {q.question}
+                                            </span>
+                                            <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                              {phqaResponseToOptionLabel(fa.questionnaireData![q.linkId])}
+                                            </span>
+                                          </li>
+                                        ))}
+                                        <li className="flex items-start justify-between gap-3 rounded-md border border-purple-200 bg-purple-50/40 px-3 py-2 text-sm">
+                                          <span className="pr-3 leading-5 text-gray-800">
+                                            10. (Optional) {PHQA_FUNCTIONAL_IMPAIRMENT_QUESTION.question}
+                                          </span>
+                                          <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-purple-100 px-2 py-0.5 text-xs font-semibold text-purple-900">
+                                            {phqaFunctionalImpairmentToOptionLabel(
+                                              fa.questionnaireData![
+                                                PHQA_FUNCTIONAL_IMPAIRMENT_QUESTION.linkId
+                                              ]
+                                            )}
+                                          </span>
+                                        </li>
+                                      </ul>
+                                    </div>
+                                  );
+                                })()
+                              ) : fa.formQuestionnaireKey === PHQ9_QUESTIONNAIRE_KEY ? (
+                                (() => {
+                                  const scores = computePHQ9Scores(fa.questionnaireData!);
+                                  return (
+                                    <div className="rounded-lg border border-amber-200 bg-amber-50/40 p-4 space-y-4">
+                                      <h4 className="text-sm font-semibold text-gray-900">PHQ-9 Scoring</h4>
+                                      <div className="grid gap-2 text-sm">
+                                        <div className="flex items-center gap-2">
+                                          <span className="font-semibold text-gray-800">Total score:</span>
+                                          <span
+                                            className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
+                                              scores.total >= 10
+                                                ? "bg-amber-100 text-amber-900"
+                                                : "bg-gray-100 text-gray-900"
+                                            }`}
+                                          >
+                                            {scores.total}
+                                          </span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                          <span className="font-semibold text-gray-800">Depression severity:</span>
+                                          <span className="inline-flex rounded-md bg-blue-100 px-2 py-0.5 text-sm font-semibold text-blue-900">
+                                            {scores.severityLabel}
+                                          </span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                          <span className="font-semibold text-gray-800">Suicide safety trigger:</span>
+                                          <span
+                                            className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
+                                              scores.suicideSafetyTrigger
+                                                ? "bg-red-100 text-red-900"
+                                                : "bg-green-100 text-green-900"
+                                            }`}
+                                          >
+                                            {scores.suicideSafetyTrigger
+                                              ? "Yes (item 9 is 1 or higher)"
+                                              : "No"}
+                                          </span>
+                                        </div>
+                                      </div>
+                                      <h4 className="text-sm font-semibold text-gray-800 pt-2 border-t border-gray-200">Responses</h4>
+                                      <ul className="space-y-2.5">
+                                        {PHQ9_QUESTIONS.map((q, idx) => (
+                                          <li
+                                            key={q.linkId}
+                                            className="flex items-start justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
+                                          >
+                                            <span className="pr-3 leading-5 text-gray-800">
+                                              {idx + 1}. {q.question}
+                                            </span>
+                                            <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                              {phq9ResponseToOptionLabel(fa.questionnaireData![q.linkId])}
                                             </span>
                                           </li>
                                         ))}
@@ -1035,34 +1594,377 @@ export default function PatientOverviewPage() {
                                     </div>
                                   );
                                 })()
-                              ) : fa.formQuestionnaireKey === PHQA_QUESTIONNAIRE_KEY ? (
+                              ) : fa.formQuestionnaireKey === SCARED_CHILD_QUESTIONNAIRE_KEY ? (
                                 (() => {
-                                  const scores = computePHQAScores(fa.questionnaireData!);
+                                  const scores = computeScaredChildScores(fa.questionnaireData!);
                                   return (
-                                    <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 space-y-4">
-                                      <h4 className="text-sm font-semibold text-gray-800">PHQ-A Scoring</h4>
-                                      <div className="text-sm">
-                                        <div>
-                                          <span className="font-medium text-gray-600">Total score:</span>{" "}
-                                          <span className={scores.total >= 10 ? "text-amber-700 font-medium" : ""}>
+                                    <div className="rounded-lg border border-amber-200 bg-amber-50/40 p-4 space-y-4">
+                                      <h4 className="text-sm font-semibold text-gray-900">SCARED Child Scoring</h4>
+                                      <div className="grid gap-2 text-sm">
+                                        <div className="flex items-center gap-2">
+                                          <span className="font-semibold text-gray-800">Total score:</span>
+                                          <span
+                                            className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
+                                              scores.total >= 25
+                                                ? "bg-amber-100 text-amber-900"
+                                                : "bg-gray-100 text-gray-900"
+                                            }`}
+                                          >
                                             {scores.total}
                                           </span>
-                                          <p className="text-xs text-gray-500 mt-0.5">
-                                            Depression severity: {scores.severityLabel}
-                                          </p>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                          <span className="font-semibold text-gray-800">Clinical cutoff (&gt;=25):</span>
+                                          <span
+                                            className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
+                                              scores.clinicallySignificantAnxiety
+                                                ? "bg-red-100 text-red-900"
+                                                : "bg-green-100 text-green-900"
+                                            }`}
+                                          >
+                                            {scores.clinicallySignificantAnxiety ? "Meets cutoff" : "Below cutoff"}
+                                          </span>
+                                        </div>
+                                        <div className="grid grid-cols-1 gap-2 pt-1 text-xs text-gray-700 sm:grid-cols-2">
+                                          <p>Panic/Somatic: {scores.panicSomatic} (cutoff &gt;= 7)</p>
+                                          <p>Generalized Anxiety: {scores.generalizedAnxiety} (cutoff &gt;= 9)</p>
+                                          <p>Separation Anxiety: {scores.separationAnxiety} (cutoff &gt;= 5)</p>
+                                          <p>Social Anxiety: {scores.socialAnxiety} (cutoff &gt;= 8)</p>
+                                          <p>School Avoidance: {scores.schoolAvoidance} (cutoff &gt;= 3)</p>
                                         </div>
                                       </div>
                                       <h4 className="text-sm font-semibold text-gray-800 pt-2 border-t border-gray-200">Responses</h4>
-                                      <ul className="space-y-2">
-                                        {PHQA_QUESTIONS.map((q) => (
-                                          <li key={q.linkId} className="flex justify-between gap-2 text-sm">
-                                            <span className="text-gray-700">{q.question}</span>
-                                            <span className="text-gray-900 shrink-0">
-                                              {phqaResponseToOptionLabel(fa.questionnaireData![q.linkId])}
+                                      <ul className="space-y-2.5">
+                                        {SCARED_CHILD_QUESTIONS.map((q, idx) => (
+                                          <li
+                                            key={q.linkId}
+                                            className="flex items-start justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
+                                          >
+                                            <span className="pr-3 leading-5 text-gray-800">
+                                              {idx + 1}. {q.question}
+                                            </span>
+                                            <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                              {scaredChildResponseToOptionLabel(fa.questionnaireData![q.linkId])}
                                             </span>
                                           </li>
                                         ))}
                                       </ul>
+                                    </div>
+                                  );
+                                })()
+                              ) : fa.formQuestionnaireKey === SCARED_PARENT_QUESTIONNAIRE_KEY ? (
+                                (() => {
+                                  const scores = computeScaredParentScores(fa.questionnaireData!);
+                                  return (
+                                    <div className="rounded-lg border border-amber-200 bg-amber-50/40 p-4 space-y-4">
+                                      <h4 className="text-sm font-semibold text-gray-900">SCARED Parent Scoring</h4>
+                                      <div className="grid gap-2 text-sm">
+                                        <div className="flex items-center gap-2">
+                                          <span className="font-semibold text-gray-800">Total score:</span>
+                                          <span
+                                            className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
+                                              scores.total >= 25
+                                                ? "bg-amber-100 text-amber-900"
+                                                : "bg-gray-100 text-gray-900"
+                                            }`}
+                                          >
+                                            {scores.total}
+                                          </span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                          <span className="font-semibold text-gray-800">Clinical cutoff (&gt;=25):</span>
+                                          <span
+                                            className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
+                                              scores.clinicallySignificantAnxiety
+                                                ? "bg-red-100 text-red-900"
+                                                : "bg-green-100 text-green-900"
+                                            }`}
+                                          >
+                                            {scores.clinicallySignificantAnxiety ? "Meets cutoff" : "Below cutoff"}
+                                          </span>
+                                        </div>
+                                        <div className="grid grid-cols-1 gap-2 pt-1 text-xs text-gray-700 sm:grid-cols-2">
+                                          <p>Panic/Somatic: {scores.panicSomatic} (cutoff &gt;= 7)</p>
+                                          <p>Generalized Anxiety: {scores.generalizedAnxiety} (cutoff &gt;= 9)</p>
+                                          <p>Separation Anxiety: {scores.separationAnxiety} (cutoff &gt;= 5)</p>
+                                          <p>Social Anxiety: {scores.socialAnxiety} (cutoff &gt;= 8)</p>
+                                          <p>School Avoidance: {scores.schoolAvoidance} (cutoff &gt;= 3)</p>
+                                        </div>
+                                      </div>
+                                      <h4 className="text-sm font-semibold text-gray-800 pt-2 border-t border-gray-200">Responses</h4>
+                                      <ul className="space-y-2.5">
+                                        {SCARED_PARENT_QUESTIONS.map((q, idx) => (
+                                          <li
+                                            key={q.linkId}
+                                            className="flex items-start justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
+                                          >
+                                            <span className="pr-3 leading-5 text-gray-800">
+                                              {idx + 1}. {q.question}
+                                            </span>
+                                            <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                              {scaredParentResponseToOptionLabel(fa.questionnaireData![q.linkId])}
+                                            </span>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  );
+                                })()
+                              ) : fa.formQuestionnaireKey === ADHD_PARENT_RATING_QUESTIONNAIRE_KEY ? (
+                                (() => {
+                                  const ageYears = getPatientAgeYears();
+                                  const scores = computeADHDParentScores(fa.questionnaireData!, ageYears);
+                                  return (
+                                    <div className="rounded-lg border border-amber-200 bg-amber-50/40 p-4 space-y-4">
+                                      <h4 className="text-sm font-semibold text-gray-900">ADHD Parent Rating Scoring</h4>
+                                      <div className="grid gap-2 text-sm">
+                                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                          <div className="flex items-center gap-2">
+                                            <span className="font-semibold text-gray-800">Inattention count:</span>
+                                            <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-gray-900">
+                                              {scores.inattentiveCount}
+                                            </span>
+                                          </div>
+                                          <div className="flex items-center gap-2">
+                                            <span className="font-semibold text-gray-800">Hyperactivity/Impulsivity count:</span>
+                                            <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-gray-900">
+                                              {scores.hyperactiveImpulsiveCount}
+                                            </span>
+                                          </div>
+                                        </div>
+                                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                          <div className="flex items-center gap-2">
+                                            <span className="font-semibold text-gray-800">Inattention total:</span>
+                                            <span className="inline-flex rounded-md bg-blue-100 px-2 py-0.5 text-sm font-semibold text-blue-900">
+                                              {scores.inattentiveTotal}
+                                            </span>
+                                          </div>
+                                          <div className="flex items-center gap-2">
+                                            <span className="font-semibold text-gray-800">Hyperactivity/Impulsivity total:</span>
+                                            <span className="inline-flex rounded-md bg-blue-100 px-2 py-0.5 text-sm font-semibold text-blue-900">
+                                              {scores.hyperactiveImpulsiveTotal}
+                                            </span>
+                                          </div>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                          <span className="font-semibold text-gray-800">Overall severity total:</span>
+                                          <span className="inline-flex rounded-md bg-amber-100 px-2 py-0.5 text-sm font-semibold text-amber-900">
+                                            {scores.overallSeverityTotal}
+                                          </span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                          <span className="font-semibold text-gray-800">Symptom threshold:</span>
+                                          <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-gray-900">
+                                            {scores.threshold.ageGroup === "unknown"
+                                              ? "Unknown age (using >=6)"
+                                              : scores.threshold.ageGroup === "child_or_teen_upto_16"
+                                                ? "Age <=16 (>=6)"
+                                                : "Age 17+ (>=5)"}
+                                          </span>
+                                          <span
+                                            className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
+                                              scores.meetsSymptomThreshold ? "bg-green-100 text-green-900" : "bg-gray-100 text-gray-900"
+                                            }`}
+                                          >
+                                            {scores.meetsSymptomThreshold ? "Meets threshold" : "Below threshold"}
+                                          </span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                          <span className="font-semibold text-gray-800">Functional impairment present:</span>
+                                          <span
+                                            className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
+                                              scores.functionalImpairmentPresent ? "bg-red-100 text-red-900" : "bg-gray-100 text-gray-900"
+                                            }`}
+                                          >
+                                            {scores.functionalImpairmentPresent ? "Yes (impact item >= 2)" : "No"}
+                                          </span>
+                                        </div>
+                                      </div>
+
+                                      <h4 className="text-sm font-semibold text-gray-800 pt-2 border-t border-gray-200">Responses</h4>
+                                      <div className="space-y-4">
+                                        <div>
+                                          <p className="text-xs font-semibold text-gray-700 mb-2">Section A: Inattention</p>
+                                          <ul className="space-y-2.5">
+                                            {ADHD_PARENT_INATTENTION_QUESTIONS.map((q, idx) => (
+                                              <li
+                                                key={q.linkId}
+                                                className="flex items-start justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
+                                              >
+                                                <span className="pr-3 leading-5 text-gray-800">
+                                                  {idx + 1}. {q.question}
+                                                </span>
+                                                <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                                  {adhdParentResponseToOptionLabel(fa.questionnaireData![q.linkId])}
+                                                </span>
+                                              </li>
+                                            ))}
+                                          </ul>
+                                        </div>
+                                        <div>
+                                          <p className="text-xs font-semibold text-gray-700 mb-2">Section B: Hyperactivity / Impulsivity</p>
+                                          <ul className="space-y-2.5">
+                                            {ADHD_PARENT_HYPERACTIVITY_QUESTIONS.map((q, idx) => (
+                                              <li
+                                                key={q.linkId}
+                                                className="flex items-start justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
+                                              >
+                                                <span className="pr-3 leading-5 text-gray-800">
+                                                  {idx + 10}. {q.question}
+                                                </span>
+                                                <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                                  {adhdParentResponseToOptionLabel(fa.questionnaireData![q.linkId])}
+                                                </span>
+                                              </li>
+                                            ))}
+                                          </ul>
+                                        </div>
+                                        <div>
+                                          <p className="text-xs font-semibold text-gray-700 mb-2">Section C: Functional Impact</p>
+                                          <ul className="space-y-2.5">
+                                            {ADHD_PARENT_FUNCTIONAL_IMPACT_QUESTIONS.map((q) => (
+                                              <li
+                                                key={q.linkId}
+                                                className="flex items-start justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
+                                              >
+                                                <span className="pr-3 leading-5 text-gray-800">{q.question}</span>
+                                                <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                                  {adhdParentResponseToOptionLabel(fa.questionnaireData![q.linkId])}
+                                                </span>
+                                              </li>
+                                            ))}
+                                          </ul>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  );
+                                })()
+                              ) : fa.formQuestionnaireKey === ADHD_TEACHER_RATING_QUESTIONNAIRE_KEY ? (
+                                (() => {
+                                  const ageYears = getPatientAgeYears();
+                                  const scores = computeADHDTeacherScores(fa.questionnaireData!, ageYears);
+                                  return (
+                                    <div className="rounded-lg border border-amber-200 bg-amber-50/40 p-4 space-y-4">
+                                      <h4 className="text-sm font-semibold text-gray-900">ADHD Teacher Rating Scoring</h4>
+                                      <div className="grid gap-2 text-sm">
+                                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                          <div className="flex items-center gap-2">
+                                            <span className="font-semibold text-gray-800">Inattention count:</span>
+                                            <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-gray-900">
+                                              {scores.inattentiveCount}
+                                            </span>
+                                          </div>
+                                          <div className="flex items-center gap-2">
+                                            <span className="font-semibold text-gray-800">Hyperactivity/Impulsivity count:</span>
+                                            <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-gray-900">
+                                              {scores.hyperactiveImpulsiveCount}
+                                            </span>
+                                          </div>
+                                        </div>
+                                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                          <div className="flex items-center gap-2">
+                                            <span className="font-semibold text-gray-800">Inattention total:</span>
+                                            <span className="inline-flex rounded-md bg-blue-100 px-2 py-0.5 text-sm font-semibold text-blue-900">
+                                              {scores.inattentiveTotal}
+                                            </span>
+                                          </div>
+                                          <div className="flex items-center gap-2">
+                                            <span className="font-semibold text-gray-800">Hyperactivity/Impulsivity total:</span>
+                                            <span className="inline-flex rounded-md bg-blue-100 px-2 py-0.5 text-sm font-semibold text-blue-900">
+                                              {scores.hyperactiveImpulsiveTotal}
+                                            </span>
+                                          </div>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                          <span className="font-semibold text-gray-800">Overall severity total:</span>
+                                          <span className="inline-flex rounded-md bg-amber-100 px-2 py-0.5 text-sm font-semibold text-amber-900">
+                                            {scores.overallSeverityTotal}
+                                          </span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                          <span className="font-semibold text-gray-800">Symptom threshold:</span>
+                                          <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-gray-900">
+                                            {scores.threshold.ageGroup === "unknown"
+                                              ? "Unknown age (using >=6)"
+                                              : scores.threshold.ageGroup === "child_or_teen_upto_16"
+                                                ? "Age <=16 (>=6)"
+                                                : "Age 17+ (>=5)"}
+                                          </span>
+                                          <span
+                                            className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
+                                              scores.meetsSymptomThreshold ? "bg-green-100 text-green-900" : "bg-gray-100 text-gray-900"
+                                            }`}
+                                          >
+                                            {scores.meetsSymptomThreshold ? "Meets threshold" : "Below threshold"}
+                                          </span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                          <span className="font-semibold text-gray-800">Functional impairment present:</span>
+                                          <span
+                                            className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
+                                              scores.functionalImpairmentPresent ? "bg-red-100 text-red-900" : "bg-gray-100 text-gray-900"
+                                            }`}
+                                          >
+                                            {scores.functionalImpairmentPresent ? "Yes (impact item >= 2)" : "No"}
+                                          </span>
+                                        </div>
+                                      </div>
+
+                                      <h4 className="text-sm font-semibold text-gray-800 pt-2 border-t border-gray-200">Responses</h4>
+                                      <div className="space-y-4">
+                                        <div>
+                                          <p className="text-xs font-semibold text-gray-700 mb-2">Section A: Inattention</p>
+                                          <ul className="space-y-2.5">
+                                            {ADHD_TEACHER_INATTENTION_QUESTIONS.map((q, idx) => (
+                                              <li
+                                                key={q.linkId}
+                                                className="flex items-start justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
+                                              >
+                                                <span className="pr-3 leading-5 text-gray-800">
+                                                  {idx + 1}. {q.question}
+                                                </span>
+                                                <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                                  {adhdTeacherResponseToOptionLabel(fa.questionnaireData![q.linkId])}
+                                                </span>
+                                              </li>
+                                            ))}
+                                          </ul>
+                                        </div>
+                                        <div>
+                                          <p className="text-xs font-semibold text-gray-700 mb-2">Section B: Hyperactivity / Impulsivity</p>
+                                          <ul className="space-y-2.5">
+                                            {ADHD_TEACHER_HYPERACTIVITY_QUESTIONS.map((q, idx) => (
+                                              <li
+                                                key={q.linkId}
+                                                className="flex items-start justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
+                                              >
+                                                <span className="pr-3 leading-5 text-gray-800">
+                                                  {idx + 10}. {q.question}
+                                                </span>
+                                                <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                                  {adhdTeacherResponseToOptionLabel(fa.questionnaireData![q.linkId])}
+                                                </span>
+                                              </li>
+                                            ))}
+                                          </ul>
+                                        </div>
+                                        <div>
+                                          <p className="text-xs font-semibold text-gray-700 mb-2">Section C: Functional Impact</p>
+                                          <ul className="space-y-2.5">
+                                            {ADHD_TEACHER_FUNCTIONAL_IMPACT_QUESTIONS.map((q) => (
+                                              <li
+                                                key={q.linkId}
+                                                className="flex items-start justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
+                                              >
+                                                <span className="pr-3 leading-5 text-gray-800">{q.question}</span>
+                                                <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                                  {adhdTeacherResponseToOptionLabel(fa.questionnaireData![q.linkId])}
+                                                </span>
+                                              </li>
+                                            ))}
+                                          </ul>
+                                        </div>
+                                      </div>
                                     </div>
                                   );
                                 })()

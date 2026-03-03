@@ -131,7 +131,6 @@ export default function PatientDashboardOverview() {
   } | null>(null);
   const [cardSummary, setCardSummary] = useState<CardSummary | null>(null);
   const [paymentHistory, setPaymentHistory] = useState<PaymentHistoryItem[]>([]);
-  const [unreadMessages, setUnreadMessages] = useState<number>(0);
   const [lastLoginIso, setLastLoginIso] = useState<string | null>(null);
   const [sessionExpiresAtMs, setSessionExpiresAtMs] = useState<number | null>(null);
   const [sessionLastActivityAtMs, setSessionLastActivityAtMs] = useState<number | null>(null);
@@ -152,7 +151,7 @@ export default function PatientDashboardOverview() {
 
   async function refreshData() {
     try {
-      const [appRes, meRes, formsRes, pendingRes, profileRes, cardRes, historyRes, sessionRes, msgSummaryRes] = await Promise.all([
+      const [appRes, meRes, formsRes, pendingRes, profileRes, cardRes, historyRes, sessionRes] = await Promise.all([
         fetch("/api/appointments/", { credentials: "include" }),
         fetch("/api/auth/me", { credentials: "include" }),
         fetch("/api/patient-forms/my-forms", { credentials: "include" }),
@@ -161,7 +160,6 @@ export default function PatientDashboardOverview() {
         fetch("/api/payments/payment-method", { credentials: "include" }),
         fetch("/api/payments/history?limit=5", { credentials: "include" }),
         fetch("/api/auth/session", { credentials: "include" }),
-        fetch("/api/messages/summary", { credentials: "include" }),
       ]);
       if (appRes.status === 401 || meRes.status === 401) {
         router.push("/login");
@@ -207,10 +205,6 @@ export default function PatientDashboardOverview() {
         if (exp) setSessionExpiresAtMs(exp * 1000);
         if (lat) setSessionLastActivityAtMs(lat * 1000);
       }
-      if (msgSummaryRes.ok) {
-        const msgData = await msgSummaryRes.json().catch(() => null);
-        setUnreadMessages(typeof msgData?.unreadCount === "number" ? msgData.unreadCount : 0);
-      }
     } catch {
       // ignore
     }
@@ -220,7 +214,7 @@ export default function PatientDashboardOverview() {
     let cancelled = false;
     async function load() {
       try {
-        const [appRes, meRes, formsRes, pendingRes, profileRes, cardRes, historyRes, sessionRes, msgSummaryRes] = await Promise.all([
+        const [appRes, meRes, formsRes, pendingRes, profileRes, cardRes, historyRes, sessionRes] = await Promise.all([
           fetch("/api/appointments/", { credentials: "include" }),
           fetch("/api/auth/me", { credentials: "include" }),
           fetch("/api/patient-forms/my-forms", { credentials: "include" }),
@@ -229,7 +223,6 @@ export default function PatientDashboardOverview() {
           fetch("/api/payments/payment-method", { credentials: "include" }),
           fetch("/api/payments/history?limit=5", { credentials: "include" }),
           fetch("/api/auth/session", { credentials: "include" }),
-          fetch("/api/messages/summary", { credentials: "include" }),
         ]);
         if (appRes.status === 401 || meRes.status === 401) {
           router.push("/login");
@@ -275,10 +268,6 @@ export default function PatientDashboardOverview() {
           if (iat) setLastLoginIso(new Date(iat * 1000).toISOString());
           if (exp) setSessionExpiresAtMs(exp * 1000);
           if (lat) setSessionLastActivityAtMs(lat * 1000);
-        }
-        if (msgSummaryRes.ok) {
-          const msgData = await msgSummaryRes.json().catch(() => null);
-          setUnreadMessages(typeof msgData?.unreadCount === "number" ? msgData.unreadCount : 0);
         }
       } catch {
         // ignore
@@ -694,27 +683,6 @@ export default function PatientDashboardOverview() {
             </Link>
           </div>
         </div>
-
-        <a
-          href="/patient/messages"
-          onClick={(e) => handleNav(e, "/patient/messages")}
-          className={`${tileClass} cursor-pointer`}
-        >
-          <div className="flex items-center gap-2">
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-warm-brown/10 text-warm-brown">
-              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 12c0 1.66-1.79 3-4 3H9l-4 4v-4c-1.11 0-2-.67-2-1.5V6c0-.83.89-1.5 2-1.5h12c2.21 0 4 1.34 4 3v4.5Z" />
-              </svg>
-            </span>
-            <h2 className={tileTitleClass}>Messages</h2>
-          </div>
-          <p className={tileDescriptionClass}>
-            {unreadMessages > 0
-              ? `You have ${unreadMessages} unread message${unreadMessages === 1 ? "" : "s"}.`
-              : "No unread messages."}
-          </p>
-          <p className={`mt-auto ${tileLinkClass}`}>Open Inbox →</p>
-        </a>
 
         {hasAssignedForms && (
           <a
