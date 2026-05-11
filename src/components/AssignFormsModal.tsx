@@ -116,7 +116,7 @@ export default function AssignFormsModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="w-full max-w-2xl rounded-lg bg-white shadow-xl">
         <div className="border-b border-gray-200 px-6 py-4">
-          <h2 className="text-xl font-semibold text-gray-900">Assign Forms to Patient</h2>
+          <h2 className="text-xl font-semibold text-navy">Assign Forms to Patient</h2>
           <p className="mt-1 text-sm text-gray-600">
             Select forms that the patient needs to complete before their appointment.
           </p>
@@ -145,7 +145,7 @@ export default function AssignFormsModal({
                     key={form.id}
                     className={`flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition-colors ${
                       isSelected
-                        ? "border-warm-brown bg-cream-50"
+                        ? "border-cta bg-cream-50"
                         : "border-gray-200 bg-white hover:border-gray-300"
                     }`}
                   >
@@ -153,12 +153,12 @@ export default function AssignFormsModal({
                       type="checkbox"
                       checked={isSelected}
                       onChange={() => toggleForm(form.id)}
-                      className="mt-0.5 h-4 w-4 rounded border-gray-300 text-warm-brown focus:ring-warm-brown"
+                      className="mt-0.5 h-4 w-4 rounded border-gray-300 text-cta focus:ring-cta"
                     />
                     <div className="flex-1">
                       <div className="flex items-start justify-between gap-2">
                         <div>
-                          <p className="font-medium text-gray-900">{form.title}</p>
+                          <p className="font-medium text-navy">{form.title}</p>
                           {form.description && (
                             <p className="mt-1 text-sm text-gray-600">{form.description}</p>
                           )}
@@ -201,7 +201,7 @@ export default function AssignFormsModal({
                 type="button"
                 onClick={handleSubmit}
                 disabled={submitting || selectedFormIds.size === 0}
-                className="rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90 disabled:opacity-50"
+                className="rounded-lg bg-cta px-4 py-2 text-sm font-medium text-white hover:bg-cta/90 disabled:opacity-50"
               >
                 {submitting ? "Assigning…" : "Assign Forms"}
               </button>

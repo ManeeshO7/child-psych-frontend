@@ -9,6 +9,10 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        navy: "#1E293B",
+        "header-footer": "#AFC7CE",
+        cta: "#7FAFC0",
+        "cta-hover": "#6799AA",
         cream: {
           50: "#f8f7f4",
           100: "#f0eeea",
@@ -22,6 +26,10 @@ const config: Config = {
           sand: "#e8dcc8",
           beige: "#ebe9e4",
         },
+      },
+      backgroundImage: {
+        "section-sage": "linear-gradient(135deg, #f8f7f4 0%, #eef4f3 100%)",
+        "section-cta-gradient": "linear-gradient(120deg, #f8f7f4, #eef4f3)",
       },
     },
   },

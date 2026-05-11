@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import RescheduleModal from "@/components/RescheduleModal";
+import ConfirmCancelModal from "@/components/ConfirmCancelModal";
 
 type IntakeResponse =
   | null
@@ -20,6 +21,7 @@ type DashboardAppointment = {
   doctor?: { id: string; email: string; name: string };
   meetLink?: string | null;
   hasPendingFormsForThisAppointment?: boolean;
+  patientRescheduleCount?: number;
 };
 
 type CardSummary = {
@@ -44,7 +46,6 @@ type PaymentHistoryItem = {
 
 const PRACTICE_TZ = "America/Los_Angeles";
 const RESCHEDULABLE_STATUSES = ["scheduled", "card_on_file", "paid"];
-const RESCHEDULE_MIN_HOURS = 48;
 const SESSION_IDLE_TIMEOUT_MS = 30 * 60 * 1000;
 
 function formatAppointmentDateTime(iso: string): string {
@@ -71,14 +72,29 @@ function typeLabel(type: string): string {
   return type;
 }
 
-function canReschedule(a: { scheduledAt: string; status: string }): boolean {
+function canReschedule(a: {
+  scheduledAt: string;
+  status: string;
+  patientRescheduleCount?: number;
+}): boolean {
   if (!RESCHEDULABLE_STATUSES.includes(a.status)) return false;
+  if ((a.patientRescheduleCount ?? 0) >= 1) return false;
   try {
     const scheduledAt = new Date(a.scheduledAt);
     if (isNaN(scheduledAt.getTime())) return false;
-    const now = new Date();
-    const hoursUntil = (scheduledAt.getTime() - now.getTime()) / (1000 * 60 * 60);
-    return hoursUntil >= RESCHEDULE_MIN_HOURS;
+    return scheduledAt > new Date();
+  } catch {
+    return false;
+  }
+}
+
+function canCancel(a: { scheduledAt: string; status: string }): boolean {
+  const cancelableStatuses = ["scheduled", "card_on_file", "paid"];
+  if (!cancelableStatuses.includes(a.status)) return false;
+  try {
+    const scheduledAt = new Date(a.scheduledAt);
+    if (isNaN(scheduledAt.getTime())) return false;
+    return scheduledAt > new Date();
   } catch {
     return false;
   }
@@ -137,6 +153,7 @@ export default function PatientDashboardOverview() {
   const [clockNow, setClockNow] = useState<number>(Date.now());
   const [loading, setLoading] = useState(true);
   const [changeTimeAppointment, setChangeTimeAppointment] = useState<DashboardAppointment | null>(null);
+  const [cancelTarget, setCancelTarget] = useState<{ id: string; label: string } | null>(null);
   const [profileComplete, setProfileComplete] = useState<boolean | null>(null);
   const lastNavAtRef = useRef(0);
   const NAV_THROTTLE_MS = 1500;
@@ -147,6 +164,28 @@ export default function PatientDashboardOverview() {
     if (now - lastNavAtRef.current < NAV_THROTTLE_MS) return;
     lastNavAtRef.current = now;
     router.push(path);
+  }
+
+  function openCancelConfirm(appointment: DashboardAppointment) {
+    const label = `${formatAppointmentDateTime(appointment.scheduledAt)} · ${typeLabel(appointment.type)}`;
+    setCancelTarget({ id: appointment.id, label });
+  }
+
+  async function confirmCancelAppointment() {
+    if (!cancelTarget) return;
+    const id = cancelTarget.id;
+    const res = await fetch(`/api/appointments/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ status: "cancelled" }),
+    });
+    if (res.ok) {
+      refreshData();
+    } else {
+      const err = await res.json().catch(() => ({}));
+      alert(err.detail || "Failed to cancel appointment.");
+    }
   }
 
   async function refreshData() {
@@ -319,16 +358,16 @@ export default function PatientDashboardOverview() {
     ? new Date(lastLoginIso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })
     : "Unavailable";
   const tileClass =
-    "card flex flex-col gap-3 rounded-[20px] bg-white p-7 shadow-sm ring-1 ring-warm-brown/10 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md";
-  const tileTitleClass = "text-xl font-semibold text-warm-brown";
+    "card flex flex-col gap-3 rounded-[20px] bg-white p-7 shadow-sm ring-1 ring-cta/10 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md";
+  const tileTitleClass = "text-xl font-semibold text-cta";
   const tileDescriptionClass = "text-base text-gray-600";
-  const tileLinkClass = "text-sm font-medium text-warm-brown";
+  const tileLinkClass = "text-sm font-medium text-cta";
 
   return (
     <main className="relative mx-auto max-w-6xl overflow-hidden px-4 py-12 sm:px-6 lg:px-8">
       <div
         aria-hidden
-        className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-gradient-to-br from-warm-tan/25 via-warm-beige/20 to-transparent blur-3xl"
+        className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-gradient-to-br from-cta/25 via-cream-100/30 to-transparent blur-3xl"
       />
       <div
         aria-hidden
@@ -342,27 +381,23 @@ export default function PatientDashboardOverview() {
             Manage your profile and appointments.
           </p>
         </div>
-        <div className={`min-w-[250px] rounded-xl border px-4 py-3 text-sm ${
-          sessionWarning
-            ? "border-amber-300 bg-amber-50 text-amber-900"
-            : "border-cream-200 bg-white/90 text-gray-700"
-        }`}>
-          <p><span className="font-medium text-gray-900">Last login:</span> {lastLoginLabel}</p>
+        <div className="min-w-[250px] rounded-xl border border-[#9FC4CF] bg-[#E6F2F6] px-4 py-3 text-sm text-navy">
+          <p><span className="font-medium text-[#2F6F80]">Last login:</span> {lastLoginLabel}</p>
           <p className="mt-1">
-            <span className="font-medium text-gray-900">Session timeout:</span>{" "}
+            <span className="font-medium text-[#2F6F80]">Session timeout:</span>{" "}
             {typeof sessionRemainingMs === "number" ? `in ${formatSessionRemaining(sessionRemainingMs)}` : "Unavailable"}
           </p>
         </div>
       </div>
 
-      <div className="mt-8 card rounded-[20px] bg-white p-7 shadow-md shadow-warm-brown/5 ring-1 ring-warm-brown/10">
+      <div className="mt-8 card rounded-[20px] bg-white p-7 shadow-md shadow-cta/5 ring-1 ring-cta/10">
         <div className="flex items-start justify-between gap-6">
           <div className="min-w-0 flex-1">
-            <h2 className="text-2xl font-semibold text-warm-brown">Welcome back, {firstName}</h2>
+            <h2 className="text-2xl font-semibold text-cta">Welcome back, {firstName}</h2>
             <p className="mt-1 text-sm text-gray-600">You are doing great. Here is your next step.</p>
           </div>
           <div aria-hidden className="hidden shrink-0 md:block">
-            <svg viewBox="0 0 160 120" className="h-24 w-32 text-warm-brown/30" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg viewBox="0 0 160 120" className="h-24 w-32 text-cta/30" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M20 90c14-30 34-45 60-45 20 0 38 9 56 26" strokeLinecap="round" />
               <path d="M46 84c10-20 22-30 36-30 10 0 21 5 32 14" strokeLinecap="round" />
               <circle cx="34" cy="36" r="10" fill="currentColor" fillOpacity="0.14" stroke="none" />
@@ -375,7 +410,7 @@ export default function PatientDashboardOverview() {
           <>
             <p className="mt-4 text-base text-gray-700">
               Your next appointment is on{" "}
-              <span className="font-medium text-gray-900">
+              <span className="font-medium text-navy">
                 {formatAppointmentDateTime(nextAppointment.scheduledAt)}
               </span>
               {" "}({typeLabel(nextAppointment.type)}).
@@ -385,7 +420,7 @@ export default function PatientDashboardOverview() {
                 nextNeedsForms ? (
                   <Link
                     href="/patient/forms"
-                    className="inline-flex items-center rounded-lg bg-warm-brown px-4 py-2.5 text-sm font-medium text-white hover:bg-warm-brown/90"
+                    className="inline-flex items-center rounded-lg bg-cta px-4 py-2.5 text-sm font-medium text-white hover:bg-cta/90"
                   >
                     Complete forms first
                   </Link>
@@ -393,7 +428,7 @@ export default function PatientDashboardOverview() {
                   <>
                     <Link
                       href={`/patient/confirm-scheduled?appointmentId=${encodeURIComponent(nextAppointment.id)}`}
-                      className="inline-flex items-center rounded-lg bg-warm-brown px-4 py-2.5 text-sm font-medium text-white hover:bg-warm-brown/90"
+                      className="inline-flex items-center rounded-lg bg-cta px-4 py-2.5 text-sm font-medium text-white hover:bg-cta/90"
                     >
                       Confirm & add payment
                     </Link>
@@ -404,6 +439,15 @@ export default function PatientDashboardOverview() {
                     >
                       Change time
                     </button>
+                    {canCancel(nextAppointment) && (
+                      <button
+                        type="button"
+                        onClick={() => openCancelConfirm(nextAppointment)}
+                        className="inline-flex items-center rounded-lg border border-red-200 bg-white px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50"
+                      >
+                        Cancel appointment
+                      </button>
+                    )}
                   </>
                 )
               ) : (
@@ -413,7 +457,7 @@ export default function PatientDashboardOverview() {
                       href={nextAppointment.meetLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center rounded-lg bg-warm-brown px-4 py-2.5 text-sm font-medium text-white hover:bg-warm-brown/90"
+                      className="inline-flex items-center rounded-lg bg-cta px-4 py-2.5 text-sm font-medium text-white hover:bg-cta/90"
                     >
                       Join appointment
                     </a>
@@ -427,6 +471,15 @@ export default function PatientDashboardOverview() {
                       Reschedule
                     </button>
                   )}
+                  {canCancel(nextAppointment) && (
+                    <button
+                      type="button"
+                      onClick={() => openCancelConfirm(nextAppointment)}
+                      className="inline-flex items-center rounded-lg border border-red-200 bg-white px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50"
+                    >
+                      Cancel appointment
+                    </button>
+                  )}
                 </>
               )}
             </div>
@@ -437,7 +490,7 @@ export default function PatientDashboardOverview() {
       </div>
 
       <div aria-hidden className="mt-6">
-        <svg viewBox="0 0 1200 70" className="h-6 w-full text-warm-brown/10" preserveAspectRatio="none">
+        <svg viewBox="0 0 1200 70" className="h-6 w-full text-cta/10" preserveAspectRatio="none">
           <path
             d="M0,30 C150,55 300,5 450,30 C600,55 750,5 900,30 C1020,48 1110,34 1200,20 L1200,70 L0,70 Z"
             fill="currentColor"
@@ -458,7 +511,7 @@ export default function PatientDashboardOverview() {
               </p>
               <Link
                 href="/patient/profile"
-                className="mt-4 inline-flex rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90"
+                className="mt-4 inline-flex rounded-lg bg-cta px-4 py-2 text-sm font-medium text-white hover:bg-cta/90"
               >
                 Complete profile →
               </Link>
@@ -468,16 +521,16 @@ export default function PatientDashboardOverview() {
       )}
 
       {pendingAppointments.length > 0 && (
-        <div className="mt-8 rounded-2xl border border-amber-200/70 bg-amber-50/60 p-6 shadow-sm">
+        <div className="mt-8 rounded-2xl border border-[#9FC4CF] bg-[#E6F2F6] p-6 shadow-sm">
           <div className="flex items-start gap-3">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-200 text-amber-800" aria-hidden>
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#7FAFC0] text-white" aria-hidden>
               !
             </span>
             <div className="min-w-0 flex-1">
-              <h2 className="text-xl font-semibold text-amber-900">
+              <h2 className="text-xl font-semibold text-[#2F6F80]">
                 Action required — Confirm your appointment
               </h2>
-              <p className="mt-2 text-base text-amber-800">
+              <p className="mt-2 text-base text-navy">
                 Your doctor has scheduled an appointment for you. Please confirm to add payment and secure your time.
               </p>
               <ul className="mt-4 space-y-3">
@@ -486,17 +539,17 @@ export default function PatientDashboardOverview() {
                   return (
                     <li
                       key={a.id}
-                      className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200/60 bg-white/95 p-5"
+                      className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#9FC4CF]/60 bg-white/95 p-5"
                     >
                       <div>
-                        <p className="font-medium text-gray-900">
+                        <p className="font-medium text-navy">
                           {formatAppointmentDateTime(a.scheduledAt)} · {typeLabel(a.type)}
                         </p>
                         <p className="text-sm text-gray-600">
                           {a.durationMinutes} minutes
                         </p>
                         {mustCompleteForms && (
-                          <p className="mt-2 text-sm font-medium text-amber-800">
+                          <p className="mt-2 text-sm font-medium text-[#2F6F80]">
                             Complete your assigned forms before confirming.
                           </p>
                         )}
@@ -505,7 +558,7 @@ export default function PatientDashboardOverview() {
                         {mustCompleteForms ? (
                           <Link
                             href="/patient/forms"
-                            className="inline-flex items-center rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90"
+                            className="inline-flex items-center rounded-lg bg-cta px-4 py-2 text-sm font-medium text-white hover:bg-cta/90"
                           >
                             Complete forms first
                           </Link>
@@ -513,7 +566,7 @@ export default function PatientDashboardOverview() {
                           <>
                             <Link
                               href={`/patient/confirm-scheduled?appointmentId=${encodeURIComponent(a.id)}`}
-                              className="inline-flex items-center rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90"
+                              className="inline-flex items-center rounded-lg bg-cta px-4 py-2 text-sm font-medium text-white hover:bg-cta/90"
                             >
                               Confirm & add payment
                             </Link>
@@ -524,6 +577,15 @@ export default function PatientDashboardOverview() {
                             >
                               Change time
                             </button>
+                            {canCancel(a) && (
+                              <button
+                                type="button"
+                                onClick={() => openCancelConfirm(a)}
+                                className="inline-flex items-center rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+                              >
+                                Cancel appointment
+                              </button>
+                            )}
                           </>
                         )}
                       </div>
@@ -543,7 +605,7 @@ export default function PatientDashboardOverview() {
           className={`${tileClass} cursor-pointer`}
         >
           <div className="flex items-center gap-2">
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-warm-brown/10 text-warm-brown">
+            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-cta/10 text-cta">
               <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6.75a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.5 20.25a7.5 7.5 0 0 1 15 0" />
               </svg>
@@ -551,7 +613,7 @@ export default function PatientDashboardOverview() {
             <h2 className={tileTitleClass}>My Profile</h2>
           </div>
           <p className={tileDescriptionClass}>Your profile details.</p>
-          <p className="mt-2 text-base font-medium text-gray-900">
+          <p className="mt-2 text-base font-medium text-navy">
             {(profile?.firstName || fullProfile?.user?.firstName || "—")}{" "}
             {(profile?.lastName || fullProfile?.user?.lastName || "")}
           </p>
@@ -563,7 +625,7 @@ export default function PatientDashboardOverview() {
 
         <div className={tileClass}>
           <div className="flex items-center gap-2">
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-warm-brown/10 text-warm-brown">
+            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-cta/10 text-cta">
               <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v3m10.5-3v3M3.75 9.75h16.5M5.25 6.75h13.5A1.5 1.5 0 0 1 20.25 8.25v11.25a1.5 1.5 0 0 1-1.5 1.5H5.25a1.5 1.5 0 0 1-1.5-1.5V8.25a1.5 1.5 0 0 1 1.5-1.5Z" />
               </svg>
@@ -572,7 +634,7 @@ export default function PatientDashboardOverview() {
           </div>
           {nextAppointment ? (
             <>
-              <p className="mt-1 pt-0.5 text-base font-medium leading-7 text-gray-900">
+              <p className="mt-1 pt-0.5 text-base font-medium leading-7 text-navy">
                 {formatAppointmentDateTime(nextAppointment.scheduledAt)}
               </p>
               <p className={tileDescriptionClass}>
@@ -588,7 +650,7 @@ export default function PatientDashboardOverview() {
                   nextNeedsForms ? (
                     <Link
                       href="/patient/forms"
-                      className="inline-flex items-center rounded-lg bg-warm-brown px-3 py-1.5 text-sm font-medium text-white hover:bg-warm-brown/90"
+                      className="inline-flex items-center rounded-lg bg-cta px-3 py-1.5 text-sm font-medium text-white hover:bg-cta/90"
                     >
                       Complete forms first
                     </Link>
@@ -596,7 +658,7 @@ export default function PatientDashboardOverview() {
                     <>
                       <Link
                         href={`/patient/confirm-scheduled?appointmentId=${encodeURIComponent(nextAppointment.id)}`}
-                        className="inline-flex items-center rounded-lg bg-warm-brown px-3 py-1.5 text-sm font-medium text-white hover:bg-warm-brown/90"
+                        className="inline-flex items-center rounded-lg bg-cta px-3 py-1.5 text-sm font-medium text-white hover:bg-cta/90"
                       >
                         Confirm & add payment
                       </Link>
@@ -607,6 +669,15 @@ export default function PatientDashboardOverview() {
                       >
                         Change time
                       </button>
+                      {canCancel(nextAppointment) && (
+                        <button
+                          type="button"
+                          onClick={() => openCancelConfirm(nextAppointment)}
+                          className="inline-flex items-center rounded-lg border border-red-200 bg-white px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50"
+                        >
+                          Cancel
+                        </button>
+                      )}
                     </>
                   )
                 ) : (
@@ -616,7 +687,7 @@ export default function PatientDashboardOverview() {
                         href={nextAppointment.meetLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center rounded-lg bg-warm-brown px-3 py-1.5 text-sm font-medium text-white hover:bg-warm-brown/90"
+                        className="inline-flex items-center rounded-lg bg-cta px-3 py-1.5 text-sm font-medium text-white hover:bg-cta/90"
                       >
                         Join
                       </a>
@@ -628,6 +699,15 @@ export default function PatientDashboardOverview() {
                         className="inline-flex items-center rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
                       >
                         Reschedule
+                      </button>
+                    )}
+                    {canCancel(nextAppointment) && (
+                      <button
+                        type="button"
+                        onClick={() => openCancelConfirm(nextAppointment)}
+                        className="inline-flex items-center rounded-lg border border-red-200 bg-white px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50"
+                      >
+                        Cancel
                       </button>
                     )}
                   </>
@@ -643,8 +723,8 @@ export default function PatientDashboardOverview() {
             <>
               <p className={tileDescriptionClass}>No upcoming appointments right now.</p>
               <p className={`mt-auto ${tileLinkClass}`}>
-                <Link href="/patient/book" className="hover:underline">
-                  Book appointment →
+                <Link href="/patient/appointments" className="hover:underline">
+                  View appointments →
                 </Link>
               </p>
             </>
@@ -656,7 +736,7 @@ export default function PatientDashboardOverview() {
 
         <div className={tileClass}>
           <div className="flex items-center gap-2">
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-warm-brown/10 text-warm-brown">
+            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-cta/10 text-cta">
               <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5m-18 0v9A2.25 2.25 0 0 0 6 19.5h12a2.25 2.25 0 0 0 2.25-2.25v-9m-16.5 0V6.75A2.25 2.25 0 0 1 6 4.5h12a2.25 2.25 0 0 1 2.25 2.25v1.5" />
               </svg>
@@ -665,7 +745,7 @@ export default function PatientDashboardOverview() {
           </div>
           <p className={tileDescriptionClass}>Payment history, invoices, and card on file.</p>
           {cardSummary?.hasCard ? (
-            <p className="text-base text-gray-900">
+            <p className="text-base text-navy">
               Card on file: {(cardSummary.brand || "Card").toString().toUpperCase()} •••• {cardSummary.last4 || "—"}
             </p>
           ) : (
@@ -691,7 +771,7 @@ export default function PatientDashboardOverview() {
             className={`${tileClass} cursor-pointer`}
           >
             <div className="flex items-center gap-2">
-              <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-warm-brown/10 text-warm-brown">
+              <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-cta/10 text-cta">
                 <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-8.625a1.125 1.125 0 0 0-1.125-1.125H8.25m11.25 9.75-3-3m3 3-3 3m-2.25-12h-6A1.125 1.125 0 0 0 7.125 6.375v11.25A1.125 1.125 0 0 0 8.25 18.75h8.625A1.125 1.125 0 0 0 18 17.625V9.75a1.125 1.125 0 0 0-.33-.795l-3.375-3.375A1.125 1.125 0 0 0 13.5 5.25Z" />
                 </svg>
@@ -711,7 +791,7 @@ export default function PatientDashboardOverview() {
           className={`${tileClass} cursor-pointer`}
         >
           <div className="flex items-center gap-2">
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-warm-brown/10 text-warm-brown">
+            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-cta/10 text-cta">
               <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
               </svg>
@@ -719,9 +799,9 @@ export default function PatientDashboardOverview() {
             <h2 className={tileTitleClass}>Book appointment</h2>
           </div>
           <p className={tileDescriptionClass}>
-            Request a follow-up appointment time.
+            Schedule a new appointment or follow-up visit.
           </p>
-          <p className={`mt-auto ${tileLinkClass}`}>Request follow-up →</p>
+          <p className={`mt-auto ${tileLinkClass}`}>Book Appointment →</p>
         </a>
       </div>
 
@@ -736,6 +816,12 @@ export default function PatientDashboardOverview() {
           setChangeTimeAppointment(null);
           refreshData();
         }}
+      />
+      <ConfirmCancelModal
+        isOpen={!!cancelTarget}
+        onClose={() => setCancelTarget(null)}
+        appointmentLabel={cancelTarget?.label ?? ""}
+        onConfirm={confirmCancelAppointment}
       />
     </main>
   );

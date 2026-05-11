@@ -4,22 +4,38 @@ import { useEffect, useState, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import RescheduleModal from "@/components/RescheduleModal";
+import ConfirmCancelModal from "@/components/ConfirmCancelModal";
 
 // Practice timezone (California) – always show appointments in Pacific time
 const PRACTICE_TZ = "America/Los_Angeles";
 
 const RESCHEDULABLE_STATUSES = ["scheduled", "card_on_file", "paid"];
-const RESCHEDULE_MIN_HOURS = 48;
 const PAGE_SIZE = 10;
 
-function canReschedule(a: { scheduledAt: string; status: string }): boolean {
+function canReschedule(a: {
+  scheduledAt: string;
+  status: string;
+  patientRescheduleCount?: number;
+}): boolean {
   if (!RESCHEDULABLE_STATUSES.includes(a.status)) return false;
+  if ((a.patientRescheduleCount ?? 0) >= 1) return false;
   try {
     const scheduledAt = new Date(a.scheduledAt);
     if (isNaN(scheduledAt.getTime())) return false;
     const now = new Date();
-    const hoursUntil = (scheduledAt.getTime() - now.getTime()) / (1000 * 60 * 60);
-    return hoursUntil >= RESCHEDULE_MIN_HOURS;
+    return scheduledAt > now;
+  } catch {
+    return false;
+  }
+}
+
+function canCancel(a: { scheduledAt: string; status: string }): boolean {
+  const cancelableStatuses = ["scheduled", "card_on_file", "paid"];
+  if (!cancelableStatuses.includes(a.status)) return false;
+  try {
+    const scheduledAt = new Date(a.scheduledAt);
+    if (isNaN(scheduledAt.getTime())) return false;
+    return scheduledAt > new Date();
   } catch {
     return false;
   }
@@ -35,6 +51,7 @@ type Appointment = {
   doctor?: { id: string; email: string; name: string };
   meetLink?: string | null;
   hasPendingFormsForThisAppointment?: boolean;
+  patientRescheduleCount?: number;
 };
 
 function formatAppointmentDateTime(iso: string): string {
@@ -62,6 +79,7 @@ export default function PatientAppointments() {
   const [hasMore, setHasMore] = useState(false);
   const [tzLabel, setTzLabel] = useState("PT");
   const [rescheduleAppointment, setRescheduleAppointment] = useState<Appointment | null>(null);
+  const [cancelTarget, setCancelTarget] = useState<Appointment | null>(null);
   const lastInteractionAtRef = useRef<Record<string, number>>({});
   const lastPastSectionClickRef = useRef(0);
   const PAST_CLICK_THROTTLE_MS = 1500;
@@ -113,6 +131,27 @@ export default function PatientAppointments() {
 
   function loadMore() {
     if (nextCursor && !loadingMore) load(nextCursor, true);
+  }
+
+  function openCancelConfirm(a: Appointment) {
+    setCancelTarget(a);
+  }
+
+  async function confirmCancelAppointment() {
+    if (!cancelTarget) return;
+    const id = cancelTarget.id;
+    const res = await fetch(`/api/appointments/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ status: "cancelled" }),
+    });
+    if (res.ok) {
+      load();
+    } else {
+      const err = await res.json().catch(() => ({}));
+      alert(err.detail || "Failed to cancel appointment.");
+    }
   }
 
   useEffect(() => {
@@ -175,7 +214,7 @@ export default function PatientAppointments() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h2 className="text-lg font-semibold text-warm-brown">Appointments</h2>
+        <h2 className="text-lg font-semibold text-cta">Appointments</h2>
         <Link href="/patient/book" className="btn-primary">
           Book appointment
         </Link>
@@ -202,7 +241,7 @@ export default function PatientAppointments() {
                   }}
                 >
                   <div>
-                    <p className="font-medium text-gray-900">
+                    <p className="font-medium text-navy">
                       {formattedDateTime} {tzLabel}
                     </p>
                     <p className="text-sm text-gray-600">
@@ -214,14 +253,14 @@ export default function PatientAppointments() {
                           {a.hasPendingFormsForThisAppointment ? (
                             <Link
                               href="/patient/forms"
-                              className="inline-flex items-center text-xs font-medium text-warm-brown hover:underline"
+                              className="inline-flex items-center text-xs font-medium text-cta hover:underline"
                             >
                               Complete forms first →
                             </Link>
                           ) : (
                             <Link
                               href={`/patient/confirm-scheduled?appointmentId=${encodeURIComponent(a.id)}`}
-                              className="inline-flex items-center text-xs font-medium text-warm-brown hover:underline"
+                              className="inline-flex items-center text-xs font-medium text-cta hover:underline"
                             >
                               Confirm & add payment →
                             </Link>
@@ -233,10 +272,23 @@ export default function PatientAppointments() {
                               e.stopPropagation();
                               setRescheduleAppointment(a);
                             }}
-                            className="text-xs font-medium text-warm-brown hover:underline"
+                            className="text-xs font-medium text-cta hover:underline"
                           >
                             Change time
                           </button>
+                          {canCancel(a) && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                openCancelConfirm(a);
+                              }}
+                              className="text-xs font-medium text-red-600 hover:underline"
+                            >
+                              Cancel appointment
+                            </button>
+                          )}
                         </p>
                       ) : (
                         <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1">
@@ -248,7 +300,7 @@ export default function PatientAppointments() {
                                 href={a.meetLink}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center text-xs font-medium text-warm-brown hover:underline"
+                                className="inline-flex items-center text-xs font-medium text-cta hover:underline"
                               >
                                 Join video visit
                               </a>
@@ -261,9 +313,22 @@ export default function PatientAppointments() {
                                 e.stopPropagation();
                                 setRescheduleAppointment(a);
                               }}
-                              className="text-xs font-medium text-warm-brown hover:underline"
+                              className="text-xs font-medium text-cta hover:underline"
                             >
                               Reschedule
+                            </button>
+                          )}
+                          {canCancel(a) && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                openCancelConfirm(a);
+                              }}
+                              className="text-xs font-medium text-red-600 hover:underline"
+                            >
+                              Cancel appointment
                             </button>
                           )}
                         </p>
@@ -310,6 +375,12 @@ export default function PatientAppointments() {
           load();
         }}
       />
+      <ConfirmCancelModal
+        isOpen={!!cancelTarget}
+        onClose={() => setCancelTarget(null)}
+        appointmentLabel={cancelTarget ? `${formatAppointmentDateTime(cancelTarget.scheduledAt)} · ${cancelTarget.type}` : ""}
+        onConfirm={confirmCancelAppointment}
+      />
       {upcoming.length === 0 && appointments.length === 0 && (
         <p className="text-gray-500">No appointments yet. Book one when you’re ready.</p>
       )}
@@ -347,7 +418,7 @@ export default function PatientAppointments() {
                   lastInteractionAtRef.current[a.id] = now;
                 }}
               >
-                <span className="text-gray-900">
+                <span className="text-navy">
                   {formattedDateTime} {tzLabel}
                 </span>
                 <span className="ml-2 text-gray-500">· {a.status}</span>
@@ -363,7 +434,7 @@ export default function PatientAppointments() {
             type="button"
             onClick={loadMore}
             disabled={loadingMore}
-            className="rounded-lg border border-cream-300 bg-white px-4 py-2 text-sm font-medium text-warm-brown hover:bg-cream-50 disabled:opacity-50"
+            className="rounded-lg border border-cream-300 bg-white px-4 py-2 text-sm font-medium text-cta hover:bg-cream-50 disabled:opacity-50"
           >
             {loadingMore ? "Loading…" : "Load more"}
           </button>

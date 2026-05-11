@@ -57,7 +57,7 @@ function IntroCard() {
   return (
     <div
       ref={ref}
-      className={`relative col-span-2 flex min-h-[260px] flex-col overflow-hidden rounded-2xl bg-[#d4c4a8] p-6 text-white shadow-[0_4px_20px_rgba(0,0,0,0.08)] transition-all duration-700 ease-out will-change-transform sm:col-span-1 sm:min-h-[420px] sm:p-8 ${
+      className={`relative col-span-2 flex min-h-[260px] flex-col overflow-hidden rounded-2xl bg-[#8FB5C1] p-6 text-navy shadow-[0_4px_20px_rgba(0,0,0,0.08)] transition-all duration-700 ease-out will-change-transform sm:col-span-1 sm:min-h-[420px] sm:p-8 ${
         inView
           ? "translate-x-0 translate-y-0 scale-100 opacity-100 blur-0"
           : "-translate-x-8 translate-y-6 scale-[0.96] opacity-0 blur-[2px]"
@@ -66,16 +66,16 @@ function IntroCard() {
       <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
         Featured Services
       </h2>
-      <p className="mt-2 text-base font-medium opacity-90 sm:text-lg">
+      <p className="mt-2 text-base font-medium text-navy/90 sm:text-lg">
         What We Offer
       </p>
-      <p className="mt-4 text-sm leading-relaxed opacity-90">
+      <p className="mt-4 text-sm leading-relaxed text-navy/90">
         Personalized psychiatric care for children, adolescents, and young adults—evaluation, therapy, medication management, and ongoing support.
       </p>
       <div className="mt-auto pt-8">
         <Link
           href="/#services"
-          className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-white/90 text-warm-brown shadow transition hover:bg-white"
+          className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-white/90 text-cta shadow transition hover:bg-white"
           aria-label="View services"
         >
           <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -105,7 +105,7 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
       <button
         type="button"
         onClick={() => setFlipped((v) => !v)}
-        className="relative flex h-full min-h-[340px] w-full flex-1 cursor-pointer flex-col text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-tan/60 sm:min-h-[480px]"
+        className="relative flex h-full min-h-[340px] w-full flex-1 cursor-pointer flex-col text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cta/60 sm:min-h-[480px]"
         aria-pressed={flipped}
         aria-label={`${service.title}. ${flipped ? "Hide details" : "Show details"}`}
       >
@@ -127,7 +127,7 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
                 />
                 <div className="absolute bottom-5 right-5">
                   <div
-                    className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-warm-brown shadow-[0_8px_20px_rgba(0,0,0,0.18)] ring-1 ring-black/5 transition group-hover:bg-white"
+                    className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-cta shadow-[0_8px_20px_rgba(0,0,0,0.18)] ring-1 ring-black/5 transition group-hover:bg-white"
                     aria-hidden="true"
                   >
                     <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -140,7 +140,7 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
 
             {/* Back: description */}
             <div className="absolute inset-0 flex flex-col overflow-hidden rounded-2xl bg-cream-200 p-6 text-gray-700 [backface-visibility:hidden] [transform:rotateY(180deg)]">
-              <h3 className="text-xl font-semibold text-warm-brown sm:text-2xl">
+              <h3 className="text-xl font-semibold text-cta sm:text-2xl">
                 {service.title}
               </h3>
               <div className="mt-3 flex-1 overflow-auto pr-2 [-webkit-overflow-scrolling:touch]">

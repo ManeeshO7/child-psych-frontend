@@ -58,7 +58,7 @@ export default function SetAllowedFollowupModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="w-full max-w-md rounded-lg bg-white shadow-xl">
         <div className="border-b border-gray-200 px-6 py-4">
-          <h2 className="text-xl font-semibold text-gray-900">Set patient&apos;s follow-up type</h2>
+          <h2 className="text-xl font-semibold text-navy">Set patient&apos;s follow-up type</h2>
           <p className="mt-1 text-sm text-gray-600">
             Which follow-up appointments can {patientName || "this patient"} book? (Decided during clinical intake.)
           </p>
@@ -69,7 +69,7 @@ export default function SetAllowedFollowupModal({
               type="checkbox"
               checked={allow30}
               onChange={(e) => setAllow30(e.target.checked)}
-              className="h-4 w-4 rounded border-gray-300 text-warm-brown focus:ring-warm-brown"
+              className="h-4 w-4 rounded border-gray-300 text-cta focus:ring-cta"
             />
             <span className="font-medium">30 min – Follow-up (med management)</span>
           </label>
@@ -78,7 +78,7 @@ export default function SetAllowedFollowupModal({
               type="checkbox"
               checked={allow45}
               onChange={(e) => setAllow45(e.target.checked)}
-              className="h-4 w-4 rounded border-gray-300 text-warm-brown focus:ring-warm-brown"
+              className="h-4 w-4 rounded border-gray-300 text-cta focus:ring-cta"
             />
             <span className="font-medium">45 min – Follow-up (med + therapy)</span>
           </label>
@@ -99,7 +99,7 @@ export default function SetAllowedFollowupModal({
             type="button"
             onClick={handleSubmit}
             disabled={submitting || (!allow30 && !allow45)}
-            className="rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90 disabled:opacity-50"
+            className="rounded-lg bg-cta px-4 py-2 text-sm font-medium text-white hover:bg-cta/90 disabled:opacity-50"
           >
             {submitting ? "Saving…" : "Save"}
           </button>

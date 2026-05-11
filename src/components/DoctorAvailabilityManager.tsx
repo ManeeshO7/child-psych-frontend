@@ -405,7 +405,7 @@ export default function DoctorAvailabilityManager() {
   return (
     <main className="mx-auto max-w-2xl px-4 py-10 sm:px-6 lg:px-8">
       <div className="mb-6 flex items-center gap-4">
-        <Link href="/doctor" className="text-sm text-warm-brown hover:underline">
+        <Link href="/doctor" className="text-sm text-cta hover:underline">
           ← Dashboard
         </Link>
       </div>
@@ -425,7 +425,7 @@ export default function DoctorAvailabilityManager() {
           </p>
           <a
             href="/api/auth/google"
-            className="mt-3 inline-block rounded bg-warm-brown px-3 py-1.5 text-sm font-medium text-white hover:opacity-90"
+            className="mt-3 inline-block rounded bg-cta px-3 py-1.5 text-sm font-medium text-white hover:opacity-90"
           >
             Connect Google Calendar
           </a>
@@ -452,7 +452,7 @@ export default function DoctorAvailabilityManager() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition ${
                     activeTab === tab.id
-                      ? "bg-warm-brown text-white"
+                      ? "bg-cta text-white"
                       : "bg-transparent text-gray-600 hover:bg-cream-100"
                   }`}
                 >
@@ -477,7 +477,7 @@ export default function DoctorAvailabilityManager() {
                       onClick={() => setSelectedDuration(d)}
                       className={`rounded-lg border px-4 py-2 text-sm font-medium transition ${
                         selectedDuration === d
-                          ? "border-warm-brown bg-warm-brown text-white"
+                          ? "border-cta bg-cta text-white"
                           : "border-cream-200 bg-white text-gray-700 hover:bg-cream-100"
                       }`}
                     >
@@ -564,11 +564,11 @@ export default function DoctorAvailabilityManager() {
                               className={[
                                 "flex h-8 w-full min-w-0 items-center justify-center rounded-full border text-xs font-medium transition",
                                 isSelected
-                                  ? "border-warm-brown bg-warm-brown text-white"
+                                  ? "border-cta bg-cta text-white"
                                   : hasBlocks
-                                    ? "border-warm-brown/40 bg-warm-brown/10 text-warm-brown hover:bg-warm-brown/20"
+                                    ? "border-cta/40 bg-cta/10 text-cta hover:bg-cta/20"
                                     : "border-cream-200 text-gray-500 hover:bg-cream-100",
-                                isToday && !isSelected ? "ring-1 ring-warm-brown/40" : "",
+                                isToday && !isSelected ? "ring-1 ring-cta/40" : "",
                               ]
                                 .filter(Boolean)
                                 .join(" ")}
@@ -611,7 +611,7 @@ export default function DoctorAvailabilityManager() {
                   </div>
                 )}
                 {selectedStartTimes.length > 0 && !slotsLoading && (
-                  <p className="mt-2 text-xs font-medium text-warm-brown">
+                  <p className="mt-2 text-xs font-medium text-cta">
                     Offered for this day: {selectedStartTimes.map((t) => formatTimeAmPm(selectedDateForSlots, t)).join(", ")}
                   </p>
                 )}
@@ -633,7 +633,7 @@ export default function DoctorAvailabilityManager() {
                         setActiveTab("blocks");
                         setAddDate(selectedDateForSlots.includes("T") ? selectedDateForSlots.slice(0, 10) : selectedDateForSlots);
                       }}
-                      className="mt-3 rounded bg-warm-brown px-3 py-1.5 text-sm font-medium text-white hover:opacity-90"
+                      className="mt-3 rounded bg-cta px-3 py-1.5 text-sm font-medium text-white hover:opacity-90"
                     >
                       When I&apos;m available → add block for {formatDate(selectedDateForSlots)}
                     </button>
@@ -647,7 +647,7 @@ export default function DoctorAvailabilityManager() {
                           key={slot.startTime}
                           className={`inline-flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm transition ${
                             offered
-                              ? "border-warm-brown bg-warm-brown/10 text-warm-brown"
+                              ? "border-cta bg-cta/10 text-cta"
                               : "border-cream-200 bg-white text-gray-700 hover:bg-cream-50"
                           }`}
                         >
@@ -701,7 +701,7 @@ export default function DoctorAvailabilityManager() {
                       onClick={() => setBlocksTabView(tab.id)}
                       className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition ${
                         blocksTabView === tab.id
-                          ? "bg-warm-brown text-white"
+                          ? "bg-cta text-white"
                           : "bg-transparent text-gray-600 hover:bg-cream-100"
                       }`}
                     >
@@ -803,11 +803,11 @@ export default function DoctorAvailabilityManager() {
                                 className={[
                                   "flex h-8 w-full min-w-0 items-center justify-center rounded-full border text-xs font-medium transition",
                                   isSelected
-                                    ? "border-warm-brown bg-warm-brown text-white shadow-sm"
+                                    ? "border-cta bg-cta text-white shadow-sm"
                                     : hasBlocks
-                                      ? "border-warm-brown/40 bg-warm-brown/10 text-warm-brown"
+                                      ? "border-cta/40 bg-cta/10 text-cta"
                                       : "border-transparent text-gray-700 hover:border-cream-300 hover:bg-cream-100",
-                                  isToday && !isSelected ? "ring-1 ring-warm-brown/40" : "",
+                                  isToday && !isSelected ? "ring-1 ring-cta/40" : "",
                                 ]
                                   .filter(Boolean)
                                   .join(" ")}
@@ -852,7 +852,7 @@ export default function DoctorAvailabilityManager() {
               <button
                 type="button"
                 onClick={addBlock}
-                className="rounded bg-warm-brown px-3 py-1.5 text-sm font-medium text-white hover:opacity-90"
+                className="rounded bg-cta px-3 py-1.5 text-sm font-medium text-white hover:opacity-90"
               >
                 Add block
               </button>
@@ -877,7 +877,7 @@ export default function DoctorAvailabilityManager() {
                         className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-cream-200 bg-white shadow-sm px-4 py-3 text-sm"
                       >
                         <div className="flex flex-col gap-1">
-                          <span className="font-medium text-gray-800">
+                          <span className="font-medium text-navy">
                             {formatTimeAmPm(b.date, b.startTime)} – {formatTimeAmPm(b.date, b.endTime)}
                           </span>
                           <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600">
@@ -970,7 +970,7 @@ export default function DoctorAvailabilityManager() {
                       className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-cream-200 bg-white shadow-sm px-4 py-3 text-sm"
                     >
                       <div className="flex flex-col gap-1">
-                        <span className="font-medium text-gray-800">
+                        <span className="font-medium text-navy">
                           {formatDate(b.date)}
                         </span>
                         <span className="text-gray-600">

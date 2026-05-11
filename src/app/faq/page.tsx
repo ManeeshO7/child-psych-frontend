@@ -8,7 +8,7 @@ function renderWithBold(text: string) {
   const parts = text.split(/(\*\*[^*]+\*\*)/g);
   return parts.map((part, i) =>
     part.startsWith("**") && part.endsWith("**") ? (
-      <strong key={i} className="font-semibold text-warm-brown">
+      <strong key={i} className="font-semibold text-cta">
         {part.slice(2, -2)}
       </strong>
     ) : (
@@ -76,7 +76,7 @@ const faqs = [
   },
   {
     q: "What is your cancellation policy?",
-    a: "Appointments must be canceled or rescheduled with **at least 48 business hours' notice.**\n\nLate cancellations and missed appointments are charged the full session fee, as insurance does not reimburse for no-shows.\n\nPatient emergencies are reviewed on a case-by-case basis.",
+    a: "You may **cancel** an upcoming appointment at any time from your appointments page. You may **reschedule** an appointment **once** online; for further date or time changes, please contact the practice.\n\nLate cancellations and missed appointments may be charged the full session fee, as insurance does not reimburse for no-shows.\n\nPatient emergencies are reviewed on a case-by-case basis.",
   },
 ];
 
@@ -94,18 +94,18 @@ export default function FAQPage() {
         <div className="absolute inset-0 z-0 bg-white/50" aria-hidden />
         <div className="relative z-10 mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <h1 className="section-heading text-center">FAQs</h1>
-          <p className="mt-2 text-center text-sm font-medium uppercase tracking-wider text-warm-brown">
+          <p className="mt-2 text-center text-sm font-medium uppercase tracking-wider text-cta">
             Frequently Asked Questions
           </p>
           <div className="mt-12 space-y-3 [&_details]:overflow-hidden [&_details]:rounded-xl [&_details]:border [&_details]:border-cream-200/80 [&_details]:bg-white [&_details]:shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
             {faqs.map((faq, index) => (
               <details key={faq.q} className="group">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-left transition-colors hover:bg-cream-50/50 [&::-webkit-details-marker]:hidden">
-                  <span className="font-semibold text-warm-brown">{faq.q}</span>
-                  <span className="inline-flex w-6 shrink-0 items-center justify-center text-lg font-bold text-warm-brown after:content-['+'] group-open:after:content-['−']" />
+                  <span className="font-semibold text-cta">{faq.q}</span>
+                  <span className="inline-flex w-6 shrink-0 items-center justify-center text-lg font-bold text-cta after:content-['+'] group-open:after:content-['−']" />
                 </summary>
                 <div className="border-t border-cream-200/80 bg-cream-50/30">
-                  <p className="whitespace-pre-line px-5 py-4 text-sm leading-relaxed text-warm-brown">
+                  <p className="whitespace-pre-line px-5 py-4 text-sm leading-relaxed text-cta">
                     {renderedAnswers[index]}
                   </p>
                 </div>

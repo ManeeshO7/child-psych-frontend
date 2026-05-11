@@ -59,7 +59,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="mt-1 block w-full rounded-lg border border-cream-200 bg-white px-3 py-2 text-gray-900 shadow-sm focus:border-warm-brown focus:outline-none focus:ring-1 focus:ring-warm-brown"
+                className="mt-1 block w-full rounded-lg border border-cream-200 bg-white px-3 py-2 text-navy shadow-sm focus:border-cta focus:outline-none focus:ring-1 focus:ring-cta"
               />
             </div>
             <div>
@@ -73,7 +73,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="block w-full rounded-lg border border-cream-200 bg-white px-3 py-2 pr-10 text-gray-900 shadow-sm focus:border-warm-brown focus:outline-none focus:ring-1 focus:ring-warm-brown"
+                  className="block w-full rounded-lg border border-cream-200 bg-white px-3 py-2 pr-10 text-navy shadow-sm focus:border-cta focus:outline-none focus:ring-1 focus:ring-cta"
                 />
                 <button
                   type="button"
@@ -111,18 +111,18 @@ export default function LoginPage() {
             </button>
           </form>
           <p className="mt-6 text-center text-sm text-gray-600">
-            <Link href="/reset-password" className="text-warm-brown hover:underline">
+            <Link href="/reset-password" className="text-cta hover:underline">
               Forgot password? Reset it here
             </Link>
           </p>
           <p className="mt-2 text-center text-sm text-gray-600">
             New patient?{" "}
-            <Link href="/request-access" className="text-warm-brown hover:underline">
+            <Link href="/request-access" className="text-cta hover:underline">
               Request access
             </Link>
           </p>
           <p className="mt-2 text-center text-sm text-gray-600">
-            <Link href="/doctor/login" className="text-warm-brown hover:underline">
+            <Link href="/doctor/login" className="text-cta hover:underline">
               Doctor login
             </Link>
           </p>

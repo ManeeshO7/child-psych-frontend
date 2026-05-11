@@ -165,7 +165,7 @@ export default function ConfirmChargeModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="w-full max-w-md rounded-lg bg-white shadow-xl">
         <div className="border-b border-gray-200 px-6 py-4">
-          <h2 className="text-xl font-semibold text-gray-900">Confirm charge</h2>
+          <h2 className="text-xl font-semibold text-navy">Confirm charge</h2>
           <p className="mt-1 text-sm text-gray-600">
             Review the amount below. The patient&apos;s card will be charged.
           </p>
@@ -174,25 +174,25 @@ export default function ConfirmChargeModal({
           <div className="rounded-lg border border-cream-200 bg-gray-50 p-4 space-y-2">
             <div>
               <p className="text-xs text-gray-500">Patient</p>
-              <p className="font-medium text-gray-900">{appointment?.patient?.name ?? "—"}</p>
+              <p className="font-medium text-navy">{appointment?.patient?.name ?? "—"}</p>
             </div>
             <div>
               <p className="text-xs text-gray-500">Appointment</p>
-              <p className="font-medium text-gray-900">
+              <p className="font-medium text-navy">
                 {typeLabel}
                 {appointment?.durationMinutes ? ` · ${appointment.durationMinutes} min` : ""}
               </p>
             </div>
             <div>
               <p className="text-xs text-gray-500">Date & time</p>
-              <p className="font-medium text-gray-900">{formattedDate} PST</p>
+              <p className="font-medium text-navy">{formattedDate} PST</p>
             </div>
             <div className="pt-2 border-t border-cream-200">
               <p className="text-xs text-gray-500">Amount to charge (from Stripe)</p>
               {pricingLoading ? (
                 <p className="font-medium text-gray-500">Loading…</p>
               ) : visitPrice ? (
-                <p className="text-lg font-semibold text-warm-brown">{visitPrice.formatted}</p>
+                <p className="text-lg font-semibold text-cta">{visitPrice.formatted}</p>
               ) : (
                 <p className="font-medium text-amber-700">Pricing not available — will use configured amount</p>
               )}
@@ -250,7 +250,7 @@ export default function ConfirmChargeModal({
             type="button"
             onClick={handleConfirm}
             disabled={submitting || pricingLoading}
-            className="rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90 disabled:opacity-50"
+            className="rounded-lg bg-cta px-4 py-2 text-sm font-medium text-white hover:bg-cta/90 disabled:opacity-50"
           >
             {submitting ? "Charging…" : "Confirm charge"}
           </button>

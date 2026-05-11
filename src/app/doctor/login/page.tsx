@@ -54,7 +54,7 @@ export default function DoctorLoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="mt-1 block w-full rounded-lg border border-cream-200 bg-white px-3 py-2 text-gray-900 shadow-sm focus:border-warm-brown focus:outline-none focus:ring-1 focus:ring-warm-brown"
+                className="mt-1 block w-full rounded-lg border border-cream-200 bg-white px-3 py-2 text-navy shadow-sm focus:border-cta focus:outline-none focus:ring-1 focus:ring-cta"
               />
             </div>
             <div>
@@ -68,7 +68,7 @@ export default function DoctorLoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="block w-full rounded-lg border border-cream-200 bg-white px-3 py-2 pr-10 text-gray-900 shadow-sm focus:border-warm-brown focus:outline-none focus:ring-1 focus:ring-warm-brown"
+                  className="block w-full rounded-lg border border-cream-200 bg-white px-3 py-2 pr-10 text-navy shadow-sm focus:border-cta focus:outline-none focus:ring-1 focus:ring-cta"
                 />
                 <button
                   type="button"
@@ -106,12 +106,12 @@ export default function DoctorLoginPage() {
             </button>
           </form>
           <p className="mt-6 text-center text-sm text-gray-600">
-            <Link href="/doctor/forgot-password" className="text-warm-brown hover:underline">
+            <Link href="/doctor/forgot-password" className="text-cta hover:underline">
               Forgot password? Reset it here
             </Link>
           </p>
           <p className="mt-2 text-center text-sm text-gray-600">
-            <Link href="/login" className="text-warm-brown hover:underline">
+            <Link href="/login" className="text-cta hover:underline">
               Patient login
             </Link>
           </p>

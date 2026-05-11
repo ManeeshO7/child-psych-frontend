@@ -88,14 +88,14 @@ export default function DoctorPatientsListPage() {
       filteredPatients.map((patient) => (
         <tr key={patient.id} className="hover:bg-gray-50">
           <td className="whitespace-nowrap px-4 py-3">
-            <span className="font-medium text-gray-900">{patient.name || "—"}</span>
+            <span className="font-medium text-navy">{patient.name || "—"}</span>
           </td>
           <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">{patient.email}</td>
           <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">{patient.appointmentCount}</td>
           <td className="whitespace-nowrap px-4 py-3 text-right">
             <Link
               href={`/doctor/patients/${patient.id}`}
-              className="text-sm font-medium text-warm-brown hover:underline"
+              className="text-sm font-medium text-cta hover:underline"
             >
               View details →
             </Link>
@@ -107,7 +107,7 @@ export default function DoctorPatientsListPage() {
   return (
     <main className="mx-auto w-full max-w-[1400px] px-4 py-10 sm:px-6 lg:px-8">
       <p className="mb-6">
-        <Link href="/doctor" className="text-sm text-warm-brown hover:underline">
+        <Link href="/doctor" className="text-sm text-cta hover:underline">
           ← Back to dashboard
         </Link>
       </p>
@@ -134,7 +134,7 @@ export default function DoctorPatientsListPage() {
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               placeholder="Search by patient name…"
-              className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 text-gray-900 placeholder-gray-500 focus:border-warm-brown focus:ring-warm-brown sm:text-sm"
+              className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-3 text-navy placeholder-gray-500 focus:border-cta focus:ring-cta sm:text-sm"
               aria-label="Search by patient name"
             />
           </div>

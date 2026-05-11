@@ -101,29 +101,29 @@ export default function PatientBillingPage() {
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-      <Link href="/patient" className="text-sm text-warm-brown hover:underline">
+      <Link href="/patient" className="text-sm text-cta hover:underline">
         ← Back to dashboard
       </Link>
 
       <h1 className="mt-4 section-heading">Billing & Payments</h1>
       <p className="mt-2 text-gray-600">View invoices and payment receipts.</p>
 
-      <div className="mt-6 card rounded-[20px] bg-white p-6 shadow-sm ring-1 ring-warm-brown/10">
-        <h2 className="text-lg font-semibold text-warm-brown">Card on file</h2>
+      <div className="mt-6 card rounded-[20px] bg-white p-6 shadow-sm ring-1 ring-cta/10">
+        <h2 className="text-lg font-semibold text-cta">Card on file</h2>
         {cardSummary?.hasCard ? (
-          <p className="mt-2 text-gray-900">
+          <p className="mt-2 text-navy">
             {(cardSummary.brand || "Card").toString().toUpperCase()} •••• {cardSummary.last4 || "—"}
           </p>
         ) : (
           <p className="mt-2 text-gray-600">No card on file.</p>
         )}
-        <Link href="/patient/save-card?returnTo=/patient/billing" className="mt-3 inline-block text-sm font-medium text-warm-brown hover:underline">
+        <Link href="/patient/save-card?returnTo=/patient/billing" className="mt-3 inline-block text-sm font-medium text-cta hover:underline">
           {cardSummary?.hasCard ? "Manage card →" : "Add card →"}
         </Link>
       </div>
 
-      <div className="mt-6 card rounded-[20px] bg-white p-6 shadow-sm ring-1 ring-warm-brown/10">
-        <h2 className="text-lg font-semibold text-warm-brown">Invoices & Receipts</h2>
+      <div className="mt-6 card rounded-[20px] bg-white p-6 shadow-sm ring-1 ring-cta/10">
+        <h2 className="text-lg font-semibold text-cta">Invoices & Receipts</h2>
         {paymentHistory.length === 0 ? (
           <p className="mt-3 text-sm text-gray-600">No payment history yet.</p>
         ) : (
@@ -133,7 +133,7 @@ export default function PatientBillingPage() {
               const downloadUrl = item.invoicePdfUrl || item.hostedInvoiceUrl || item.receiptUrl;
               return (
                 <li key={item.id || `${item.createdAt}-${item.amountCents}`} className="rounded-xl border border-cream-200 bg-cream-50 p-4">
-                  <p className="text-base font-semibold text-gray-900">
+                  <p className="text-base font-semibold text-navy">
                     {formatMoney(item.amountCents, item.currency)}
                   </p>
                   <p className="mt-1 text-sm text-gray-600">
@@ -145,7 +145,7 @@ export default function PatientBillingPage() {
                         href={viewUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm font-medium text-warm-brown hover:underline"
+                        className="text-sm font-medium text-cta hover:underline"
                       >
                         View invoice
                       </a>
@@ -156,7 +156,7 @@ export default function PatientBillingPage() {
                         download
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm font-medium text-warm-brown hover:underline"
+                        className="text-sm font-medium text-cta hover:underline"
                       >
                         Download invoice
                       </a>

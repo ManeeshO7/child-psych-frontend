@@ -124,7 +124,7 @@ export default function ConfirmAppointmentPage() {
       <main className="mx-auto max-w-xl px-4 py-10 sm:px-6 lg:px-8">
         <h1 className="section-heading">Confirm appointment</h1>
         <p className="mt-2 text-red-600">{error}</p>
-        <Link href="/patient/book" className="mt-4 inline-block text-warm-brown hover:underline">
+        <Link href="/patient/book" className="mt-4 inline-block text-cta hover:underline">
           ← Back to booking
         </Link>
       </main>
@@ -136,7 +136,7 @@ export default function ConfirmAppointmentPage() {
       <main className="mx-auto max-w-xl px-4 py-10 sm:px-6 lg:px-8">
         <h1 className="section-heading">Confirm appointment</h1>
         <p className="mt-2 text-gray-600">No appointment slot selected.</p>
-        <Link href="/patient/book" className="mt-4 inline-block text-warm-brown hover:underline">
+        <Link href="/patient/book" className="mt-4 inline-block text-cta hover:underline">
           ← Back to booking
         </Link>
       </main>
@@ -155,32 +155,32 @@ export default function ConfirmAppointmentPage() {
       </p>
 
       <div className="mt-6 rounded-lg border border-cream-200 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-warm-brown mb-4">Appointment Details</h2>
+        <h2 className="text-lg font-semibold text-cta mb-4">Appointment Details</h2>
         
         <div className="space-y-3">
           <div>
             <p className="text-sm text-gray-600">Date & Time</p>
-            <p className="text-base font-medium text-gray-900">
+            <p className="text-base font-medium text-navy">
               {formatSlotDate(slotStart)}, {formatSlotTime(slotStart)} {tzLabel}
             </p>
           </div>
 
           <div>
             <p className="text-sm text-gray-600">Duration</p>
-            <p className="text-base font-medium text-gray-900">
+            <p className="text-base font-medium text-navy">
               {durationMinutes} minute{durationMinutes === 1 ? "" : "s"}
             </p>
           </div>
 
           <div>
             <p className="text-sm text-gray-600">Appointment Type</p>
-            <p className="text-base font-medium text-gray-900 capitalize">{visitType.replace(/_/g, " ")}</p>
+            <p className="text-base font-medium text-navy capitalize">{visitType.replace(/_/g, " ")}</p>
           </div>
 
           {visitPrice && (
             <div className="mt-4 pt-4 border-t border-cream-200">
               <p className="text-sm text-gray-600">Visit Fee</p>
-              <p className="text-lg font-semibold text-warm-brown">{visitPrice.formatted}</p>
+              <p className="text-lg font-semibold text-cta">{visitPrice.formatted}</p>
               <p className="mt-1 text-xs text-gray-500">
                 You will be charged {visitPrice.formatted} after you attend your appointment. Your card on file will be used for payment.
               </p>

@@ -321,7 +321,7 @@ export function CaliforniaAddressAutocomplete({
           Add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to .env to enable autocomplete.
         </p>
         {restrictToCalifornia && (
-          <p className="text-xs italic text-warm-brown">
+          <p className="text-xs italic text-cta">
             Only California addresses are accepted. Visits must occur from California.
           </p>
         )}
@@ -334,7 +334,7 @@ export function CaliforniaAddressAutocomplete({
       <div className="space-y-1">
         {fallbackInput}
         {restrictToCalifornia && (
-          <p className="text-xs italic text-warm-brown">
+          <p className="text-xs italic text-cta">
             Only California addresses are accepted. Visits must occur from California.
           </p>
         )}
@@ -362,14 +362,14 @@ export function CaliforniaAddressAutocomplete({
               }
             }
           }}
-          className="mt-1 min-h-[2.75rem] w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-warm-brown shadow-sm focus:border-warm-brown focus:outline-none focus:ring-1 focus:ring-warm-brown"
+          className="mt-1 min-h-[2.75rem] w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-cta shadow-sm focus:border-cta focus:outline-none focus:ring-1 focus:ring-cta"
           aria-label="California address (select all and press Delete or Backspace to clear)"
           title="Select the address and press Delete or Backspace to clear"
         />
       ) : null}
       <div
         ref={containerRef}
-        className="mt-1 flex w-full min-w-0 min-h-[2.75rem] items-center overflow-visible rounded-lg border border-gray-300 bg-white focus-within:border-warm-brown focus-within:ring-1 focus-within:ring-warm-brown [&_*]:outline-none [&_input]:min-h-[2.5rem] [&_input]:min-w-0 [&_input]:w-full [&_input]:flex-1 [&_input]:border-0 [&_input]:bg-transparent [&_input]:py-2 [&_input]:px-3 [&_input]:text-sm [&_input]:leading-normal [&_input]:outline-none [&_input]:ring-0 [&_input]:focus:outline-none [&_input]:focus:ring-0 [&_input]:placeholder:text-gray-400 [&_gmp-place-autocomplete]:w-full"
+        className="mt-1 flex w-full min-w-0 min-h-[2.75rem] items-center overflow-visible rounded-lg border border-gray-300 bg-white focus-within:border-cta focus-within:ring-1 focus-within:ring-cta [&_*]:outline-none [&_input]:min-h-[2.5rem] [&_input]:min-w-0 [&_input]:w-full [&_input]:flex-1 [&_input]:border-0 [&_input]:bg-transparent [&_input]:py-2 [&_input]:px-3 [&_input]:text-sm [&_input]:leading-normal [&_input]:outline-none [&_input]:ring-0 [&_input]:focus:outline-none [&_input]:focus:ring-0 [&_input]:placeholder:text-gray-400 [&_gmp-place-autocomplete]:w-full"
         style={{ boxSizing: "border-box", display: value ? "none" : undefined }}
       />
       <input type="hidden" id={id} value={value} readOnly aria-hidden="true" tabIndex={-1} />
@@ -379,7 +379,7 @@ export function CaliforniaAddressAutocomplete({
         </p>
       )}
       {restrictToCalifornia && (
-        <p className="text-xs italic text-warm-brown">
+        <p className="text-xs italic text-cta">
           Only California addresses are accepted. Visits must occur from California.
         </p>
       )}

@@ -3,6 +3,9 @@
 @tailwind utilities;
 
 :root {
+  --navy: #1E293B;
+  --cta: #7FAFC0;
+  --cta-hover: #6799AA;
   --cream: #f8f7f4;
   --cream-100: #f0eeea;
   --cream-200: #ebe9e4;
@@ -18,36 +21,44 @@ html {
 }
 
 body {
-  @apply bg-cream-100 text-gray-800 antialiased;
+  @apply bg-cream-100 text-navy antialiased;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 @layer components {
-  /* Primary CTA: one clear action */
+  /* Primary CTA: muted blue */
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-xl bg-warm-brown px-6 py-3.5 text-sm font-semibold text-white shadow-[0_2px_8px_rgba(139,115,85,0.25)] transition-all duration-200 hover:bg-warm-gold hover:shadow-[0_4px_14px_rgba(139,115,85,0.3)] focus:outline-none focus:ring-2 focus:ring-warm-tan focus:ring-offset-2 active:opacity-95;
+    @apply inline-flex items-center justify-center rounded-xl bg-cta px-6 py-3.5 text-sm font-semibold text-white shadow-[0_2px_8px_rgba(127,175,192,0.25)] transition-all duration-200 hover:bg-cta-hover hover:shadow-[0_4px_14px_rgba(127,175,192,0.35)] focus:outline-none focus:ring-2 focus:ring-cta/60 focus:ring-offset-2 active:opacity-95;
   }
-  /* Secondary: outline for alternative action */
+  /* Secondary: outline */
   .btn-secondary {
-    @apply inline-flex items-center justify-center rounded-xl border border-warm-brown/50 bg-transparent px-5 py-2.5 text-sm font-medium text-warm-brown transition-all duration-200 hover:bg-warm-brown/5 focus:outline-none focus:ring-2 focus:ring-warm-tan focus:ring-offset-2;
+    @apply inline-flex items-center justify-center rounded-xl border border-cta/60 bg-transparent px-5 py-2.5 text-sm font-medium text-cta transition-all duration-200 hover:bg-cta/10 focus:outline-none focus:ring-2 focus:ring-cta/60 focus:ring-offset-2;
   }
-  /* Quiet secondary: text-only, does not compete */
+  /* Quiet secondary: text-only */
   .btn-secondary-quiet {
-    @apply inline-flex items-center justify-center rounded-lg px-4 py-2.5 text-sm font-medium text-gray-600 transition-colors duration-200 hover:text-warm-brown focus:outline-none focus:ring-2 focus:ring-warm-tan focus:ring-offset-2;
+    @apply inline-flex items-center justify-center rounded-lg px-4 py-2.5 text-sm font-medium text-gray-600 transition-colors duration-200 hover:text-cta focus:outline-none focus:ring-2 focus:ring-cta/60 focus:ring-offset-2;
   }
   .section-heading {
-    @apply text-2xl font-semibold tracking-[-0.02em] text-warm-brown md:text-3xl;
+    @apply text-2xl font-semibold tracking-[-0.02em] text-navy md:text-3xl;
   }
   .section-heading-accent {
-    @apply relative inline-block after:absolute after:bottom-[-6px] after:left-0 after:h-0.5 after:w-12 after:rounded-full after:bg-warm-tan/60 after:content-[''];
+    @apply relative inline-block after:absolute after:bottom-[-6px] after:left-0 after:h-0.5 after:w-12 after:rounded-full after:bg-cta/60 after:content-[''];
   }
-  /* Softer shadows, warm beige card background (Grow Therapy–style) */
+  /* Option B: white cards that stand out on light page */
   .card {
-    @apply rounded-2xl border border-cream-300/60 bg-cream-200 p-6 shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-shadow duration-300 hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)];
+    @apply rounded-2xl bg-white p-6 shadow-[0_8px_24px_rgba(0,0,0,0.04)] transition-shadow duration-300 hover:shadow-[0_8px_28px_rgba(0,0,0,0.08)];
   }
   .nav-link {
-    @apply relative text-gray-700 after:absolute after:bottom-[-2px] after:left-0 after:h-0.5 after:w-0 after:bg-warm-brown after:transition-all after:duration-200 hover:text-warm-brown hover:after:w-full;
+    @apply relative text-navy after:absolute after:bottom-[-2px] after:left-0 after:h-0.5 after:w-0 after:bg-cta-hover after:transition-all after:duration-200 hover:text-cta-hover hover:after:w-full;
+  }
+  /* Header nav: darker hover so links are visible on muted blue background */
+  .site-header .nav-link::after {
+    background-color: #1E293B;
+  }
+  .site-header .nav-link:hover,
+  .site-header .nav-link.after\:w-full {
+    color: #1E293B;
   }
   /* Minimum touch target for mobile (44px) */
   .touch-target {

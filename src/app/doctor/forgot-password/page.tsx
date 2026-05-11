@@ -63,7 +63,7 @@ export default function DoctorForgotPasswordPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="mt-1 block w-full rounded-lg border border-cream-200 bg-white px-3 py-2 text-gray-900 shadow-sm focus:border-warm-brown focus:outline-none focus:ring-1 focus:ring-warm-brown"
+                  className="mt-1 block w-full rounded-lg border border-cream-200 bg-white px-3 py-2 text-navy shadow-sm focus:border-cta focus:outline-none focus:ring-1 focus:ring-cta"
                 />
               </div>
               {errorMessage && <p className="text-sm text-red-600">{errorMessage}</p>}
@@ -71,7 +71,7 @@ export default function DoctorForgotPasswordPage() {
                 {status === "submitting" ? "Sending…" : "Send reset link"}
               </button>
               <div className="text-center text-sm text-gray-600">
-                <Link href="/doctor/login" className="text-warm-brown hover:underline">
+                <Link href="/doctor/login" className="text-cta hover:underline">
                   Back to Doctor Login
                 </Link>
               </div>

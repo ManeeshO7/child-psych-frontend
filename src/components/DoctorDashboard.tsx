@@ -360,7 +360,7 @@ export default function DoctorDashboard() {
                 ? "border-green-200 bg-green-50 text-green-900"
                 : notice.type === "error"
                   ? "border-red-200 bg-red-50 text-red-900"
-                  : "border-cream-200 bg-white text-gray-900"
+                  : "border-cream-200 bg-white text-navy"
             }`}
             role="status"
             aria-live="polite"
@@ -381,13 +381,13 @@ export default function DoctorDashboard() {
 
       <header className="sticky top-0 z-40 border-b border-cream-200 bg-white">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link href="/" className="font-semibold text-warm-brown">
+          <Link href="/" className="font-semibold text-cta">
             TelePsych — Doctor Portal
           </Link>
           <button
             type="button"
             onClick={logout}
-            className="rounded-lg border border-warm-brown/40 bg-white px-4 py-2 text-sm font-medium text-warm-brown shadow-sm transition-colors hover:bg-warm-brown hover:text-white focus:outline-none focus:ring-2 focus:ring-warm-brown focus:ring-offset-2"
+            className="rounded-lg border border-cta/40 bg-white px-4 py-2 text-sm font-medium text-cta shadow-sm transition-colors hover:bg-cta hover:text-white focus:outline-none focus:ring-2 focus:ring-cta focus:ring-offset-2"
           >
             Logout
           </button>
@@ -405,13 +405,13 @@ export default function DoctorDashboard() {
           <>
             {pending.length > 0 && (
               <section className="mt-10">
-                <h2 className="text-lg font-semibold text-warm-brown">Pending</h2>
+                <h2 className="text-lg font-semibold text-cta">Pending</h2>
                 <ul className="mt-4 space-y-4">
                   {pending.map((req) => (
                     <li key={req.id} className="card">
                       <div className="flex flex-wrap justify-between gap-4">
                         <div>
-                          <p className="font-medium text-gray-900">
+                          <p className="font-medium text-navy">
                             {req.firstName} {req.lastName}
                           </p>
                           <p className="text-sm text-gray-600">{req.email}</p>
@@ -468,7 +468,7 @@ export default function DoctorDashboard() {
                                 return next;
                               })
                             }
-                            className="text-sm font-medium text-warm-brown hover:underline"
+                            className="text-sm font-medium text-cta hover:underline"
                           >
                             {expandedPrescreen.has(req.id) ? "Hide" : "Show"} pre-screening responses
                           </button>
@@ -480,7 +480,7 @@ export default function DoctorDashboard() {
                                 </p>
                               )}
                               {req.questionnaireData && Object.keys(req.questionnaireData).length > 0 ? (
-                                <pre className="mt-2 max-h-80 overflow-auto whitespace-pre-wrap rounded bg-white p-3 text-sm text-gray-800">
+                                <pre className="mt-2 max-h-80 overflow-auto whitespace-pre-wrap rounded bg-white p-3 text-sm text-navy">
                                   {JSON.stringify(req.questionnaireData, null, 2)}
                                 </pre>
                               ) : (
@@ -500,12 +500,12 @@ export default function DoctorDashboard() {
             )}
             {processed.length > 0 && (
               <section className="mt-10">
-                <h2 className="text-lg font-semibold text-warm-brown">Processed</h2>
+                <h2 className="text-lg font-semibold text-cta">Processed</h2>
                 <ul className="mt-4 space-y-3">
                   {processed.map((req) => (
                     <li key={req.id} className="card flex flex-wrap items-center justify-between gap-4">
                       <div>
-                        <p className="font-medium text-gray-900">
+                        <p className="font-medium text-navy">
                           {req.firstName} {req.lastName} — {req.email}
                         </p>
                         <p className="text-sm text-gray-500">
@@ -520,7 +520,7 @@ export default function DoctorDashboard() {
             )}
 
             <section className="mt-12">
-              <h2 className="text-lg font-semibold text-warm-brown">Appointments</h2>
+              <h2 className="text-lg font-semibold text-cta">Appointments</h2>
               <p className="mt-1 text-sm text-gray-600">Your upcoming and past appointments.</p>
               {appointmentsLoading ? (
                 <p className="mt-4 text-gray-500">Loading…</p>
@@ -531,7 +531,7 @@ export default function DoctorDashboard() {
                   {formattedAppointments.slice(0, 20).map((a) => (
                     <li key={a.id} className="card flex flex-wrap items-center justify-between gap-4">
                       <div className="min-w-0 flex-1">
-                        <p className="font-medium text-gray-900">
+                        <p className="font-medium text-navy">
                           {a.formattedDate}
                         </p>
                         <p className="text-sm text-gray-600">
@@ -544,7 +544,7 @@ export default function DoctorDashboard() {
                               href={a.meetLink}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-sm font-medium text-warm-brown hover:underline"
+                              className="text-sm font-medium text-cta hover:underline"
                             >
                               Join video call →
                             </a>
@@ -559,7 +559,7 @@ export default function DoctorDashboard() {
                                 e.stopPropagation();
                                 setChargeConfirmAppointment(a);
                               }}
-                              className="text-sm font-medium text-warm-brown hover:underline"
+                              className="text-sm font-medium text-cta hover:underline"
                             >
                               Charge now
                             </button>

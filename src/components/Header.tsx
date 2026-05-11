@@ -10,6 +10,7 @@ import DoctorLogoutButton from "@/components/DoctorLogoutButton";
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/#about", label: "About" },
+  { href: "/how-it-works", label: "How it works" },
   { href: "/#services", label: "Services" },
   { href: "/#testimonials", label: "Testimonials" },
   { href: "/#contact", label: "Contact" },
@@ -58,7 +59,7 @@ export default function Header() {
             key={link.href}
             href={link.href}
             className={`nav-link text-base font-medium ${
-              pathname === link.href ? "text-warm-brown after:w-full" : ""
+              pathname === link.href ? "text-cta-hover after:w-full" : ""
             }`}
           >
             {link.label}
@@ -67,7 +68,7 @@ export default function Header() {
         <div className="relative">
           <button
             onClick={() => setPatientCenterOpen(!patientCenterOpen)}
-            className="flex items-center gap-1 text-base font-medium text-gray-700 transition hover:text-warm-brown"
+            className="flex items-center gap-1 text-base font-medium text-navy transition hover:text-cta-hover"
           >
             Book Appointment
             <svg
@@ -89,14 +90,14 @@ export default function Header() {
               <div className="absolute left-0 top-full z-20 mt-1 w-56 animate-fade-in-up rounded-xl border border-cream-200/80 bg-white py-2 shadow-[0_4px_20px_rgba(0,0,0,0.08)]">
                 <Link
                   href="/request-access"
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-cream-100 hover:text-warm-brown"
+                  className="block px-4 py-2 text-sm text-navy hover:bg-cream-100 hover:text-cta"
                   onClick={() => setPatientCenterOpen(false)}
                 >
                   New Patient — Request Access
                 </Link>
                 <Link
                   href="/login"
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-cream-100 hover:text-warm-brown"
+                  className="block px-4 py-2 text-sm text-navy hover:bg-cream-100 hover:text-cta"
                   onClick={() => setPatientCenterOpen(false)}
                 >
                   Returning Patient — Login
@@ -116,7 +117,7 @@ export default function Header() {
           </>
         ) : (
           <>
-            <Link href="/#contact" className="text-base font-medium text-gray-700 transition hover:text-warm-brown">
+            <Link href="/#contact" className="nav-link text-base font-medium">
               Contact Us
             </Link>
             <a
@@ -135,10 +136,10 @@ export default function Header() {
   );
 
   return (
-    <header className="sticky top-0 z-50 border-b border-cream-300/80 bg-cream-100">
+    <header className="site-header sticky top-0 z-50 border-b border-cream-300/80 bg-header-footer">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:h-24 lg:gap-6 lg:px-8">
         <Link href="/" className="flex shrink-0 flex-col items-start">
-          <span className="text-xl font-semibold tracking-tight text-warm-brown sm:text-2xl">TP</span>
+          <span className="text-xl font-semibold tracking-tight text-cta sm:text-2xl">TP</span>
           <span className="text-xs font-medium text-gray-600 sm:text-sm">TelePsych</span>
         </Link>
 
@@ -148,7 +149,7 @@ export default function Header() {
         <button
           type="button"
           onClick={mobileMenuOpen ? closeMobileMenu : openMobileMenu}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-gray-700 transition hover:bg-cream-200/80 hover:text-warm-brown lg:hidden"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-navy transition hover:bg-cream-200/80 hover:text-cta lg:hidden"
           aria-expanded={mobileMenuOpen}
           aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
         >
@@ -177,7 +178,7 @@ export default function Header() {
               onClick={closeMobileMenu}
             />
             <div
-              className={`fixed right-0 top-0 z-50 flex h-full w-[min(320px,85vw)] max-w-sm flex-col border-l border-cream-300/80 bg-cream-100 shadow-xl transition-transform duration-200 ease-out lg:hidden ${
+              className={`fixed right-0 top-0 z-50 flex h-full w-[min(320px,85vw)] max-w-sm flex-col border-l border-cream-300/80 bg-header-footer shadow-xl transition-transform duration-200 ease-out lg:hidden ${
                 mobileMenuOpen ? "translate-x-0" : "translate-x-full"
               }`}
               aria-modal="true"
@@ -185,11 +186,11 @@ export default function Header() {
               role="dialog"
             >
               <div className="flex shrink-0 items-center justify-between border-b border-cream-300/80 px-4 py-4">
-                <span className="text-lg font-semibold text-warm-brown">Menu</span>
+                <span className="text-lg font-semibold text-cta">Menu</span>
                 <button
                   type="button"
                   onClick={closeMobileMenu}
-                  className="flex h-10 w-10 items-center justify-center rounded-lg text-gray-700 hover:bg-cream-200/80"
+                  className="flex h-10 w-10 items-center justify-center rounded-lg text-navy hover:bg-cream-200/80 hover:text-cta"
                   aria-label="Close menu"
                 >
                   <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -204,7 +205,7 @@ export default function Header() {
                       key={link.href}
                       href={link.href}
                       className={`block px-5 py-3.5 text-base font-medium ${
-                        pathname === link.href ? "bg-cream-200/60 text-warm-brown" : "text-gray-700 hover:bg-cream-200/40"
+                        pathname === link.href ? "bg-cream-200/60 text-cta" : "text-navy hover:bg-cream-200/40"
                       }`}
                       onClick={closeMobileMenu}
                     >
@@ -217,14 +218,14 @@ export default function Header() {
                     </p>
                     <Link
                       href="/request-access"
-                      className="block rounded-lg px-3 py-3 text-base text-gray-700 hover:bg-cream-200/60 hover:text-warm-brown"
+                      className="block rounded-lg px-3 py-3 text-base text-navy hover:bg-cream-200/60 hover:text-cta"
                       onClick={closeMobileMenu}
                     >
                       New Patient — Request Access
                     </Link>
                     <Link
                       href="/login"
-                      className="block rounded-lg px-3 py-3 text-base text-gray-700 hover:bg-cream-200/60 hover:text-warm-brown"
+                      className="block rounded-lg px-3 py-3 text-base text-navy hover:bg-cream-200/60 hover:text-cta"
                       onClick={closeMobileMenu}
                     >
                       Returning Patient — Login
@@ -235,14 +236,14 @@ export default function Header() {
                       <div className="border-t border-cream-300/80" />
                       <Link
                         href="/#contact"
-                        className="block px-5 py-3.5 text-base font-medium text-gray-700 hover:bg-cream-200/40"
+                        className="block px-5 py-3.5 text-base font-medium text-navy hover:bg-cream-200/40"
                         onClick={closeMobileMenu}
                       >
                         Contact Us
                       </Link>
                       <a
                         href="tel:+18587766267"
-                        className="mx-4 mt-2 flex items-center justify-center gap-2 rounded-lg bg-warm-brown px-4 py-3 text-sm font-medium text-white transition hover:bg-warm-brown/90"
+                        className="mx-4 mt-2 flex items-center justify-center gap-2 rounded-lg bg-cta px-4 py-3 text-sm font-medium text-white transition hover:bg-cta-hover"
                         onClick={closeMobileMenu}
                       >
                         <svg className="h-4 w-4 shrink-0" fill="currentColor" viewBox="0 0 20 20">

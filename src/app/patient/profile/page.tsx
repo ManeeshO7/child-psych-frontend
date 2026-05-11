@@ -44,10 +44,16 @@ const REQUIRED_PROFILE_FIELDS = [
   { key: "firstName", label: "First name" },
   { key: "lastName", label: "Last name" },
   { key: "phone", label: "Phone" },
-  { key: "sex", label: "Sex" },
+  { key: "address", label: "Address" },
+  { key: "sex", label: "Gender" },
   { key: "dateOfBirth", label: "Date of birth" },
   { key: "ssn", label: "SSN" },
   { key: "preferredPharmacyName", label: "Preferred pharmacy" },
+  { key: "preferredPharmacyAddress", label: "Preferred pharmacy address" },
+  { key: "guardian1Name", label: "Parent 1 name" },
+  { key: "guardian1Relationship", label: "Parent 1 relationship" },
+  { key: "guardian1Phone", label: "Parent 1 phone" },
+  { key: "guardian1Address", label: "Parent 1 address" },
 ] as const;
 
 function formatSsn(digits: string): string {
@@ -330,24 +336,31 @@ export default function PatientProfilePage() {
   return (
     <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
       <p className="mb-6">
-        <Link href="/patient" className="text-sm text-warm-brown hover:underline">
+        <Link href="/patient" className="text-sm text-cta hover:underline">
           ← Back to dashboard
         </Link>
       </p>
       <h1 className="section-heading">Your profile</h1>
-      <p className="mt-2 text-gray-600">
-        Please complete your profile before booking your 30-minute orientation consultation. All fields marked with * are required.
-      </p>
+      {!data?.isComplete && (
+        <p className="mt-2 text-gray-600">
+          Please complete your profile before booking your 30-minute orientation consultation. All fields marked with * are required.
+        </p>
+      )}
+      {data?.isComplete && (
+        <p className="mt-2 text-gray-600">
+          All fields marked with * are required. You can update your details below.
+        </p>
+      )}
       <div className="mt-4 rounded-xl border border-cream-200 bg-white p-4 shadow-sm">
         <div className="flex items-center justify-between gap-3">
-          <p className="text-sm font-medium text-gray-900">Profile Completion: {completionPercent}%</p>
+          <p className="text-sm font-medium text-navy">Profile Completion: {completionPercent}%</p>
           <p className="text-xs text-gray-600">
             {remainingRequiredCount} required {remainingLabel} remaining
           </p>
         </div>
         <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-cream-100">
           <div
-            className="h-full rounded-full bg-warm-brown transition-all duration-300"
+            className="h-full rounded-full bg-cta transition-all duration-300"
             style={{ width: `${completionPercent}%` }}
             aria-hidden
           />
@@ -357,7 +370,7 @@ export default function PatientProfilePage() {
       {!data?.isComplete && (
         <div className="mt-4 rounded-lg border-2 border-amber-200 bg-amber-50 p-4">
           <p className="text-sm font-medium text-amber-900">
-            Required: Name, Sex, Date of Birth, SSN, Contact info, and Preferred Pharmacy.
+            Required: Name, Contact info, Address, Gender, Date of Birth, SSN, Preferred Pharmacy (name & address), and Parent 1 details.
           </p>
           <p className="mt-1 text-xs text-amber-800">
             Once complete, you will be able to book your orientation consultation.
@@ -387,7 +400,7 @@ export default function PatientProfilePage() {
       <form onSubmit={handleSubmit} className="mt-6">
         <div className="grid gap-8 lg:grid-cols-2">
           <div className="rounded-xl border border-cream-200/70 bg-white p-6 shadow-[0_1px_4px_rgba(15,23,42,0.06)]">
-          <h2 className="text-xl font-semibold text-gray-900">Name & contact</h2>
+          <h2 className="text-xl font-semibold text-navy">Patient name and contact</h2>
           <div className="mt-5 grid gap-5 sm:grid-cols-2">
             <div>
               <label className="block text-sm font-medium text-gray-700">First name *</label>
@@ -396,7 +409,7 @@ export default function PatientProfilePage() {
                 value={form.firstName}
                 onChange={(e) => setForm((f) => ({ ...f, firstName: e.target.value }))}
                 required
-                className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-base text-gray-900 focus:border-warm-brown focus:ring-warm-brown"
+                className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-base text-navy focus:border-cta focus:ring-cta"
               />
             </div>
             <div>
@@ -406,13 +419,13 @@ export default function PatientProfilePage() {
                 value={form.lastName}
                 onChange={(e) => setForm((f) => ({ ...f, lastName: e.target.value }))}
                 required
-                className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-base text-gray-900 focus:border-warm-brown focus:ring-warm-brown"
+                className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-base text-navy focus:border-cta focus:ring-cta"
               />
             </div>
           </div>
           <div className="mt-4">
             <label className="block text-sm font-medium text-gray-700">Phone *</label>
-            <div className="mt-1 flex rounded-lg border border-gray-200 focus-within:border-warm-brown focus-within:ring-1 focus-within:ring-warm-brown">
+            <div className="mt-1 flex rounded-lg border border-gray-200 focus-within:border-cta focus-within:ring-1 focus-within:ring-cta">
               <span className="flex items-center rounded-l-lg border-r border-gray-200 bg-gray-50 px-3 py-2.5 text-base text-gray-600">+1</span>
               <input
                 type="tel"
@@ -425,32 +438,33 @@ export default function PatientProfilePage() {
                 }}
                 required
                 placeholder="2175551234"
-                className="w-full rounded-r-lg border-0 bg-transparent px-3 py-2.5 text-base text-gray-900 placeholder:text-gray-400 focus:ring-0"
+                className="w-full rounded-r-lg border-0 bg-transparent px-3 py-2.5 text-base text-navy placeholder:text-gray-400 focus:ring-0"
               />
             </div>
           </div>
           <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700">Address</label>
+            <label className="block text-sm font-medium text-gray-700">Address *</label>
             <CaliforniaAddressAutocomplete
               id="profile-address"
               value={form.address}
               onChange={(address) => setForm((f) => ({ ...f, address }))}
               placeholder="Start typing your California address…"
-              className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-base text-gray-900 focus:border-warm-brown focus:ring-warm-brown"
+              required
+              className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-base text-navy focus:border-cta focus:ring-cta"
             />
           </div>
           </div>
 
           <div className="rounded-xl border border-cream-200/70 bg-white p-6 shadow-[0_1px_4px_rgba(15,23,42,0.06)]">
-          <h2 className="text-xl font-semibold text-gray-900">Demographics</h2>
+          <h2 className="text-xl font-semibold text-navy">Demographics</h2>
           <div className="mt-5 grid gap-5 sm:grid-cols-2">
             <div>
-              <label className="block text-sm font-medium text-gray-700">Sex *</label>
+              <label className="block text-sm font-medium text-gray-700">Gender *</label>
               <select
                 value={form.sex}
                 onChange={(e) => setForm((f) => ({ ...f, sex: e.target.value }))}
                 required
-                className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-base text-gray-900 focus:border-warm-brown focus:ring-warm-brown"
+                className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-base text-navy focus:border-cta focus:ring-cta"
               >
                 <option value="">Select</option>
                 <option value="male">Male</option>
@@ -466,7 +480,7 @@ export default function PatientProfilePage() {
                 value={form.dateOfBirth}
                 onChange={(e) => setForm((f) => ({ ...f, dateOfBirth: e.target.value }))}
                 required
-                className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-base text-gray-900 focus:border-warm-brown focus:ring-warm-brown"
+                className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-base text-navy focus:border-cta focus:ring-cta"
               />
             </div>
           </div>
@@ -483,7 +497,7 @@ export default function PatientProfilePage() {
               <button
                 type="button"
                 onClick={() => setShowSsn((v) => !v)}
-                className="text-xs font-medium text-warm-brown hover:underline"
+                className="text-xs font-medium text-cta hover:underline"
               >
                 {showSsn ? "Hide" : "Show"}
               </button>
@@ -500,7 +514,7 @@ export default function PatientProfilePage() {
               }}
               required
               placeholder="•••-••-1234"
-              className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-base text-gray-900 focus:border-warm-brown focus:ring-warm-brown"
+              className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-base text-navy focus:border-cta focus:ring-cta"
             />
             <p className="mt-1 text-xs text-gray-500">
               <span
@@ -514,7 +528,7 @@ export default function PatientProfilePage() {
           </div>
 
           <div className="rounded-xl border border-cream-200/70 bg-white p-6 shadow-[0_1px_4px_rgba(15,23,42,0.06)]">
-          <h2 className="text-xl font-semibold text-gray-900">Preferred pharmacy *</h2>
+          <h2 className="text-xl font-semibold text-navy">Preferred pharmacy *</h2>
           <div className="mt-5 space-y-5">
             <div>
               <label className="block text-sm font-medium text-gray-700">Pharmacy name *</label>
@@ -524,12 +538,12 @@ export default function PatientProfilePage() {
                 onChange={(e) => setForm((f) => ({ ...f, preferredPharmacyName: e.target.value }))}
                 required
                 placeholder="e.g. CVS, Walgreens"
-                className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-base text-gray-900 focus:border-warm-brown focus:ring-warm-brown"
+                className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-base text-navy focus:border-cta focus:ring-cta"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Pharmacy phone</label>
-              <div className="mt-1 flex rounded-lg border border-gray-200 focus-within:border-warm-brown focus-within:ring-1 focus-within:ring-warm-brown">
+              <div className="mt-1 flex rounded-lg border border-gray-200 focus-within:border-cta focus-within:ring-1 focus-within:ring-cta">
                 <span className="flex items-center rounded-l-lg border-r border-gray-200 bg-gray-50 px-3 py-2.5 text-base text-gray-600">+1</span>
                 <input
                   type="tel"
@@ -541,52 +555,55 @@ export default function PatientProfilePage() {
                     setForm((f) => ({ ...f, preferredPharmacyPhone: digits }));
                   }}
                   placeholder="2175551234"
-                  className="w-full rounded-r-lg border-0 bg-transparent px-3 py-2.5 text-base text-gray-900 placeholder:text-gray-400 focus:ring-0"
+                  className="w-full rounded-r-lg border-0 bg-transparent px-3 py-2.5 text-base text-navy placeholder:text-gray-400 focus:ring-0"
                 />
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Pharmacy address</label>
+              <label className="block text-sm font-medium text-gray-700">Pharmacy address *</label>
               <CaliforniaAddressAutocomplete
                 id="profile-pharmacy-address"
                 value={form.preferredPharmacyAddress}
                 onChange={(address) => setForm((f) => ({ ...f, preferredPharmacyAddress: address }))}
                 placeholder="Start typing pharmacy California address…"
-                className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-base text-gray-900 focus:border-warm-brown focus:ring-warm-brown"
+                required
+                className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-base text-navy focus:border-cta focus:ring-cta"
               />
             </div>
           </div>
           </div>
 
           <div className="rounded-xl border border-cream-200/70 bg-white p-6 shadow-[0_1px_4px_rgba(15,23,42,0.06)]">
-          <h2 className="text-xl font-semibold text-gray-900">Parent or guardian (optional)</h2>
-          <p className="mt-1 text-sm text-gray-500">If applicable, provide up to 2 guardian contacts.</p>
+          <h2 className="text-xl font-semibold text-navy">Parent details</h2>
+          <p className="mt-1 text-sm text-gray-500">Parent 1 is required; Parent 2 is optional.</p>
           <div className="mt-5 space-y-8">
             <div className="rounded-lg border border-gray-200 bg-gray-50/50 p-5">
-              <h3 className="text-sm font-medium text-gray-700">Guardian 1</h3>
+              <h3 className="text-sm font-medium text-gray-700">Parent 1 *</h3>
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="block text-sm font-medium text-gray-600">Name</label>
+                  <label className="block text-sm font-medium text-gray-600">Name *</label>
                   <input
                     type="text"
                     value={form.guardian1Name}
                     onChange={(e) => setForm((f) => ({ ...f, guardian1Name: e.target.value }))}
+                    required
                     className="mt-1 w-full rounded border border-gray-200 px-3 py-2 text-sm"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-600">Relationship</label>
+                  <label className="block text-sm font-medium text-gray-600">Relationship *</label>
                   <input
                     type="text"
                     value={form.guardian1Relationship}
                     onChange={(e) => setForm((f) => ({ ...f, guardian1Relationship: e.target.value }))}
                     placeholder="e.g. Mother, Father"
+                    required
                     className="mt-1 w-full rounded border border-gray-200 px-3 py-2 text-sm"
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="block text-sm font-medium text-gray-600">Phone</label>
-                  <div className="mt-1 flex rounded border border-gray-200 focus-within:border-warm-brown focus-within:ring-1 focus-within:ring-warm-brown">
+                  <label className="block text-sm font-medium text-gray-600">Phone *</label>
+                  <div className="mt-1 flex rounded border border-gray-200 focus-within:border-cta focus-within:ring-1 focus-within:ring-cta">
                     <span className="flex items-center rounded-l border-r border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-600">+1</span>
                     <input
                       type="tel"
@@ -598,25 +615,27 @@ export default function PatientProfilePage() {
                         setForm((f) => ({ ...f, guardian1Phone: digits }));
                       }}
                       placeholder="2175551234"
+                      required
                       className="w-full rounded-r border-0 bg-transparent px-3 py-2 text-sm focus:ring-0"
                     />
                   </div>
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="block text-sm font-medium text-gray-600">Address</label>
+                  <label className="block text-sm font-medium text-gray-600">Address *</label>
                   <CaliforniaAddressAutocomplete
                     id="profile-guardian1-address"
                     value={form.guardian1Address}
                     onChange={(address) => setForm((f) => ({ ...f, guardian1Address: address }))}
                     placeholder="Start typing address…"
                     restrictToCalifornia={false}
+                    required
                     className="mt-1 w-full rounded border border-gray-200 px-3 py-2 text-sm"
                   />
                 </div>
               </div>
             </div>
             <div className="rounded-lg border border-gray-200 bg-gray-50/50 p-5">
-              <h3 className="text-sm font-medium text-gray-700">Guardian 2</h3>
+              <h3 className="text-sm font-medium text-gray-700">Parent 2 (optional)</h3>
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 <div>
                   <label className="block text-sm font-medium text-gray-600">Name</label>
@@ -639,7 +658,7 @@ export default function PatientProfilePage() {
                 </div>
                 <div className="sm:col-span-2">
                   <label className="block text-sm font-medium text-gray-600">Phone</label>
-                  <div className="mt-1 flex rounded border border-gray-200 focus-within:border-warm-brown focus-within:ring-1 focus-within:ring-warm-brown">
+                  <div className="mt-1 flex rounded border border-gray-200 focus-within:border-cta focus-within:ring-1 focus-within:ring-cta">
                     <span className="flex items-center rounded-l border-r border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-600">+1</span>
                     <input
                       type="tel"
@@ -676,7 +695,7 @@ export default function PatientProfilePage() {
           <button
             type="submit"
             disabled={saving}
-            className="rounded-lg bg-warm-brown px-6 py-2.5 text-sm font-medium text-white hover:bg-warm-brown/90 disabled:opacity-50"
+            className="rounded-lg bg-cta px-6 py-2.5 text-sm font-medium text-white hover:bg-cta/90 disabled:opacity-50"
           >
             {saving ? "Saving…" : "Save profile"}
           </button>
@@ -687,7 +706,7 @@ export default function PatientProfilePage() {
       </form>
 
       <div className="mt-6 rounded-xl border border-cream-200 bg-white p-6 shadow-sm">
-        <h2 className="text-base font-semibold text-gray-900">Previous medical records</h2>
+        <h2 className="text-base font-semibold text-navy">Previous medical records</h2>
         <p className="mt-1 text-sm text-gray-500">Upload documents (PDF, PNG, JPG) that your doctor may need. Max 10 MB per file.</p>
         <form onSubmit={handleUpload} className="mt-4 flex flex-wrap items-end gap-3">
           <div className="min-w-[180px]">
@@ -696,13 +715,13 @@ export default function PatientProfilePage() {
               type="file"
               accept=".pdf,.png,.jpg,.jpeg,.gif,.webp"
               multiple
-              className="mt-1 block w-full text-sm text-gray-600 file:mr-2 file:rounded file:border-0 file:bg-warm-brown/10 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-warm-brown hover:file:bg-warm-brown/20"
+              className="mt-1 block w-full text-sm text-gray-600 file:mr-2 file:rounded file:border-0 file:bg-cta/10 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-cta hover:file:bg-cta/20"
             />
           </div>
           <button
             type="submit"
             disabled={uploading}
-            className="rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90 disabled:opacity-50"
+            className="rounded-lg bg-cta px-4 py-2 text-sm font-medium text-white hover:bg-cta/90 disabled:opacity-50"
           >
             {uploading ? "Uploading…" : "Upload"}
           </button>
@@ -711,10 +730,10 @@ export default function PatientProfilePage() {
           <ul className="mt-4 space-y-2">
             {documents.map((doc) => (
               <li key={doc.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-gray-200 bg-gray-50/50 px-3 py-2 text-sm">
-                <span className="font-medium text-gray-900">{doc.fileName}</span>
+                <span className="font-medium text-navy">{doc.fileName}</span>
                 <div className="flex items-center gap-3">
                   {doc.downloadUrl && (
-                    <a href={doc.downloadUrl} target="_blank" rel="noopener noreferrer" className="text-warm-brown hover:underline">
+                    <a href={doc.downloadUrl} target="_blank" rel="noopener noreferrer" className="text-cta hover:underline">
                       View
                     </a>
                   )}

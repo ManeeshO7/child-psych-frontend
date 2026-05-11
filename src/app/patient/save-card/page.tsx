@@ -372,7 +372,7 @@ export default function PatientSaveCardPage() {
         <p className="mt-2 text-gray-600">
           Payments are not configured. Set <code className="text-sm bg-gray-100 px-1">NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY</code> in the frontend .env.
         </p>
-        <Link href="/patient" className="mt-4 inline-block text-warm-brown hover:underline">
+        <Link href="/patient" className="mt-4 inline-block text-cta hover:underline">
           ← Back to dashboard
         </Link>
       </main>
@@ -383,8 +383,8 @@ export default function PatientSaveCardPage() {
     <main className="mx-auto max-w-xl px-4 py-10 sm:px-6 lg:px-8">
       <h1 className="section-heading">Save card on file</h1>
       {appointment && pricing?.pricing?.[appointment.type] && (
-        <div className="mt-3 rounded-lg border border-warm-brown/20 bg-cream-50 p-3">
-          <p className="text-sm font-medium text-warm-brown">
+        <div className="mt-3 rounded-lg border border-cta/20 bg-cream-50 p-3">
+          <p className="text-sm font-medium text-cta">
             Visit fee: {pricing.pricing[appointment.type].formatted}
           </p>
         </div>
@@ -399,7 +399,7 @@ export default function PatientSaveCardPage() {
       ) : error || !clientSecret ? (
         <div className="mt-6">
           <p className="text-red-600">{error || "Could not load payment form."}</p>
-          <Link href="/patient" className="mt-4 inline-block text-warm-brown hover:underline">
+          <Link href="/patient" className="mt-4 inline-block text-cta hover:underline">
             ← Back to dashboard
           </Link>
         </div>
@@ -427,7 +427,7 @@ export default function PatientSaveCardPage() {
       )}
 
       <p className="mt-6">
-        <Link href="/patient" className="text-sm text-warm-brown hover:underline">
+        <Link href="/patient" className="text-sm text-cta hover:underline">
           ← Back to dashboard
         </Link>
       </p>

@@ -75,7 +75,7 @@ export default function Testimonials() {
       </div>
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <h2 className="text-center text-sm font-semibold tracking-[0.22em] text-warm-brown/80">
+        <h2 className="text-center text-sm font-semibold tracking-[0.22em] text-cta/80">
           TESTIMONIALS
         </h2>
 
@@ -96,7 +96,7 @@ export default function Testimonials() {
               {Array.from({ length: SLIDE_COUNT }).map((_, i) => (
                 <span
                   key={i}
-                  className={`h-1 w-6 rounded-full sm:w-9 ${i === slideIndex ? "bg-warm-brown" : "bg-gray-200"}`}
+                  className={`h-1 w-6 rounded-full sm:w-9 ${i === slideIndex ? "bg-cta" : "bg-gray-200"}`}
                   aria-hidden
                 />
               ))}
@@ -133,7 +133,7 @@ export default function Testimonials() {
               {Array.from({ length: SLIDE_COUNT }).map((_, i) => (
                 <span
                   key={i}
-                  className={`h-1 w-6 rounded-full sm:w-9 ${i === slideIndex ? "bg-warm-brown" : "bg-gray-200"}`}
+                  className={`h-1 w-6 rounded-full sm:w-9 ${i === slideIndex ? "bg-cta" : "bg-gray-200"}`}
                   aria-hidden
                 />
               ))}

@@ -50,7 +50,7 @@ export default function PatientBookPage() {
   return (
     <main className="mx-auto max-w-2xl px-4 py-10 sm:px-6 lg:px-8">
       <p className="mb-6">
-        <Link href="/patient" className="text-sm text-warm-brown hover:underline">
+        <Link href="/patient" className="text-sm text-cta hover:underline">
           ← Back to dashboard
         </Link>
       </p>
@@ -80,7 +80,7 @@ export default function PatientBookPage() {
           </p>
           <Link
             href="/patient/profile"
-            className="mt-3 inline-block rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90"
+            className="mt-3 inline-block rounded-lg bg-cta px-4 py-2 text-sm font-medium text-white hover:bg-cta/90"
           >
             Complete profile →
           </Link>
@@ -98,7 +98,7 @@ export default function PatientBookPage() {
               ? "Complete your profile first to book an orientation consultation."
               : "New patients: request access first. After orientation, you can book clinical intake. After intake, your doctor will assign your follow-up type."}
           </p>
-          <Link href="/patient" className="mt-4 inline-block text-warm-brown hover:underline">
+          <Link href="/patient" className="mt-4 inline-block text-cta hover:underline">
             ← Back to dashboard
           </Link>
         </div>
@@ -112,12 +112,12 @@ export default function PatientBookPage() {
             return (
               <div
                 key={opt.type}
-                className="rounded-xl border border-cream-200 bg-white p-5 shadow-sm transition hover:border-warm-brown/50 hover:shadow-md"
+                className="rounded-xl border border-cream-200 bg-white p-5 shadow-sm transition hover:border-cta/50 hover:shadow-md"
               >
-                <h2 className="text-base font-semibold text-gray-900">{label}</h2>
+                <h2 className="text-base font-semibold text-navy">{label}</h2>
                 <Link
                   href={`/patient/book/${slug}`}
-                  className="mt-3 inline-block rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90"
+                  className="mt-3 inline-block rounded-lg bg-cta px-4 py-2 text-sm font-medium text-white hover:bg-cta/90"
                 >
                   Book this appointment →
                 </Link>

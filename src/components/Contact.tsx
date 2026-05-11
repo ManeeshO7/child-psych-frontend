@@ -55,7 +55,7 @@ export default function Contact() {
                 name="name"
                 type="text"
                 required
-                className="mt-1.5 block w-full rounded-xl border border-cream-200/80 bg-white px-4 py-3 text-gray-900 shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-shadow focus:border-warm-brown focus:outline-none focus:ring-2 focus:ring-warm-tan/40"
+                className="mt-1.5 block w-full rounded-xl border border-cream-200/80 bg-white px-4 py-3 text-navy shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-shadow focus:border-cta focus:outline-none focus:ring-2 focus:ring-cta/40"
               />
             </div>
             <div>
@@ -67,7 +67,7 @@ export default function Contact() {
                 name="email"
                 type="email"
                 required
-                className="mt-1.5 block w-full rounded-xl border border-cream-200/80 bg-white px-4 py-3 text-gray-900 shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-shadow focus:border-warm-brown focus:outline-none focus:ring-2 focus:ring-warm-tan/40"
+                className="mt-1.5 block w-full rounded-xl border border-cream-200/80 bg-white px-4 py-3 text-navy shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-shadow focus:border-cta focus:outline-none focus:ring-2 focus:ring-cta/40"
               />
             </div>
             <div>
@@ -78,7 +78,7 @@ export default function Contact() {
                 id="phone"
                 name="phone"
                 type="tel"
-                className="mt-1.5 block w-full rounded-xl border border-cream-200/80 bg-white px-4 py-3 text-gray-900 shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-shadow focus:border-warm-brown focus:outline-none focus:ring-2 focus:ring-warm-tan/40"
+                className="mt-1.5 block w-full rounded-xl border border-cream-200/80 bg-white px-4 py-3 text-navy shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-shadow focus:border-cta focus:outline-none focus:ring-2 focus:ring-cta/40"
               />
             </div>
             <div>
@@ -90,7 +90,7 @@ export default function Contact() {
                 name="message"
                 rows={4}
                 required
-                className="mt-1.5 block w-full rounded-xl border border-cream-200/80 bg-white px-4 py-3 text-gray-900 shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-shadow focus:border-warm-brown focus:outline-none focus:ring-2 focus:ring-warm-tan/40"
+                className="mt-1.5 block w-full rounded-xl border border-cream-200/80 bg-white px-4 py-3 text-navy shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-shadow focus:border-cta focus:outline-none focus:ring-2 focus:ring-cta/40"
               />
             </div>
             <button type="submit" disabled={status === "sending"} className="btn-primary w-full">

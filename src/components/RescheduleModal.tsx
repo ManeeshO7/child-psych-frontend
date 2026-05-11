@@ -199,19 +199,19 @@ export default function RescheduleModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-lg bg-white shadow-xl">
         <div className="border-b border-gray-200 px-6 py-4">
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-xl font-semibold text-navy">
             {isChangeProposed ? "Change proposed time" : "Reschedule appointment"}
           </h2>
           <p className="mt-1 text-sm text-gray-600">
             {isChangeProposed
               ? "Pick a new date and time before confirming. You'll add payment and confirm the appointment after."
-              : "Choose a new date and time. Rescheduling is allowed until 48 hours before the appointment."}
+              : "Choose a new date and time. You may reschedule once per appointment."}
           </p>
         </div>
         <div className="px-6 py-4 space-y-4">
           {showConfirmation && selectedSlot ? (
             <div className="rounded-lg border border-cream-200 bg-white p-6 shadow-sm">
-              <h3 className="text-lg font-semibold text-warm-brown mb-4">
+              <h3 className="text-lg font-semibold text-cta mb-4">
                 {isChangeProposed ? "Confirm new time" : "Confirm reschedule"}
               </h3>
               <p className="text-sm text-gray-600 mb-4">
@@ -220,19 +220,19 @@ export default function RescheduleModal({
               <div className="space-y-3">
                 <div>
                   <p className="text-sm text-gray-600">New date & time</p>
-                  <p className="text-base font-medium text-gray-900">
+                  <p className="text-base font-medium text-navy">
                     {formatSlotDateLong(selectedSlot.start)}, {formatSlotTime(selectedSlot.start)} {getTimezoneLabel()}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Duration</p>
-                  <p className="text-base font-medium text-gray-900">
+                  <p className="text-base font-medium text-navy">
                     {durationMinutes} minute{durationMinutes === 1 ? "" : "s"}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Appointment type</p>
-                  <p className="text-base font-medium text-gray-900 capitalize">{appointmentType.replace(/_/g, " ")}</p>
+                  <p className="text-base font-medium text-navy capitalize">{appointmentType.replace(/_/g, " ")}</p>
                 </div>
               </div>
             </div>
@@ -251,7 +251,7 @@ export default function RescheduleModal({
           ) : (
             <>
               <div className="rounded-xl border border-cream-200 bg-white p-4 shadow-sm">
-                <h3 className="text-sm font-semibold text-gray-900">1. Pick a date</h3>
+                <h3 className="text-sm font-semibold text-navy">1. Pick a date</h3>
                 <div className="mt-3 flex items-center justify-between">
                   <button
                     type="button"
@@ -262,7 +262,7 @@ export default function RescheduleModal({
                   >
                     ‹
                   </button>
-                  <span className="text-sm font-medium text-gray-800">{currentMonth?.label ?? ""}</span>
+                  <span className="text-sm font-medium text-navy">{currentMonth?.label ?? ""}</span>
                   <button
                     type="button"
                     onClick={() => setCurrentMonthIndex((i) => Math.min(months.length - 1, i + 1))}
@@ -299,8 +299,8 @@ export default function RescheduleModal({
                             !hasSlots
                               ? "cursor-default text-gray-300"
                               : isSelected
-                                ? "bg-warm-brown text-white"
-                                : "bg-cream-50 text-warm-brown hover:bg-cream-100"
+                                ? "bg-cta text-white"
+                                : "bg-cream-50 text-cta hover:bg-cream-100"
                           }`}
                         >
                           {day}
@@ -313,7 +313,7 @@ export default function RescheduleModal({
 
               {selectedDate && (
                 <div className="rounded-xl border border-cream-200 bg-white p-4 shadow-sm">
-                  <h3 className="text-sm font-semibold text-gray-900">2. Select a time slot</h3>
+                  <h3 className="text-sm font-semibold text-navy">2. Select a time slot</h3>
                   <p className="mt-1 text-sm text-gray-600">
                     {formatSlotDate(slotsForSelected[0]?.start ?? selectedDate)} · {typeLabel}
                   </p>
@@ -328,8 +328,8 @@ export default function RescheduleModal({
                           disabled={submitting}
                           className={`rounded-lg border px-4 py-2 text-sm font-medium transition disabled:opacity-50 ${
                             isSelected
-                              ? "border-warm-brown bg-warm-brown text-white"
-                              : "border-cream-200 bg-white text-warm-brown hover:border-warm-brown/50 hover:bg-cream-50"
+                              ? "border-cta bg-cta text-white"
+                              : "border-cream-200 bg-white text-cta hover:border-cta/50 hover:bg-cream-50"
                           }`}
                         >
                           {formatSlotTime(slot.start)}
@@ -360,7 +360,7 @@ export default function RescheduleModal({
                 type="button"
                 onClick={handleReschedule}
                 disabled={submitting}
-                className="rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90 disabled:opacity-50"
+                className="rounded-lg bg-cta px-4 py-2 text-sm font-medium text-white hover:bg-cta/90 disabled:opacity-50"
               >
                 {submitting
                   ? isChangeProposed
@@ -385,7 +385,7 @@ export default function RescheduleModal({
                 type="button"
                 onClick={() => selectedSlot && setShowConfirmation(true)}
                 disabled={submitting || !selectedSlot}
-                className="rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90 disabled:opacity-50"
+                className="rounded-lg bg-cta px-4 py-2 text-sm font-medium text-white hover:bg-cta/90 disabled:opacity-50"
               >
                 Continue
               </button>

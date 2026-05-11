@@ -316,7 +316,7 @@ export default function PatientFormsPage() {
                         onChange={() =>
                           updateQuestionnaireResponse(assignment.id, q.linkId, opt.value)
                         }
-                        className="h-4 w-4 border-gray-300 text-warm-brown focus:ring-warm-brown"
+                        className="h-4 w-4 border-gray-300 text-cta focus:ring-cta"
                       />
                       <span className="text-sm text-gray-700">{opt.label}</span>
                     </label>
@@ -346,7 +346,7 @@ export default function PatientFormsPage() {
                         opt.value
                       )
                     }
-                    className="h-4 w-4 border-gray-300 text-warm-brown focus:ring-warm-brown"
+                    className="h-4 w-4 border-gray-300 text-cta focus:ring-cta"
                   />
                   <span className="text-sm text-gray-700">{opt.label}</span>
                 </label>
@@ -357,7 +357,7 @@ export default function PatientFormsPage() {
             type="button"
             onClick={() => handleQuestionnaireSubmit(assignment.id, formKey)}
             disabled={submitting === assignment.id}
-            className="rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90 disabled:opacity-50"
+            className="rounded-lg bg-cta px-4 py-2 text-sm font-medium text-white hover:bg-cta/90 disabled:opacity-50"
           >
             {submitting === assignment.id ? "Submitting…" : "Submit PHQ-A"}
           </button>
@@ -385,7 +385,7 @@ export default function PatientFormsPage() {
                         onChange={() =>
                           updateQuestionnaireResponse(assignment.id, q.linkId, opt.value)
                         }
-                        className="h-4 w-4 border-gray-300 text-warm-brown focus:ring-warm-brown"
+                        className="h-4 w-4 border-gray-300 text-cta focus:ring-cta"
                       />
                       <span className="text-sm text-gray-700">{opt.label}</span>
                     </label>
@@ -398,7 +398,7 @@ export default function PatientFormsPage() {
             type="button"
             onClick={() => handleQuestionnaireSubmit(assignment.id, formKey)}
             disabled={submitting === assignment.id}
-            className="rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90 disabled:opacity-50"
+            className="rounded-lg bg-cta px-4 py-2 text-sm font-medium text-white hover:bg-cta/90 disabled:opacity-50"
           >
             {submitting === assignment.id ? "Submitting…" : "Submit PHQ-9"}
           </button>
@@ -427,7 +427,7 @@ export default function PatientFormsPage() {
                         onChange={() =>
                           updateQuestionnaireResponse(assignment.id, q.linkId, opt.value)
                         }
-                        className="h-4 w-4 border-gray-300 text-warm-brown focus:ring-warm-brown"
+                        className="h-4 w-4 border-gray-300 text-cta focus:ring-cta"
                       />
                       <span className="text-sm text-gray-700">{opt.label}</span>
                     </label>
@@ -440,7 +440,7 @@ export default function PatientFormsPage() {
             type="button"
             onClick={() => handleQuestionnaireSubmit(assignment.id, formKey)}
             disabled={submitting === assignment.id}
-            className="rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90 disabled:opacity-50"
+            className="rounded-lg bg-cta px-4 py-2 text-sm font-medium text-white hover:bg-cta/90 disabled:opacity-50"
           >
             {submitting === assignment.id ? "Submitting…" : "Submit SCARED Child"}
           </button>
@@ -469,7 +469,7 @@ export default function PatientFormsPage() {
                         onChange={() =>
                           updateQuestionnaireResponse(assignment.id, q.linkId, opt.value)
                         }
-                        className="h-4 w-4 border-gray-300 text-warm-brown focus:ring-warm-brown"
+                        className="h-4 w-4 border-gray-300 text-cta focus:ring-cta"
                       />
                       <span className="text-sm text-gray-700">{opt.label}</span>
                     </label>
@@ -482,7 +482,7 @@ export default function PatientFormsPage() {
             type="button"
             onClick={() => handleQuestionnaireSubmit(assignment.id, formKey)}
             disabled={submitting === assignment.id}
-            className="rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90 disabled:opacity-50"
+            className="rounded-lg bg-cta px-4 py-2 text-sm font-medium text-white hover:bg-cta/90 disabled:opacity-50"
           >
             {submitting === assignment.id ? "Submitting…" : "Submit SCARED Parent"}
           </button>
@@ -497,7 +497,7 @@ export default function PatientFormsPage() {
         startIndex: number
       ) => (
         <div className="space-y-3">
-          <h4 className="text-sm font-semibold text-gray-800">{title}</h4>
+          <h4 className="text-sm font-semibold text-navy">{title}</h4>
           <ul className="space-y-3">
             {questions.map((q, i) => (
               <li key={q.linkId} className="rounded-lg border border-gray-200 bg-white p-3">
@@ -514,7 +514,7 @@ export default function PatientFormsPage() {
                         onChange={() =>
                           updateQuestionnaireResponse(assignment.id, q.linkId, opt.value)
                         }
-                        className="h-4 w-4 border-gray-300 text-warm-brown focus:ring-warm-brown"
+                        className="h-4 w-4 border-gray-300 text-cta focus:ring-cta"
                       />
                       <span className="text-sm text-gray-700">{opt.label}</span>
                     </label>
@@ -542,7 +542,7 @@ export default function PatientFormsPage() {
           )}
 
           <div className="space-y-3">
-            <h4 className="text-sm font-semibold text-gray-800">Section C: Functional Impact</h4>
+            <h4 className="text-sm font-semibold text-navy">Section C: Functional Impact</h4>
             <ul className="space-y-3">
               {ADHD_PARENT_FUNCTIONAL_IMPACT_QUESTIONS.map((q) => (
                 <li key={q.linkId} className="rounded-lg border border-gray-200 bg-white p-3">
@@ -557,7 +557,7 @@ export default function PatientFormsPage() {
                           onChange={() =>
                             updateQuestionnaireResponse(assignment.id, q.linkId, opt.value)
                           }
-                          className="h-4 w-4 border-gray-300 text-warm-brown focus:ring-warm-brown"
+                          className="h-4 w-4 border-gray-300 text-cta focus:ring-cta"
                         />
                         <span className="text-sm text-gray-700">{opt.label}</span>
                       </label>
@@ -572,7 +572,7 @@ export default function PatientFormsPage() {
             type="button"
             onClick={() => handleQuestionnaireSubmit(assignment.id, formKey)}
             disabled={submitting === assignment.id}
-            className="rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90 disabled:opacity-50"
+            className="rounded-lg bg-cta px-4 py-2 text-sm font-medium text-white hover:bg-cta/90 disabled:opacity-50"
           >
             {submitting === assignment.id ? "Submitting…" : "Submit ADHD Parent Rating"}
           </button>
@@ -587,7 +587,7 @@ export default function PatientFormsPage() {
         startIndex: number
       ) => (
         <div className="space-y-3">
-          <h4 className="text-sm font-semibold text-gray-800">{title}</h4>
+          <h4 className="text-sm font-semibold text-navy">{title}</h4>
           <ul className="space-y-3">
             {questions.map((q, i) => (
               <li key={q.linkId} className="rounded-lg border border-gray-200 bg-white p-3">
@@ -604,7 +604,7 @@ export default function PatientFormsPage() {
                         onChange={() =>
                           updateQuestionnaireResponse(assignment.id, q.linkId, opt.value)
                         }
-                        className="h-4 w-4 border-gray-300 text-warm-brown focus:ring-warm-brown"
+                        className="h-4 w-4 border-gray-300 text-cta focus:ring-cta"
                       />
                       <span className="text-sm text-gray-700">{opt.label}</span>
                     </label>
@@ -632,7 +632,7 @@ export default function PatientFormsPage() {
           )}
 
           <div className="space-y-3">
-            <h4 className="text-sm font-semibold text-gray-800">Section C: Functional Impact</h4>
+            <h4 className="text-sm font-semibold text-navy">Section C: Functional Impact</h4>
             <ul className="space-y-3">
               {ADHD_TEACHER_FUNCTIONAL_IMPACT_QUESTIONS.map((q) => (
                 <li key={q.linkId} className="rounded-lg border border-gray-200 bg-white p-3">
@@ -647,7 +647,7 @@ export default function PatientFormsPage() {
                           onChange={() =>
                             updateQuestionnaireResponse(assignment.id, q.linkId, opt.value)
                           }
-                          className="h-4 w-4 border-gray-300 text-warm-brown focus:ring-warm-brown"
+                          className="h-4 w-4 border-gray-300 text-cta focus:ring-cta"
                         />
                         <span className="text-sm text-gray-700">{opt.label}</span>
                       </label>
@@ -662,7 +662,7 @@ export default function PatientFormsPage() {
             type="button"
             onClick={() => handleQuestionnaireSubmit(assignment.id, formKey)}
             disabled={submitting === assignment.id}
-            className="rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90 disabled:opacity-50"
+            className="rounded-lg bg-cta px-4 py-2 text-sm font-medium text-white hover:bg-cta/90 disabled:opacity-50"
           >
             {submitting === assignment.id ? "Submitting…" : "Submit ADHD Teacher Rating"}
           </button>
@@ -700,7 +700,7 @@ export default function PatientFormsPage() {
           type="button"
           onClick={() => handleQuestionnaireSubmit(assignment.id, formKey)}
           disabled={submitting === assignment.id}
-          className="rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90 disabled:opacity-50"
+          className="rounded-lg bg-cta px-4 py-2 text-sm font-medium text-white hover:bg-cta/90 disabled:opacity-50"
         >
           {submitting === assignment.id ? "Submitting…" : "Submit Questionnaire"}
         </button>
@@ -741,7 +741,7 @@ export default function PatientFormsPage() {
                 }
               }}
               disabled={uploading === assignment.id}
-              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-warm-brown file:text-white hover:file:bg-warm-brown/90 disabled:opacity-50"
+              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-cta file:text-white hover:file:bg-cta/90 disabled:opacity-50"
             />
             {uploading === assignment.id && (
               <p className="mt-2 text-sm text-gray-600">Uploading…</p>
@@ -800,7 +800,7 @@ export default function PatientFormsPage() {
           <a
             href="/patient"
             onClick={handleBackToDashboard}
-            className="text-sm text-warm-brown hover:underline cursor-pointer"
+            className="text-sm text-cta hover:underline cursor-pointer"
           >
             ← Back to dashboard
           </a>
@@ -830,7 +830,7 @@ export default function PatientFormsPage() {
           <a
             href="/patient"
             onClick={handleBackToDashboard}
-            className="mt-4 inline-block text-sm font-medium text-warm-brown hover:underline cursor-pointer"
+            className="mt-4 inline-block text-sm font-medium text-cta hover:underline cursor-pointer"
           >
             ← Back to dashboard
           </a>
@@ -839,7 +839,7 @@ export default function PatientFormsPage() {
         <div className="mt-10 space-y-6">
           {pendingCount > 0 && (
             <div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Pending Forms</h2>
+              <h2 className="text-lg font-semibold text-navy mb-4">Pending Forms</h2>
               <div className="space-y-4">
                 {pendingAssignments.map((assignment) => {
                   const isExpanded = assignment.id === effectiveExpandedId;
@@ -847,7 +847,7 @@ export default function PatientFormsPage() {
                     <div key={assignment.id} className="card">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
-                          <h3 className="text-lg font-semibold text-gray-900">
+                          <h3 className="text-lg font-semibold text-navy">
                             {assignment.form?.title ?? "Untitled"}
                           </h3>
                           {assignment.form?.description && (
@@ -863,7 +863,7 @@ export default function PatientFormsPage() {
                             <button
                               type="button"
                               onClick={() => handleExpandPending(assignment.id)}
-                              className="mt-3 text-sm font-medium text-warm-brown hover:underline"
+                              className="mt-3 text-sm font-medium text-cta hover:underline"
                             >
                               Fill out this form →
                             </button>
@@ -887,13 +887,13 @@ export default function PatientFormsPage() {
               onClick={handleCompletedSectionClick}
               className="select-none"
             >
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Completed Forms</h2>
+              <h2 className="text-lg font-semibold text-navy mb-4">Completed Forms</h2>
               <div className="space-y-4">
                 {completedAssignments.map((assignment) => (
                     <div key={assignment.id} className="card pointer-events-auto">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
-                          <h3 className="text-lg font-semibold text-gray-900">
+                          <h3 className="text-lg font-semibold text-navy">
                             {assignment.form?.title ?? "Untitled"}
                           </h3>
                           {assignment.form?.description && (

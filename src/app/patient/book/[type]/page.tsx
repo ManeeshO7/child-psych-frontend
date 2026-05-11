@@ -66,6 +66,7 @@ export default function PatientBookTypePage() {
   const [pricing, setPricing] = useState<Pricing | null>(null);
   const [pendingForms, setPendingForms] = useState<{ hasPendingForms: boolean; pendingCount: number } | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
   const [currentMonthIndex, setCurrentMonthIndex] = useState(0);
   const timeSlotSectionRef = useRef<HTMLDivElement>(null);
 
@@ -111,6 +112,11 @@ export default function PatientBookTypePage() {
     if (selectedDate && timeSlotSectionRef.current) {
       timeSlotSectionRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
     }
+  }, [selectedDate]);
+
+  // Clear selected slot when the date changes
+  useEffect(() => {
+    setSelectedSlot(null);
   }, [selectedDate]);
 
   useEffect(() => {
@@ -188,11 +194,11 @@ export default function PatientBookTypePage() {
   const slotsForSelected = selectedDate ? (byDate[selectedDate] ?? []) : [];
   const canBook = !pendingForms?.hasPendingForms;
 
-  function bookSlot(slot: Slot) {
-    if (!typeInfo || pendingForms?.hasPendingForms) return;
-    setSubmitting(slot.start);
+  function bookSelectedSlot() {
+    if (!typeInfo || pendingForms?.hasPendingForms || !selectedSlot) return;
+    setSubmitting(selectedSlot.start);
     router.push(
-      `/patient/save-card?slotStart=${encodeURIComponent(slot.start)}&slotEnd=${encodeURIComponent(slot.end)}&type=${encodeURIComponent(typeInfo.type)}&durationMinutes=${encodeURIComponent(String(typeInfo.durationMinutes))}`,
+      `/patient/save-card?slotStart=${encodeURIComponent(selectedSlot.start)}&slotEnd=${encodeURIComponent(selectedSlot.end)}&type=${encodeURIComponent(typeInfo.type)}&durationMinutes=${encodeURIComponent(String(typeInfo.durationMinutes))}`,
     );
     setSubmitting(null);
   }
@@ -201,7 +207,7 @@ export default function PatientBookTypePage() {
     return (
       <main className="mx-auto max-w-2xl px-4 py-10 sm:px-6 lg:px-8">
         <p className="mb-6">
-          <Link href="/patient/book" className="text-sm text-warm-brown hover:underline">
+          <Link href="/patient/book" className="text-sm text-cta hover:underline">
             ← Back to appointment types
           </Link>
         </p>
@@ -214,12 +220,12 @@ export default function PatientBookTypePage() {
     return (
       <main className="mx-auto max-w-2xl px-4 py-10 sm:px-6 lg:px-8">
         <p className="mb-6">
-          <Link href="/patient/book" className="text-sm text-warm-brown hover:underline">
+          <Link href="/patient/book" className="text-sm text-cta hover:underline">
             ← Back to appointment types
           </Link>
         </p>
         <p className="text-gray-600">Invalid appointment type.</p>
-        <Link href="/patient/book" className="mt-4 inline-block text-warm-brown hover:underline">
+        <Link href="/patient/book" className="mt-4 inline-block text-cta hover:underline">
           Choose appointment type
         </Link>
       </main>
@@ -230,14 +236,14 @@ export default function PatientBookTypePage() {
     return (
       <main className="mx-auto max-w-2xl px-4 py-10 sm:px-6 lg:px-8">
         <p className="mb-6">
-          <Link href="/patient/book" className="text-sm text-warm-brown hover:underline">
+          <Link href="/patient/book" className="text-sm text-cta hover:underline">
             ← Back to appointment types
           </Link>
         </p>
         <p className="text-gray-600">
           This appointment type is not available for you at this time.
         </p>
-        <Link href="/patient/book" className="mt-4 inline-block text-warm-brown hover:underline">
+        <Link href="/patient/book" className="mt-4 inline-block text-cta hover:underline">
           Choose another type
         </Link>
       </main>
@@ -247,7 +253,7 @@ export default function PatientBookTypePage() {
   return (
     <main className="mx-auto max-w-2xl px-4 py-10 sm:px-6 lg:px-8">
       <p className="mb-6">
-        <Link href="/patient/book" className="text-sm text-warm-brown hover:underline">
+        <Link href="/patient/book" className="text-sm text-cta hover:underline">
           ← Back to appointment types
         </Link>
       </p>
@@ -268,8 +274,8 @@ export default function PatientBookTypePage() {
       )}
 
       {typeInfo && pricing?.pricing?.[typeInfo.type] && (
-        <div className="mt-3 rounded-lg border border-warm-brown/20 bg-cream-50 p-3">
-          <p className="text-sm font-medium text-warm-brown">
+        <div className="mt-3 rounded-lg border border-cta/20 bg-cream-50 p-3">
+          <p className="text-sm font-medium text-cta">
             Visit fee: {pricing.pricing[typeInfo.type].formatted}
           </p>
           <p className="mt-1 text-xs text-gray-600">
@@ -287,14 +293,14 @@ export default function PatientBookTypePage() {
         <div className="mt-8 rounded-lg border border-cream-200 bg-cream-50 p-6 text-center">
           <p className="text-gray-600">No availability in the next 60 days for {typeInfo?.label}.</p>
           <p className="mt-2 text-sm text-gray-500">Please check back later or contact the practice.</p>
-          <Link href="/patient/book" className="mt-4 inline-block text-warm-brown hover:underline">
+          <Link href="/patient/book" className="mt-4 inline-block text-cta hover:underline">
             ← Back to appointment types
           </Link>
         </div>
       ) : (
         <div className="mt-8 space-y-8">
           <div className="rounded-xl border border-cream-200 bg-white p-4 shadow-sm">
-            <h2 className="text-base font-semibold text-gray-900">1. Pick a date</h2>
+            <h2 className="text-base font-semibold text-navy">1. Pick a date</h2>
             <p className="mt-1 text-sm text-gray-500">
               Available dates show {typeInfo?.durationMinutes}-minute slots for {typeInfo?.label}.
             </p>
@@ -308,7 +314,7 @@ export default function PatientBookTypePage() {
               >
                 ‹
               </button>
-              <span className="text-sm font-medium text-gray-800">{currentMonth?.label ?? ""}</span>
+              <span className="text-sm font-medium text-navy">{currentMonth?.label ?? ""}</span>
               <button
                 type="button"
                 onClick={() => setCurrentMonthIndex((i) => Math.min(months.length - 1, i + 1))}
@@ -345,8 +351,8 @@ export default function PatientBookTypePage() {
                         !hasSlots
                           ? "cursor-default text-gray-300"
                           : isSelected
-                            ? "bg-warm-brown text-white"
-                            : "bg-cream-50 text-warm-brown hover:bg-cream-100"
+                            ? "bg-cta text-white"
+                            : "bg-cream-50 text-cta hover:bg-cream-100"
                       }`}
                     >
                       {day}
@@ -359,30 +365,47 @@ export default function PatientBookTypePage() {
 
           {selectedDate && (
             <div ref={timeSlotSectionRef} className="rounded-xl border border-cream-200 bg-white p-4 shadow-sm">
-              <h2 className="text-base font-semibold text-gray-900">2. Select a time slot</h2>
+              <h2 className="text-base font-semibold text-navy">2. Select a time slot</h2>
               <p className="mt-1 text-sm text-gray-600">
                 {formatSlotDate(slotsForSelected[0]?.start ?? selectedDate)} · {typeInfo?.durationMinutes}-min {typeInfo?.label}
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
-                {slotsForSelected.map((slot, index) => (
-                  <button
-                    key={`${slot.start}-${slot.end}-${index}`}
-                    type="button"
-                    onClick={() => bookSlot(slot)}
-                    disabled={submitting !== null || !canBook}
-                    className="rounded-lg border border-cream-200 bg-white px-4 py-2 text-sm font-medium text-warm-brown shadow-sm transition hover:border-warm-brown/50 hover:bg-cream-50 disabled:opacity-50"
-                  >
-                    {submitting === slot.start ? "Booking…" : formatSlotTime(slot.start)}
-                  </button>
-                ))}
+                {slotsForSelected.map((slot, index) => {
+                  const isSelected = selectedSlot?.start === slot.start;
+                  return (
+                    <button
+                      key={`${slot.start}-${slot.end}-${index}`}
+                      type="button"
+                      onClick={() => canBook && setSelectedSlot(slot)}
+                      disabled={!canBook}
+                      className={`rounded-lg border px-4 py-2 text-sm font-medium shadow-sm transition disabled:opacity-50 ${
+                        isSelected
+                          ? "border-cta bg-cta text-white"
+                          : "border-cream-200 bg-white text-cta hover:border-cta/50 hover:bg-cream-50"
+                      }`}
+                    >
+                      {formatSlotTime(slot.start)}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
 
-          <div className="pt-2">
+          <div className="pt-2 flex justify-between items-center">
             <Link href="/patient/book" className="btn-secondary">
               Cancel
             </Link>
+            {selectedDate && (
+              <button
+                type="button"
+                onClick={bookSelectedSlot}
+                disabled={!canBook || !selectedSlot || submitting !== null}
+                className="inline-flex items-center rounded-lg border border-cta bg-white px-4 py-2.5 text-sm font-medium text-cta hover:bg-cream-50"
+              >
+                {submitting ? "Next…" : "Next"}
+              </button>
+            )}
           </div>
         </div>
       )}

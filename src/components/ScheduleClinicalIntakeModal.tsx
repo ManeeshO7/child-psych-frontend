@@ -165,7 +165,7 @@ export default function ScheduleClinicalIntakeModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-lg bg-white shadow-xl">
         <div className="border-b border-gray-200 px-6 py-4">
-          <h2 className="text-xl font-semibold text-gray-900">Schedule clinical intake</h2>
+          <h2 className="text-xl font-semibold text-navy">Schedule clinical intake</h2>
           <p className="mt-1 text-sm text-gray-600">
             Schedule a 75-min clinical intake for {patientName || "patient"}. They will be asked to add their card and confirm.
           </p>
@@ -176,7 +176,7 @@ export default function ScheduleClinicalIntakeModal({
               type="checkbox"
               checked={requireFormsBeforeConfirm}
               onChange={(e) => setRequireFormsBeforeConfirm(e.target.checked)}
-              className="mt-1 h-4 w-4 rounded border-gray-300 text-warm-brown focus:ring-warm-brown"
+              className="mt-1 h-4 w-4 rounded border-gray-300 text-cta focus:ring-cta"
             />
             <span className="text-sm text-gray-700">
               Require assigned forms to be completed before the patient can confirm this appointment
@@ -197,7 +197,7 @@ export default function ScheduleClinicalIntakeModal({
           ) : (
             <>
               <div className="rounded-xl border border-cream-200 bg-white p-4 shadow-sm">
-                <h3 className="text-sm font-semibold text-gray-900">1. Pick a date</h3>
+                <h3 className="text-sm font-semibold text-navy">1. Pick a date</h3>
                 <div className="mt-3 flex items-center justify-between">
                   <button
                     type="button"
@@ -208,7 +208,7 @@ export default function ScheduleClinicalIntakeModal({
                   >
                     ‹
                   </button>
-                  <span className="text-sm font-medium text-gray-800">{currentMonth?.label ?? ""}</span>
+                  <span className="text-sm font-medium text-navy">{currentMonth?.label ?? ""}</span>
                   <button
                     type="button"
                     onClick={() => setCurrentMonthIndex((i) => Math.min(months.length - 1, i + 1))}
@@ -245,8 +245,8 @@ export default function ScheduleClinicalIntakeModal({
                             !hasSlots
                               ? "cursor-default text-gray-300"
                               : isSelected
-                                ? "bg-warm-brown text-white"
-                                : "bg-cream-50 text-warm-brown hover:bg-cream-100"
+                                ? "bg-cta text-white"
+                                : "bg-cream-50 text-cta hover:bg-cream-100"
                           }`}
                         >
                           {day}
@@ -259,7 +259,7 @@ export default function ScheduleClinicalIntakeModal({
 
               {selectedDate && (
                 <div className="rounded-xl border border-cream-200 bg-white p-4 shadow-sm">
-                  <h3 className="text-sm font-semibold text-gray-900">2. Select a time slot</h3>
+                  <h3 className="text-sm font-semibold text-navy">2. Select a time slot</h3>
                   <p className="mt-1 text-sm text-gray-600">
                     {formatSlotDate(slotsForSelected[0]?.start ?? selectedDate)} · 75-min clinical intake
                   </p>
@@ -274,8 +274,8 @@ export default function ScheduleClinicalIntakeModal({
                           disabled={submitting}
                           className={`rounded-lg border px-4 py-2 text-sm font-medium transition disabled:opacity-50 ${
                             isSelected
-                              ? "border-warm-brown bg-warm-brown text-white"
-                              : "border-cream-200 bg-white text-warm-brown hover:border-warm-brown/50 hover:bg-cream-50"
+                              ? "border-cta bg-cta text-white"
+                              : "border-cream-200 bg-white text-cta hover:border-cta/50 hover:bg-cream-50"
                           }`}
                         >
                           {formatSlotTime(slot.start)}
@@ -302,7 +302,7 @@ export default function ScheduleClinicalIntakeModal({
             type="button"
             onClick={handleSchedule}
             disabled={submitting || !selectedSlot}
-            className="rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90 disabled:opacity-50"
+            className="rounded-lg bg-cta px-4 py-2 text-sm font-medium text-white hover:bg-cta-hover disabled:opacity-50"
           >
             {submitting ? "Scheduling…" : "Schedule"}
           </button>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition, startTransition } from "react";
+import { useEffect, useRef, useState, startTransition } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { questionnaireToQandA } from "@/lib/questionnaireLabels";
@@ -71,6 +71,7 @@ type PatientProfileData = {
 
 type PatientOverview = {
   patientId: string;
+  fhirPatientId?: string | null;
   patientName: string;
   patientEmail: string;
   patientPhone?: string | null;
@@ -307,7 +308,7 @@ export default function PatientOverviewPage() {
   return (
     <main className="mx-auto w-full max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
       <p className="mb-6">
-        <Link href="/doctor/patients" className="text-sm text-warm-brown hover:underline">
+        <Link href="/doctor/patients" className="text-sm text-cta hover:underline">
           ← Back to patients
         </Link>
       </p>
@@ -316,7 +317,7 @@ export default function PatientOverviewPage() {
 
       {/* Combined Patient Information & Profile */}
       <div className="mt-6 card">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Patient Information</h2>
+        <h2 className="text-lg font-semibold text-navy mb-4">Patient Information</h2>
         <div className="space-y-3 text-sm">
           <p><span className="font-medium text-gray-700">Name:</span> {overview.patientName}</p>
           <p><span className="font-medium text-gray-700">Email:</span> {overview.patientEmail}</p>
@@ -341,7 +342,7 @@ export default function PatientOverviewPage() {
           {(overview.patientProfile?.preferredPharmacyName || overview.patientProfile?.preferredPharmacyPhone || overview.patientProfile?.preferredPharmacyAddress) && (
             <div className="border-t border-gray-200 pt-3 mt-3">
               <p className="font-medium text-gray-700 mb-2">Preferred pharmacy</p>
-              <div className="pl-0 space-y-1 text-gray-800">
+              <div className="pl-0 space-y-1 text-navy">
                 {overview.patientProfile.preferredPharmacyName && (
                   <p><span className="font-medium text-gray-700">Name:</span> {overview.patientProfile.preferredPharmacyName}</p>
                 )}
@@ -357,7 +358,7 @@ export default function PatientOverviewPage() {
           {(overview.patientProfile?.guardian1Name || overview.patientProfile?.guardian1Relationship || overview.patientProfile?.guardian1Phone) && (
             <div className="border-t border-gray-200 pt-3 mt-3">
               <p className="font-medium text-gray-700 mb-2">Guardian 1</p>
-              <div className="pl-0 space-y-1 text-gray-800">
+              <div className="pl-0 space-y-1 text-navy">
                 {overview.patientProfile.guardian1Name && (
                   <p><span className="font-medium text-gray-700">Name:</span> {overview.patientProfile.guardian1Name}</p>
                 )}
@@ -373,7 +374,7 @@ export default function PatientOverviewPage() {
           {(overview.patientProfile?.guardian2Name || overview.patientProfile?.guardian2Relationship || overview.patientProfile?.guardian2Phone) && (
             <div className="border-t border-gray-200 pt-3 mt-3">
               <p className="font-medium text-gray-700 mb-2">Guardian 2</p>
-              <div className="pl-0 space-y-1 text-gray-800">
+              <div className="pl-0 space-y-1 text-navy">
                 {overview.patientProfile.guardian2Name && (
                   <p><span className="font-medium text-gray-700">Name:</span> {overview.patientProfile.guardian2Name}</p>
                 )}
@@ -394,14 +395,14 @@ export default function PatientOverviewPage() {
 
       {/* Patient uploaded documents (previous medical records) */}
       <div className="mt-6 card">
-        <h2 className="text-lg font-semibold text-gray-900 mb-2">Patient documents</h2>
+        <h2 className="text-lg font-semibold text-navy mb-2">Patient documents</h2>
         <p className="text-sm text-gray-600 mb-4">Documents uploaded by the patient (e.g. previous medical records).</p>
         {overview.patientDocuments && overview.patientDocuments.length > 0 ? (
           <ul className="space-y-2">
             {overview.patientDocuments.map((doc) => (
               <li key={doc.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-3">
                 <div>
-                  <p className="font-medium text-gray-900">{doc.displayName || doc.fileName}</p>
+                  <p className="font-medium text-navy">{doc.displayName || doc.fileName}</p>
                   <p className="text-xs text-gray-500">{doc.fileName}</p>
                 </div>
                 {doc.downloadUrl && (
@@ -410,7 +411,7 @@ export default function PatientOverviewPage() {
                       href={doc.downloadUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex rounded-lg border border-warm-brown bg-white px-3 py-1.5 text-sm font-medium text-warm-brown hover:bg-warm-brown/10"
+                      className="inline-flex rounded-lg border border-cta bg-white px-3 py-1.5 text-sm font-medium text-cta hover:bg-cta/10"
                     >
                       View
                     </a>
@@ -419,7 +420,7 @@ export default function PatientOverviewPage() {
                       download={doc.fileName}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex rounded-lg bg-warm-brown px-3 py-1.5 text-sm font-medium text-white hover:bg-warm-brown/90"
+                      className="inline-flex rounded-lg bg-cta px-3 py-1.5 text-sm font-medium text-white hover:bg-cta/90"
                     >
                       Download
                     </a>
@@ -485,7 +486,7 @@ export default function PatientOverviewPage() {
                   {showAssignForms && (
                     <li className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200 bg-white p-4">
                       <div>
-                        <p className="font-medium text-gray-900">Assign forms</p>
+                        <p className="font-medium text-navy">Assign forms</p>
                         <p className="text-sm text-gray-600">
                           Orientation completed. Assign forms for the patient to complete before clinical intake.
                         </p>
@@ -496,7 +497,7 @@ export default function PatientOverviewPage() {
                           setAssignFormsForAppointmentId(clinicalIntakeForForms?.id ?? null);
                           setAssignFormsOpen(true);
                         }}
-                        className="inline-flex rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90"
+                        className="inline-flex rounded-lg bg-cta px-4 py-2 text-sm font-medium text-white hover:bg-cta/90"
                       >
                         Assign forms →
                       </button>
@@ -505,7 +506,7 @@ export default function PatientOverviewPage() {
                   {showScheduleClinicalIntake && (
                     <li className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200 bg-white p-4">
                       <div>
-                        <p className="font-medium text-gray-900">Schedule clinical intake</p>
+                        <p className="font-medium text-navy">Schedule clinical intake</p>
                         <p className="text-sm text-gray-600">
                           Schedule a 75-minute clinical intake appointment for this patient.
                         </p>
@@ -517,7 +518,7 @@ export default function PatientOverviewPage() {
                             setAssignFormsAfterSchedule(false);
                             setScheduleClinicalIntakeOpen(true);
                           }}
-                          className="inline-flex rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90"
+                          className="inline-flex rounded-lg bg-cta px-4 py-2 text-sm font-medium text-white hover:bg-cta/90"
                         >
                           Schedule clinical intake →
                         </button>
@@ -527,7 +528,7 @@ export default function PatientOverviewPage() {
                             setAssignFormsAfterSchedule(true);
                             setScheduleClinicalIntakeOpen(true);
                           }}
-                          className="inline-flex rounded-lg border-2 border-warm-brown bg-white px-4 py-2 text-sm font-medium text-warm-brown hover:bg-amber-50"
+                          className="inline-flex rounded-lg border-2 border-cta bg-white px-4 py-2 text-sm font-medium text-cta hover:bg-amber-50"
                         >
                           Schedule & assign forms →
                         </button>
@@ -537,7 +538,7 @@ export default function PatientOverviewPage() {
                   {showScheduleFollowup && (
                     <li className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200 bg-white p-4">
                       <div>
-                        <p className="font-medium text-gray-900">Schedule follow-up</p>
+                        <p className="font-medium text-navy">Schedule follow-up</p>
                         <p className="text-sm text-gray-600">
                           Clinical intake completed. Schedule a follow-up (30 or 45 min) for this patient.
                         </p>
@@ -563,7 +564,7 @@ export default function PatientOverviewPage() {
                             });
                           }
                         }}
-                        className="inline-flex rounded-lg bg-warm-brown px-4 py-2 text-sm font-medium text-white hover:bg-warm-brown/90"
+                        className="inline-flex rounded-lg bg-cta px-4 py-2 text-sm font-medium text-white hover:bg-cta/90"
                       >
                         Schedule follow-up →
                       </button>
@@ -580,14 +581,14 @@ export default function PatientOverviewPage() {
       {overview.patientRequest && (
         <div className="mt-6 card">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">Pre-screening questionnaire</h2>
+            <h2 className="text-lg font-semibold text-navy">Pre-screening questionnaire</h2>
             {overview.patientRequest.questionnaireData && 
              typeof overview.patientRequest.questionnaireData === 'object' &&
              Object.keys(overview.patientRequest.questionnaireData).length > 0 && (
               <button
                 type="button"
                 onClick={() => setShowQuestionnaire(!showQuestionnaire)}
-                className="flex items-center gap-1 text-sm font-medium text-warm-brown hover:underline"
+                className="flex items-center gap-1 text-sm font-medium text-cta hover:underline"
               >
                 {showQuestionnaire ? "Hide" : "Show"} responses
                 <svg
@@ -608,7 +609,7 @@ export default function PatientOverviewPage() {
               {questionnaireToQandA(overview.patientRequest.questionnaireData).map((qa, idx) => (
                 <div key={idx} className="rounded-lg border border-gray-200 bg-gray-50 p-3">
                   <p className="text-xs font-medium text-gray-500">{qa.question}</p>
-                  <p className="mt-1 text-sm text-gray-900">{qa.answer}</p>
+                  <p className="mt-1 text-sm text-navy">{qa.answer}</p>
                 </div>
               ))}
             </div>
@@ -623,7 +624,7 @@ export default function PatientOverviewPage() {
 
       {overview.intakeSubmission && (
         <div className="mt-6 card">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Intake Submission</h2>
+          <h2 className="text-lg font-semibold text-navy mb-4">Intake Submission</h2>
           <div className="space-y-2 text-sm">
             <p>
               <span className="font-medium text-gray-700">Status:</span>{" "}
@@ -646,7 +647,7 @@ export default function PatientOverviewPage() {
       )}
 
       <div className="mt-6 card">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Appointments & Form Responses</h2>
+        <h2 className="text-lg font-semibold text-navy mb-4">Appointments & Form Responses</h2>
         {overview.appointments.length === 0 && overview.formAssignments.filter((fa) => !fa.appointmentId).length === 0 ? (
           <p className="text-sm text-gray-600">No appointments yet.</p>
         ) : (
@@ -657,7 +658,7 @@ export default function PatientOverviewPage() {
               <div key={apt.id} className="rounded-lg border border-gray-200 bg-gray-50 overflow-hidden">
                 <div className="flex items-start justify-between gap-4 p-4">
                   <div className="flex-1">
-                    <p className="font-medium text-gray-900">{formatDate(apt.scheduledAt)}</p>
+                    <p className="font-medium text-navy">{formatDate(apt.scheduledAt)}</p>
                     <p className="mt-1 text-sm text-gray-600">
                       {(apt.durationMinutes ?? 30)} min · {apt.type.replace(/_/g, " ")} · {apt.status}
                     </p>
@@ -675,7 +676,7 @@ export default function PatientOverviewPage() {
                               openingMeetTimeoutRef.current = null;
                             }, 2000);
                           }}
-                          className="inline-flex items-center rounded-lg border border-warm-brown/50 bg-warm-brown/5 px-3 py-1.5 text-sm font-medium text-warm-brown hover:bg-warm-brown/10"
+                          className="inline-flex items-center rounded-lg border border-cta/50 bg-cta/5 px-3 py-1.5 text-sm font-medium text-cta hover:bg-cta/10"
                         >
                           {openingMeetId === apt.id ? "Opening…" : "Join video call →"}
                         </a>
@@ -726,7 +727,7 @@ export default function PatientOverviewPage() {
                             <button
                               type="button"
                               onClick={() => setEditingNotesId(apt.id)}
-                              className="inline-flex items-center gap-1 rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-warm-brown"
+                              className="inline-flex items-center gap-1 rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-cta"
                               title="Edit notes"
                               aria-label="Edit notes"
                             >
@@ -745,14 +746,14 @@ export default function PatientOverviewPage() {
                               onChange={(e) => setNotesDraft((prev) => ({ ...prev, [apt.id]: e.target.value }))}
                               placeholder="Add or edit notes about this appointment..."
                               rows={3}
-                              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-warm-brown focus:ring-warm-brown"
+                              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-cta focus:ring-cta"
                             />
                             <div className="mt-2 flex items-center gap-2">
                               <button
                                 type="button"
                                 onClick={() => saveAppointmentNotes(apt)}
                                 disabled={savingNotesId !== null}
-                                className="rounded-md bg-warm-brown px-3 py-1.5 text-sm font-medium text-white hover:bg-warm-brown/90 disabled:opacity-50"
+                                className="rounded-md bg-cta px-3 py-1.5 text-sm font-medium text-white hover:bg-cta/90 disabled:opacity-50"
                               >
                                 {savingNotesId === apt.id ? "Saving…" : "Save"}
                               </button>
@@ -797,7 +798,7 @@ export default function PatientOverviewPage() {
                             setAssignFormsForAppointmentId(apt.id);
                             setAssignFormsOpen(true);
                           }}
-                          className="text-sm font-medium text-warm-brown hover:underline"
+                          className="text-sm font-medium text-cta hover:underline"
                         >
                           Assign forms for this appointment →
                         </button>
@@ -835,7 +836,7 @@ export default function PatientOverviewPage() {
                           <div key={fa.id} className="rounded-lg border border-cream-200 bg-gray-50/50 p-4">
                             <div className="flex flex-wrap items-start justify-between gap-2">
                               <div>
-                                <p className="font-medium text-gray-900">{fa.formTitle}</p>
+                                <p className="font-medium text-navy">{fa.formTitle}</p>
                                 <p className="mt-0.5 text-xs text-gray-500">
                                   {fa.formType === "questionnaire" ? "Questionnaire" : "PDF Upload"}
                                   {fa.assignedAt && <> · Assigned: {formatDate(fa.assignedAt)}</>}
@@ -854,7 +855,7 @@ export default function PatientOverviewPage() {
                                   <button
                                     type="button"
                                     onClick={() => setShowFormResponses((prev) => ({ ...prev, [fa.id]: !prev[fa.id] }))}
-                                    className="text-sm font-medium text-warm-brown hover:underline"
+                                    className="text-sm font-medium text-cta hover:underline"
                                   >
                                     {isExpanded ? "Hide" : "Show"} responses
                                   </button>
@@ -868,28 +869,28 @@ export default function PatientOverviewPage() {
                                     const scores = computePHQAScores(fa.questionnaireData!);
                                     return (
                                       <div className="rounded-lg border border-amber-200 bg-amber-50/40 p-4 space-y-4">
-                                        <h4 className="text-sm font-semibold text-gray-900">PHQ-A Scoring</h4>
+                                        <h4 className="text-sm font-semibold text-navy">PHQ-A Scoring</h4>
                                         <div className="grid gap-2 text-sm">
                                           <div className="flex items-center gap-2">
-                                            <span className="font-semibold text-gray-800">Total score:</span>
+                                            <span className="font-semibold text-navy">Total score:</span>
                                             <span
                                               className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
                                                 scores.total >= 10
                                                   ? "bg-amber-100 text-amber-900"
-                                                  : "bg-gray-100 text-gray-900"
+                                                  : "bg-gray-100 text-navy"
                                               }`}
                                             >
                                               {scores.total}
                                             </span>
                                           </div>
                                           <div className="flex items-center gap-2">
-                                            <span className="font-semibold text-gray-800">Depression severity:</span>
+                                            <span className="font-semibold text-navy">Depression severity:</span>
                                             <span className="inline-flex rounded-md bg-blue-100 px-2 py-0.5 text-sm font-semibold text-blue-900">
                                               {scores.severityLabel}
                                             </span>
                                           </div>
                                           <div className="flex items-center gap-2">
-                                            <span className="font-semibold text-gray-800">Suicide safety trigger:</span>
+                                            <span className="font-semibold text-navy">Suicide safety trigger:</span>
                                             <span
                                               className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
                                                 scores.suicideSafetyTrigger
@@ -903,7 +904,7 @@ export default function PatientOverviewPage() {
                                             </span>
                                           </div>
                                           <div className="flex items-center gap-2">
-                                            <span className="font-semibold text-gray-800">
+                                            <span className="font-semibold text-navy">
                                               Functional impairment (optional):
                                             </span>
                                             <span className="inline-flex rounded-md bg-purple-100 px-2 py-0.5 text-sm font-semibold text-purple-900">
@@ -913,23 +914,23 @@ export default function PatientOverviewPage() {
                                             </span>
                                           </div>
                                         </div>
-                                        <h4 className="text-sm font-semibold text-gray-800 pt-2 border-t border-gray-200">Responses</h4>
+                                        <h4 className="text-sm font-semibold text-navy pt-2 border-t border-gray-200">Responses</h4>
                                         <ul className="space-y-2.5">
                                           {PHQA_QUESTIONS.map((q, idx) => (
                                             <li
                                               key={q.linkId}
                                               className="flex items-start justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
                                             >
-                                              <span className="pr-3 leading-5 text-gray-800">
+                                              <span className="pr-3 leading-5 text-navy">
                                                 {idx + 1}. {q.question}
                                               </span>
-                                              <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                              <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-navy">
                                                 {phqaResponseToOptionLabel(fa.questionnaireData![q.linkId])}
                                               </span>
                                             </li>
                                           ))}
                                           <li className="flex items-start justify-between gap-3 rounded-md border border-purple-200 bg-purple-50/40 px-3 py-2 text-sm">
-                                            <span className="pr-3 leading-5 text-gray-800">
+                                            <span className="pr-3 leading-5 text-navy">
                                               10. (Optional) {PHQA_FUNCTIONAL_IMPAIRMENT_QUESTION.question}
                                             </span>
                                             <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-purple-100 px-2 py-0.5 text-xs font-semibold text-purple-900">
@@ -949,28 +950,28 @@ export default function PatientOverviewPage() {
                                     const scores = computePHQ9Scores(fa.questionnaireData!);
                                     return (
                                       <div className="rounded-lg border border-amber-200 bg-amber-50/40 p-4 space-y-4">
-                                        <h4 className="text-sm font-semibold text-gray-900">PHQ-9 Scoring</h4>
+                                        <h4 className="text-sm font-semibold text-navy">PHQ-9 Scoring</h4>
                                         <div className="grid gap-2 text-sm">
                                           <div className="flex items-center gap-2">
-                                            <span className="font-semibold text-gray-800">Total score:</span>
+                                            <span className="font-semibold text-navy">Total score:</span>
                                             <span
                                               className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
                                                 scores.total >= 10
                                                   ? "bg-amber-100 text-amber-900"
-                                                  : "bg-gray-100 text-gray-900"
+                                                  : "bg-gray-100 text-navy"
                                               }`}
                                             >
                                               {scores.total}
                                             </span>
                                           </div>
                                           <div className="flex items-center gap-2">
-                                            <span className="font-semibold text-gray-800">Depression severity:</span>
+                                            <span className="font-semibold text-navy">Depression severity:</span>
                                             <span className="inline-flex rounded-md bg-blue-100 px-2 py-0.5 text-sm font-semibold text-blue-900">
                                               {scores.severityLabel}
                                             </span>
                                           </div>
                                           <div className="flex items-center gap-2">
-                                            <span className="font-semibold text-gray-800">Suicide safety trigger:</span>
+                                            <span className="font-semibold text-navy">Suicide safety trigger:</span>
                                             <span
                                               className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
                                                 scores.suicideSafetyTrigger
@@ -984,17 +985,17 @@ export default function PatientOverviewPage() {
                                             </span>
                                           </div>
                                         </div>
-                                        <h4 className="text-sm font-semibold text-gray-800 pt-2 border-t border-gray-200">Responses</h4>
+                                        <h4 className="text-sm font-semibold text-navy pt-2 border-t border-gray-200">Responses</h4>
                                         <ul className="space-y-2.5">
                                           {PHQ9_QUESTIONS.map((q, idx) => (
                                             <li
                                               key={q.linkId}
                                               className="flex items-start justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
                                             >
-                                              <span className="pr-3 leading-5 text-gray-800">
+                                              <span className="pr-3 leading-5 text-navy">
                                                 {idx + 1}. {q.question}
                                               </span>
-                                              <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                              <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-navy">
                                                 {phq9ResponseToOptionLabel(fa.questionnaireData![q.linkId])}
                                               </span>
                                             </li>
@@ -1008,22 +1009,22 @@ export default function PatientOverviewPage() {
                                     const scores = computeScaredChildScores(fa.questionnaireData!);
                                     return (
                                       <div className="rounded-lg border border-amber-200 bg-amber-50/40 p-4 space-y-4">
-                                        <h4 className="text-sm font-semibold text-gray-900">SCARED Child Scoring</h4>
+                                        <h4 className="text-sm font-semibold text-navy">SCARED Child Scoring</h4>
                                         <div className="grid gap-2 text-sm">
                                           <div className="flex items-center gap-2">
-                                            <span className="font-semibold text-gray-800">Total score:</span>
+                                            <span className="font-semibold text-navy">Total score:</span>
                                             <span
                                               className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
                                                 scores.total >= 25
                                                   ? "bg-amber-100 text-amber-900"
-                                                  : "bg-gray-100 text-gray-900"
+                                                  : "bg-gray-100 text-navy"
                                               }`}
                                             >
                                               {scores.total}
                                             </span>
                                           </div>
                                           <div className="flex items-center gap-2">
-                                            <span className="font-semibold text-gray-800">Clinical cutoff (&gt;=25):</span>
+                                            <span className="font-semibold text-navy">Clinical cutoff (&gt;=25):</span>
                                             <span
                                               className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
                                                 scores.clinicallySignificantAnxiety
@@ -1042,17 +1043,17 @@ export default function PatientOverviewPage() {
                                             <p>School Avoidance: {scores.schoolAvoidance} (cutoff &gt;= 3)</p>
                                           </div>
                                         </div>
-                                        <h4 className="text-sm font-semibold text-gray-800 pt-2 border-t border-gray-200">Responses</h4>
+                                        <h4 className="text-sm font-semibold text-navy pt-2 border-t border-gray-200">Responses</h4>
                                         <ul className="space-y-2.5">
                                           {SCARED_CHILD_QUESTIONS.map((q, idx) => (
                                             <li
                                               key={q.linkId}
                                               className="flex items-start justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
                                             >
-                                              <span className="pr-3 leading-5 text-gray-800">
+                                              <span className="pr-3 leading-5 text-navy">
                                                 {idx + 1}. {q.question}
                                               </span>
-                                              <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                              <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-navy">
                                                 {scaredChildResponseToOptionLabel(fa.questionnaireData![q.linkId])}
                                               </span>
                                             </li>
@@ -1066,22 +1067,22 @@ export default function PatientOverviewPage() {
                                     const scores = computeScaredParentScores(fa.questionnaireData!);
                                     return (
                                       <div className="rounded-lg border border-amber-200 bg-amber-50/40 p-4 space-y-4">
-                                        <h4 className="text-sm font-semibold text-gray-900">SCARED Parent Scoring</h4>
+                                        <h4 className="text-sm font-semibold text-navy">SCARED Parent Scoring</h4>
                                         <div className="grid gap-2 text-sm">
                                           <div className="flex items-center gap-2">
-                                            <span className="font-semibold text-gray-800">Total score:</span>
+                                            <span className="font-semibold text-navy">Total score:</span>
                                             <span
                                               className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
                                                 scores.total >= 25
                                                   ? "bg-amber-100 text-amber-900"
-                                                  : "bg-gray-100 text-gray-900"
+                                                  : "bg-gray-100 text-navy"
                                               }`}
                                             >
                                               {scores.total}
                                             </span>
                                           </div>
                                           <div className="flex items-center gap-2">
-                                            <span className="font-semibold text-gray-800">Clinical cutoff (&gt;=25):</span>
+                                            <span className="font-semibold text-navy">Clinical cutoff (&gt;=25):</span>
                                             <span
                                               className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
                                                 scores.clinicallySignificantAnxiety
@@ -1100,17 +1101,17 @@ export default function PatientOverviewPage() {
                                             <p>School Avoidance: {scores.schoolAvoidance} (cutoff &gt;= 3)</p>
                                           </div>
                                         </div>
-                                        <h4 className="text-sm font-semibold text-gray-800 pt-2 border-t border-gray-200">Responses</h4>
+                                        <h4 className="text-sm font-semibold text-navy pt-2 border-t border-gray-200">Responses</h4>
                                         <ul className="space-y-2.5">
                                           {SCARED_PARENT_QUESTIONS.map((q, idx) => (
                                             <li
                                               key={q.linkId}
                                               className="flex items-start justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
                                             >
-                                              <span className="pr-3 leading-5 text-gray-800">
+                                              <span className="pr-3 leading-5 text-navy">
                                                 {idx + 1}. {q.question}
                                               </span>
-                                              <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                              <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-navy">
                                                 {scaredParentResponseToOptionLabel(fa.questionnaireData![q.linkId])}
                                               </span>
                                             </li>
@@ -1125,45 +1126,45 @@ export default function PatientOverviewPage() {
                                     const scores = computeADHDParentScores(fa.questionnaireData!, ageYears);
                                     return (
                                       <div className="rounded-lg border border-amber-200 bg-amber-50/40 p-4 space-y-4">
-                                        <h4 className="text-sm font-semibold text-gray-900">ADHD Parent Rating Scoring</h4>
+                                        <h4 className="text-sm font-semibold text-navy">ADHD Parent Rating Scoring</h4>
                                         <div className="grid gap-2 text-sm">
                                           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                                             <div className="flex items-center gap-2">
-                                              <span className="font-semibold text-gray-800">Inattention count:</span>
-                                              <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-gray-900">
+                                              <span className="font-semibold text-navy">Inattention count:</span>
+                                              <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-navy">
                                                 {scores.inattentiveCount}
                                               </span>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                              <span className="font-semibold text-gray-800">Hyperactivity/Impulsivity count:</span>
-                                              <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-gray-900">
+                                              <span className="font-semibold text-navy">Hyperactivity/Impulsivity count:</span>
+                                              <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-navy">
                                                 {scores.hyperactiveImpulsiveCount}
                                               </span>
                                             </div>
                                           </div>
                                           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                                             <div className="flex items-center gap-2">
-                                              <span className="font-semibold text-gray-800">Inattention total:</span>
+                                              <span className="font-semibold text-navy">Inattention total:</span>
                                               <span className="inline-flex rounded-md bg-blue-100 px-2 py-0.5 text-sm font-semibold text-blue-900">
                                                 {scores.inattentiveTotal}
                                               </span>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                              <span className="font-semibold text-gray-800">Hyperactivity/Impulsivity total:</span>
+                                              <span className="font-semibold text-navy">Hyperactivity/Impulsivity total:</span>
                                               <span className="inline-flex rounded-md bg-blue-100 px-2 py-0.5 text-sm font-semibold text-blue-900">
                                                 {scores.hyperactiveImpulsiveTotal}
                                               </span>
                                             </div>
                                           </div>
                                           <div className="flex items-center gap-2">
-                                            <span className="font-semibold text-gray-800">Overall severity total:</span>
+                                            <span className="font-semibold text-navy">Overall severity total:</span>
                                             <span className="inline-flex rounded-md bg-amber-100 px-2 py-0.5 text-sm font-semibold text-amber-900">
                                               {scores.overallSeverityTotal}
                                             </span>
                                           </div>
                                           <div className="flex items-center gap-2">
-                                            <span className="font-semibold text-gray-800">Symptom threshold:</span>
-                                            <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-gray-900">
+                                            <span className="font-semibold text-navy">Symptom threshold:</span>
+                                            <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-navy">
                                               {scores.threshold.ageGroup === "unknown"
                                                 ? "Unknown age (using >=6)"
                                                 : scores.threshold.ageGroup === "child_or_teen_upto_16"
@@ -1172,17 +1173,17 @@ export default function PatientOverviewPage() {
                                             </span>
                                             <span
                                               className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
-                                                scores.meetsSymptomThreshold ? "bg-green-100 text-green-900" : "bg-gray-100 text-gray-900"
+                                                scores.meetsSymptomThreshold ? "bg-green-100 text-green-900" : "bg-gray-100 text-navy"
                                               }`}
                                             >
                                               {scores.meetsSymptomThreshold ? "Meets threshold" : "Below threshold"}
                                             </span>
                                           </div>
                                           <div className="flex items-center gap-2">
-                                            <span className="font-semibold text-gray-800">Functional impairment present:</span>
+                                            <span className="font-semibold text-navy">Functional impairment present:</span>
                                             <span
                                               className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
-                                                scores.functionalImpairmentPresent ? "bg-red-100 text-red-900" : "bg-gray-100 text-gray-900"
+                                                scores.functionalImpairmentPresent ? "bg-red-100 text-red-900" : "bg-gray-100 text-navy"
                                               }`}
                                             >
                                               {scores.functionalImpairmentPresent ? "Yes (impact item >= 2)" : "No"}
@@ -1190,7 +1191,7 @@ export default function PatientOverviewPage() {
                                           </div>
                                         </div>
 
-                                        <h4 className="text-sm font-semibold text-gray-800 pt-2 border-t border-gray-200">Responses</h4>
+                                        <h4 className="text-sm font-semibold text-navy pt-2 border-t border-gray-200">Responses</h4>
                                         <div className="space-y-4">
                                           <div>
                                             <p className="text-xs font-semibold text-gray-700 mb-2">Section A: Inattention</p>
@@ -1200,10 +1201,10 @@ export default function PatientOverviewPage() {
                                                   key={q.linkId}
                                                   className="flex items-start justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
                                                 >
-                                                  <span className="pr-3 leading-5 text-gray-800">
+                                                  <span className="pr-3 leading-5 text-navy">
                                                     {idx + 1}. {q.question}
                                                   </span>
-                                                  <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                                  <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-navy">
                                                     {adhdParentResponseToOptionLabel(fa.questionnaireData![q.linkId])}
                                                   </span>
                                                 </li>
@@ -1218,10 +1219,10 @@ export default function PatientOverviewPage() {
                                                   key={q.linkId}
                                                   className="flex items-start justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
                                                 >
-                                                  <span className="pr-3 leading-5 text-gray-800">
+                                                  <span className="pr-3 leading-5 text-navy">
                                                     {idx + 10}. {q.question}
                                                   </span>
-                                                  <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                                  <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-navy">
                                                     {adhdParentResponseToOptionLabel(fa.questionnaireData![q.linkId])}
                                                   </span>
                                                 </li>
@@ -1236,8 +1237,8 @@ export default function PatientOverviewPage() {
                                                   key={q.linkId}
                                                   className="flex items-start justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
                                                 >
-                                                  <span className="pr-3 leading-5 text-gray-800">{q.question}</span>
-                                                  <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                                  <span className="pr-3 leading-5 text-navy">{q.question}</span>
+                                                  <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-navy">
                                                     {adhdParentResponseToOptionLabel(fa.questionnaireData![q.linkId])}
                                                   </span>
                                                 </li>
@@ -1254,45 +1255,45 @@ export default function PatientOverviewPage() {
                                     const scores = computeADHDTeacherScores(fa.questionnaireData!, ageYears);
                                     return (
                                       <div className="rounded-lg border border-amber-200 bg-amber-50/40 p-4 space-y-4">
-                                        <h4 className="text-sm font-semibold text-gray-900">ADHD Teacher Rating Scoring</h4>
+                                        <h4 className="text-sm font-semibold text-navy">ADHD Teacher Rating Scoring</h4>
                                         <div className="grid gap-2 text-sm">
                                           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                                             <div className="flex items-center gap-2">
-                                              <span className="font-semibold text-gray-800">Inattention count:</span>
-                                              <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-gray-900">
+                                              <span className="font-semibold text-navy">Inattention count:</span>
+                                              <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-navy">
                                                 {scores.inattentiveCount}
                                               </span>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                              <span className="font-semibold text-gray-800">Hyperactivity/Impulsivity count:</span>
-                                              <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-gray-900">
+                                              <span className="font-semibold text-navy">Hyperactivity/Impulsivity count:</span>
+                                              <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-navy">
                                                 {scores.hyperactiveImpulsiveCount}
                                               </span>
                                             </div>
                                           </div>
                                           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                                             <div className="flex items-center gap-2">
-                                              <span className="font-semibold text-gray-800">Inattention total:</span>
+                                              <span className="font-semibold text-navy">Inattention total:</span>
                                               <span className="inline-flex rounded-md bg-blue-100 px-2 py-0.5 text-sm font-semibold text-blue-900">
                                                 {scores.inattentiveTotal}
                                               </span>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                              <span className="font-semibold text-gray-800">Hyperactivity/Impulsivity total:</span>
+                                              <span className="font-semibold text-navy">Hyperactivity/Impulsivity total:</span>
                                               <span className="inline-flex rounded-md bg-blue-100 px-2 py-0.5 text-sm font-semibold text-blue-900">
                                                 {scores.hyperactiveImpulsiveTotal}
                                               </span>
                                             </div>
                                           </div>
                                           <div className="flex items-center gap-2">
-                                            <span className="font-semibold text-gray-800">Overall severity total:</span>
+                                            <span className="font-semibold text-navy">Overall severity total:</span>
                                             <span className="inline-flex rounded-md bg-amber-100 px-2 py-0.5 text-sm font-semibold text-amber-900">
                                               {scores.overallSeverityTotal}
                                             </span>
                                           </div>
                                           <div className="flex items-center gap-2">
-                                            <span className="font-semibold text-gray-800">Symptom threshold:</span>
-                                            <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-gray-900">
+                                            <span className="font-semibold text-navy">Symptom threshold:</span>
+                                            <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-navy">
                                               {scores.threshold.ageGroup === "unknown"
                                                 ? "Unknown age (using >=6)"
                                                 : scores.threshold.ageGroup === "child_or_teen_upto_16"
@@ -1301,17 +1302,17 @@ export default function PatientOverviewPage() {
                                             </span>
                                             <span
                                               className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
-                                                scores.meetsSymptomThreshold ? "bg-green-100 text-green-900" : "bg-gray-100 text-gray-900"
+                                                scores.meetsSymptomThreshold ? "bg-green-100 text-green-900" : "bg-gray-100 text-navy"
                                               }`}
                                             >
                                               {scores.meetsSymptomThreshold ? "Meets threshold" : "Below threshold"}
                                             </span>
                                           </div>
                                           <div className="flex items-center gap-2">
-                                            <span className="font-semibold text-gray-800">Functional impairment present:</span>
+                                            <span className="font-semibold text-navy">Functional impairment present:</span>
                                             <span
                                               className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
-                                                scores.functionalImpairmentPresent ? "bg-red-100 text-red-900" : "bg-gray-100 text-gray-900"
+                                                scores.functionalImpairmentPresent ? "bg-red-100 text-red-900" : "bg-gray-100 text-navy"
                                               }`}
                                             >
                                               {scores.functionalImpairmentPresent ? "Yes (impact item >= 2)" : "No"}
@@ -1319,7 +1320,7 @@ export default function PatientOverviewPage() {
                                           </div>
                                         </div>
 
-                                        <h4 className="text-sm font-semibold text-gray-800 pt-2 border-t border-gray-200">Responses</h4>
+                                        <h4 className="text-sm font-semibold text-navy pt-2 border-t border-gray-200">Responses</h4>
                                         <div className="space-y-4">
                                           <div>
                                             <p className="text-xs font-semibold text-gray-700 mb-2">Section A: Inattention</p>
@@ -1329,10 +1330,10 @@ export default function PatientOverviewPage() {
                                                   key={q.linkId}
                                                   className="flex items-start justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
                                                 >
-                                                  <span className="pr-3 leading-5 text-gray-800">
+                                                  <span className="pr-3 leading-5 text-navy">
                                                     {idx + 1}. {q.question}
                                                   </span>
-                                                  <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                                  <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-navy">
                                                     {adhdTeacherResponseToOptionLabel(fa.questionnaireData![q.linkId])}
                                                   </span>
                                                 </li>
@@ -1347,10 +1348,10 @@ export default function PatientOverviewPage() {
                                                   key={q.linkId}
                                                   className="flex items-start justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
                                                 >
-                                                  <span className="pr-3 leading-5 text-gray-800">
+                                                  <span className="pr-3 leading-5 text-navy">
                                                     {idx + 10}. {q.question}
                                                   </span>
-                                                  <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                                  <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-navy">
                                                     {adhdTeacherResponseToOptionLabel(fa.questionnaireData![q.linkId])}
                                                   </span>
                                                 </li>
@@ -1365,8 +1366,8 @@ export default function PatientOverviewPage() {
                                                   key={q.linkId}
                                                   className="flex items-start justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
                                                 >
-                                                  <span className="pr-3 leading-5 text-gray-800">{q.question}</span>
-                                                  <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                                  <span className="pr-3 leading-5 text-navy">{q.question}</span>
+                                                  <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-navy">
                                                     {adhdTeacherResponseToOptionLabel(fa.questionnaireData![q.linkId])}
                                                   </span>
                                                 </li>
@@ -1381,7 +1382,7 @@ export default function PatientOverviewPage() {
                                   questionnaireToQandA(fa.questionnaireData!).map((qa, idx) => (
                                     <div key={idx} className="rounded border border-gray-200 bg-white p-3">
                                       <p className="text-xs font-medium text-gray-500">{qa.question}</p>
-                                      <p className="mt-1 text-sm text-gray-900">{qa.answer}</p>
+                                      <p className="mt-1 text-sm text-navy">{qa.answer}</p>
                                     </div>
                                   ))
                                 )}
@@ -1392,10 +1393,10 @@ export default function PatientOverviewPage() {
                             )}
                             {fa.downloadUrl && (
                               <div className="mt-2 flex flex-wrap gap-3">
-                                <a href={fa.downloadUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-warm-brown hover:underline">
+                                <a href={fa.downloadUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-cta hover:underline">
                                   View PDF →
                                 </a>
-                                <a href={fa.downloadUrl} download target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-warm-brown hover:underline">
+                                <a href={fa.downloadUrl} download target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-cta hover:underline">
                                   Download PDF →
                                 </a>
                               </div>
@@ -1426,7 +1427,7 @@ export default function PatientOverviewPage() {
                         <div key={fa.id} className="rounded-lg border border-cream-200 bg-white p-4">
                           <div className="flex flex-wrap items-start justify-between gap-2">
                             <div>
-                              <p className="font-medium text-gray-900">{fa.formTitle}</p>
+                              <p className="font-medium text-navy">{fa.formTitle}</p>
                               <p className="mt-0.5 text-xs text-gray-500">
                                 {fa.formType === "questionnaire" ? "Questionnaire" : "PDF Upload"}
                                 {fa.assignedAt && <> · Assigned: {formatDate(fa.assignedAt)}</>}
@@ -1445,7 +1446,7 @@ export default function PatientOverviewPage() {
                                 <button
                                   type="button"
                                   onClick={() => setShowFormResponses((prev) => ({ ...prev, [fa.id]: !prev[fa.id] }))}
-                                  className="text-sm font-medium text-warm-brown hover:underline"
+                                  className="text-sm font-medium text-cta hover:underline"
                                 >
                                   {isExpanded ? "Hide" : "Show"} responses
                                 </button>
@@ -1459,28 +1460,28 @@ export default function PatientOverviewPage() {
                                   const scores = computePHQAScores(fa.questionnaireData!);
                                   return (
                                     <div className="rounded-lg border border-amber-200 bg-amber-50/40 p-4 space-y-4">
-                                      <h4 className="text-sm font-semibold text-gray-900">PHQ-A Scoring</h4>
+                                      <h4 className="text-sm font-semibold text-navy">PHQ-A Scoring</h4>
                                       <div className="grid gap-2 text-sm">
                                         <div className="flex items-center gap-2">
-                                          <span className="font-semibold text-gray-800">Total score:</span>
+                                          <span className="font-semibold text-navy">Total score:</span>
                                           <span
                                             className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
                                               scores.total >= 10
                                                 ? "bg-amber-100 text-amber-900"
-                                                : "bg-gray-100 text-gray-900"
+                                                : "bg-gray-100 text-navy"
                                             }`}
                                           >
                                             {scores.total}
                                           </span>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                          <span className="font-semibold text-gray-800">Depression severity:</span>
+                                          <span className="font-semibold text-navy">Depression severity:</span>
                                           <span className="inline-flex rounded-md bg-blue-100 px-2 py-0.5 text-sm font-semibold text-blue-900">
                                             {scores.severityLabel}
                                           </span>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                          <span className="font-semibold text-gray-800">Suicide safety trigger:</span>
+                                          <span className="font-semibold text-navy">Suicide safety trigger:</span>
                                           <span
                                             className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
                                               scores.suicideSafetyTrigger
@@ -1494,7 +1495,7 @@ export default function PatientOverviewPage() {
                                           </span>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                          <span className="font-semibold text-gray-800">
+                                          <span className="font-semibold text-navy">
                                             Functional impairment (optional):
                                           </span>
                                           <span className="inline-flex rounded-md bg-purple-100 px-2 py-0.5 text-sm font-semibold text-purple-900">
@@ -1504,23 +1505,23 @@ export default function PatientOverviewPage() {
                                           </span>
                                         </div>
                                       </div>
-                                      <h4 className="text-sm font-semibold text-gray-800 pt-2 border-t border-gray-200">Responses</h4>
+                                      <h4 className="text-sm font-semibold text-navy pt-2 border-t border-gray-200">Responses</h4>
                                       <ul className="space-y-2.5">
                                         {PHQA_QUESTIONS.map((q, idx) => (
                                           <li
                                             key={q.linkId}
                                             className="flex items-start justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
                                           >
-                                            <span className="pr-3 leading-5 text-gray-800">
+                                            <span className="pr-3 leading-5 text-navy">
                                               {idx + 1}. {q.question}
                                             </span>
-                                            <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                            <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-navy">
                                               {phqaResponseToOptionLabel(fa.questionnaireData![q.linkId])}
                                             </span>
                                           </li>
                                         ))}
                                         <li className="flex items-start justify-between gap-3 rounded-md border border-purple-200 bg-purple-50/40 px-3 py-2 text-sm">
-                                          <span className="pr-3 leading-5 text-gray-800">
+                                          <span className="pr-3 leading-5 text-navy">
                                             10. (Optional) {PHQA_FUNCTIONAL_IMPAIRMENT_QUESTION.question}
                                           </span>
                                           <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-purple-100 px-2 py-0.5 text-xs font-semibold text-purple-900">
@@ -1540,28 +1541,28 @@ export default function PatientOverviewPage() {
                                   const scores = computePHQ9Scores(fa.questionnaireData!);
                                   return (
                                     <div className="rounded-lg border border-amber-200 bg-amber-50/40 p-4 space-y-4">
-                                      <h4 className="text-sm font-semibold text-gray-900">PHQ-9 Scoring</h4>
+                                      <h4 className="text-sm font-semibold text-navy">PHQ-9 Scoring</h4>
                                       <div className="grid gap-2 text-sm">
                                         <div className="flex items-center gap-2">
-                                          <span className="font-semibold text-gray-800">Total score:</span>
+                                          <span className="font-semibold text-navy">Total score:</span>
                                           <span
                                             className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
                                               scores.total >= 10
                                                 ? "bg-amber-100 text-amber-900"
-                                                : "bg-gray-100 text-gray-900"
+                                                : "bg-gray-100 text-navy"
                                             }`}
                                           >
                                             {scores.total}
                                           </span>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                          <span className="font-semibold text-gray-800">Depression severity:</span>
+                                          <span className="font-semibold text-navy">Depression severity:</span>
                                           <span className="inline-flex rounded-md bg-blue-100 px-2 py-0.5 text-sm font-semibold text-blue-900">
                                             {scores.severityLabel}
                                           </span>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                          <span className="font-semibold text-gray-800">Suicide safety trigger:</span>
+                                          <span className="font-semibold text-navy">Suicide safety trigger:</span>
                                           <span
                                             className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
                                               scores.suicideSafetyTrigger
@@ -1575,17 +1576,17 @@ export default function PatientOverviewPage() {
                                           </span>
                                         </div>
                                       </div>
-                                      <h4 className="text-sm font-semibold text-gray-800 pt-2 border-t border-gray-200">Responses</h4>
+                                      <h4 className="text-sm font-semibold text-navy pt-2 border-t border-gray-200">Responses</h4>
                                       <ul className="space-y-2.5">
                                         {PHQ9_QUESTIONS.map((q, idx) => (
                                           <li
                                             key={q.linkId}
                                             className="flex items-start justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
                                           >
-                                            <span className="pr-3 leading-5 text-gray-800">
+                                            <span className="pr-3 leading-5 text-navy">
                                               {idx + 1}. {q.question}
                                             </span>
-                                            <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                            <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-navy">
                                               {phq9ResponseToOptionLabel(fa.questionnaireData![q.linkId])}
                                             </span>
                                           </li>
@@ -1599,22 +1600,22 @@ export default function PatientOverviewPage() {
                                   const scores = computeScaredChildScores(fa.questionnaireData!);
                                   return (
                                     <div className="rounded-lg border border-amber-200 bg-amber-50/40 p-4 space-y-4">
-                                      <h4 className="text-sm font-semibold text-gray-900">SCARED Child Scoring</h4>
+                                      <h4 className="text-sm font-semibold text-navy">SCARED Child Scoring</h4>
                                       <div className="grid gap-2 text-sm">
                                         <div className="flex items-center gap-2">
-                                          <span className="font-semibold text-gray-800">Total score:</span>
+                                          <span className="font-semibold text-navy">Total score:</span>
                                           <span
                                             className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
                                               scores.total >= 25
                                                 ? "bg-amber-100 text-amber-900"
-                                                : "bg-gray-100 text-gray-900"
+                                                : "bg-gray-100 text-navy"
                                             }`}
                                           >
                                             {scores.total}
                                           </span>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                          <span className="font-semibold text-gray-800">Clinical cutoff (&gt;=25):</span>
+                                          <span className="font-semibold text-navy">Clinical cutoff (&gt;=25):</span>
                                           <span
                                             className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
                                               scores.clinicallySignificantAnxiety
@@ -1633,17 +1634,17 @@ export default function PatientOverviewPage() {
                                           <p>School Avoidance: {scores.schoolAvoidance} (cutoff &gt;= 3)</p>
                                         </div>
                                       </div>
-                                      <h4 className="text-sm font-semibold text-gray-800 pt-2 border-t border-gray-200">Responses</h4>
+                                      <h4 className="text-sm font-semibold text-navy pt-2 border-t border-gray-200">Responses</h4>
                                       <ul className="space-y-2.5">
                                         {SCARED_CHILD_QUESTIONS.map((q, idx) => (
                                           <li
                                             key={q.linkId}
                                             className="flex items-start justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
                                           >
-                                            <span className="pr-3 leading-5 text-gray-800">
+                                            <span className="pr-3 leading-5 text-navy">
                                               {idx + 1}. {q.question}
                                             </span>
-                                            <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                            <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-navy">
                                               {scaredChildResponseToOptionLabel(fa.questionnaireData![q.linkId])}
                                             </span>
                                           </li>
@@ -1657,22 +1658,22 @@ export default function PatientOverviewPage() {
                                   const scores = computeScaredParentScores(fa.questionnaireData!);
                                   return (
                                     <div className="rounded-lg border border-amber-200 bg-amber-50/40 p-4 space-y-4">
-                                      <h4 className="text-sm font-semibold text-gray-900">SCARED Parent Scoring</h4>
+                                      <h4 className="text-sm font-semibold text-navy">SCARED Parent Scoring</h4>
                                       <div className="grid gap-2 text-sm">
                                         <div className="flex items-center gap-2">
-                                          <span className="font-semibold text-gray-800">Total score:</span>
+                                          <span className="font-semibold text-navy">Total score:</span>
                                           <span
                                             className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
                                               scores.total >= 25
                                                 ? "bg-amber-100 text-amber-900"
-                                                : "bg-gray-100 text-gray-900"
+                                                : "bg-gray-100 text-navy"
                                             }`}
                                           >
                                             {scores.total}
                                           </span>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                          <span className="font-semibold text-gray-800">Clinical cutoff (&gt;=25):</span>
+                                          <span className="font-semibold text-navy">Clinical cutoff (&gt;=25):</span>
                                           <span
                                             className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
                                               scores.clinicallySignificantAnxiety
@@ -1691,17 +1692,17 @@ export default function PatientOverviewPage() {
                                           <p>School Avoidance: {scores.schoolAvoidance} (cutoff &gt;= 3)</p>
                                         </div>
                                       </div>
-                                      <h4 className="text-sm font-semibold text-gray-800 pt-2 border-t border-gray-200">Responses</h4>
+                                      <h4 className="text-sm font-semibold text-navy pt-2 border-t border-gray-200">Responses</h4>
                                       <ul className="space-y-2.5">
                                         {SCARED_PARENT_QUESTIONS.map((q, idx) => (
                                           <li
                                             key={q.linkId}
                                             className="flex items-start justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
                                           >
-                                            <span className="pr-3 leading-5 text-gray-800">
+                                            <span className="pr-3 leading-5 text-navy">
                                               {idx + 1}. {q.question}
                                             </span>
-                                            <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                            <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-navy">
                                               {scaredParentResponseToOptionLabel(fa.questionnaireData![q.linkId])}
                                             </span>
                                           </li>
@@ -1716,45 +1717,45 @@ export default function PatientOverviewPage() {
                                   const scores = computeADHDParentScores(fa.questionnaireData!, ageYears);
                                   return (
                                     <div className="rounded-lg border border-amber-200 bg-amber-50/40 p-4 space-y-4">
-                                      <h4 className="text-sm font-semibold text-gray-900">ADHD Parent Rating Scoring</h4>
+                                      <h4 className="text-sm font-semibold text-navy">ADHD Parent Rating Scoring</h4>
                                       <div className="grid gap-2 text-sm">
                                         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                                           <div className="flex items-center gap-2">
-                                            <span className="font-semibold text-gray-800">Inattention count:</span>
-                                            <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-gray-900">
+                                            <span className="font-semibold text-navy">Inattention count:</span>
+                                            <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-navy">
                                               {scores.inattentiveCount}
                                             </span>
                                           </div>
                                           <div className="flex items-center gap-2">
-                                            <span className="font-semibold text-gray-800">Hyperactivity/Impulsivity count:</span>
-                                            <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-gray-900">
+                                            <span className="font-semibold text-navy">Hyperactivity/Impulsivity count:</span>
+                                            <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-navy">
                                               {scores.hyperactiveImpulsiveCount}
                                             </span>
                                           </div>
                                         </div>
                                         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                                           <div className="flex items-center gap-2">
-                                            <span className="font-semibold text-gray-800">Inattention total:</span>
+                                            <span className="font-semibold text-navy">Inattention total:</span>
                                             <span className="inline-flex rounded-md bg-blue-100 px-2 py-0.5 text-sm font-semibold text-blue-900">
                                               {scores.inattentiveTotal}
                                             </span>
                                           </div>
                                           <div className="flex items-center gap-2">
-                                            <span className="font-semibold text-gray-800">Hyperactivity/Impulsivity total:</span>
+                                            <span className="font-semibold text-navy">Hyperactivity/Impulsivity total:</span>
                                             <span className="inline-flex rounded-md bg-blue-100 px-2 py-0.5 text-sm font-semibold text-blue-900">
                                               {scores.hyperactiveImpulsiveTotal}
                                             </span>
                                           </div>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                          <span className="font-semibold text-gray-800">Overall severity total:</span>
+                                          <span className="font-semibold text-navy">Overall severity total:</span>
                                           <span className="inline-flex rounded-md bg-amber-100 px-2 py-0.5 text-sm font-semibold text-amber-900">
                                             {scores.overallSeverityTotal}
                                           </span>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                          <span className="font-semibold text-gray-800">Symptom threshold:</span>
-                                          <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-gray-900">
+                                          <span className="font-semibold text-navy">Symptom threshold:</span>
+                                          <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-navy">
                                             {scores.threshold.ageGroup === "unknown"
                                               ? "Unknown age (using >=6)"
                                               : scores.threshold.ageGroup === "child_or_teen_upto_16"
@@ -1763,17 +1764,17 @@ export default function PatientOverviewPage() {
                                           </span>
                                           <span
                                             className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
-                                              scores.meetsSymptomThreshold ? "bg-green-100 text-green-900" : "bg-gray-100 text-gray-900"
+                                              scores.meetsSymptomThreshold ? "bg-green-100 text-green-900" : "bg-gray-100 text-navy"
                                             }`}
                                           >
                                             {scores.meetsSymptomThreshold ? "Meets threshold" : "Below threshold"}
                                           </span>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                          <span className="font-semibold text-gray-800">Functional impairment present:</span>
+                                          <span className="font-semibold text-navy">Functional impairment present:</span>
                                           <span
                                             className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
-                                              scores.functionalImpairmentPresent ? "bg-red-100 text-red-900" : "bg-gray-100 text-gray-900"
+                                              scores.functionalImpairmentPresent ? "bg-red-100 text-red-900" : "bg-gray-100 text-navy"
                                             }`}
                                           >
                                             {scores.functionalImpairmentPresent ? "Yes (impact item >= 2)" : "No"}
@@ -1781,7 +1782,7 @@ export default function PatientOverviewPage() {
                                         </div>
                                       </div>
 
-                                      <h4 className="text-sm font-semibold text-gray-800 pt-2 border-t border-gray-200">Responses</h4>
+                                      <h4 className="text-sm font-semibold text-navy pt-2 border-t border-gray-200">Responses</h4>
                                       <div className="space-y-4">
                                         <div>
                                           <p className="text-xs font-semibold text-gray-700 mb-2">Section A: Inattention</p>
@@ -1791,10 +1792,10 @@ export default function PatientOverviewPage() {
                                                 key={q.linkId}
                                                 className="flex items-start justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
                                               >
-                                                <span className="pr-3 leading-5 text-gray-800">
+                                                <span className="pr-3 leading-5 text-navy">
                                                   {idx + 1}. {q.question}
                                                 </span>
-                                                <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                                <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-navy">
                                                   {adhdParentResponseToOptionLabel(fa.questionnaireData![q.linkId])}
                                                 </span>
                                               </li>
@@ -1809,10 +1810,10 @@ export default function PatientOverviewPage() {
                                                 key={q.linkId}
                                                 className="flex items-start justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
                                               >
-                                                <span className="pr-3 leading-5 text-gray-800">
+                                                <span className="pr-3 leading-5 text-navy">
                                                   {idx + 10}. {q.question}
                                                 </span>
-                                                <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                                <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-navy">
                                                   {adhdParentResponseToOptionLabel(fa.questionnaireData![q.linkId])}
                                                 </span>
                                               </li>
@@ -1827,8 +1828,8 @@ export default function PatientOverviewPage() {
                                                 key={q.linkId}
                                                 className="flex items-start justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
                                               >
-                                                <span className="pr-3 leading-5 text-gray-800">{q.question}</span>
-                                                <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                                <span className="pr-3 leading-5 text-navy">{q.question}</span>
+                                                <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-navy">
                                                   {adhdParentResponseToOptionLabel(fa.questionnaireData![q.linkId])}
                                                 </span>
                                               </li>
@@ -1845,45 +1846,45 @@ export default function PatientOverviewPage() {
                                   const scores = computeADHDTeacherScores(fa.questionnaireData!, ageYears);
                                   return (
                                     <div className="rounded-lg border border-amber-200 bg-amber-50/40 p-4 space-y-4">
-                                      <h4 className="text-sm font-semibold text-gray-900">ADHD Teacher Rating Scoring</h4>
+                                      <h4 className="text-sm font-semibold text-navy">ADHD Teacher Rating Scoring</h4>
                                       <div className="grid gap-2 text-sm">
                                         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                                           <div className="flex items-center gap-2">
-                                            <span className="font-semibold text-gray-800">Inattention count:</span>
-                                            <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-gray-900">
+                                            <span className="font-semibold text-navy">Inattention count:</span>
+                                            <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-navy">
                                               {scores.inattentiveCount}
                                             </span>
                                           </div>
                                           <div className="flex items-center gap-2">
-                                            <span className="font-semibold text-gray-800">Hyperactivity/Impulsivity count:</span>
-                                            <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-gray-900">
+                                            <span className="font-semibold text-navy">Hyperactivity/Impulsivity count:</span>
+                                            <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-navy">
                                               {scores.hyperactiveImpulsiveCount}
                                             </span>
                                           </div>
                                         </div>
                                         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                                           <div className="flex items-center gap-2">
-                                            <span className="font-semibold text-gray-800">Inattention total:</span>
+                                            <span className="font-semibold text-navy">Inattention total:</span>
                                             <span className="inline-flex rounded-md bg-blue-100 px-2 py-0.5 text-sm font-semibold text-blue-900">
                                               {scores.inattentiveTotal}
                                             </span>
                                           </div>
                                           <div className="flex items-center gap-2">
-                                            <span className="font-semibold text-gray-800">Hyperactivity/Impulsivity total:</span>
+                                            <span className="font-semibold text-navy">Hyperactivity/Impulsivity total:</span>
                                             <span className="inline-flex rounded-md bg-blue-100 px-2 py-0.5 text-sm font-semibold text-blue-900">
                                               {scores.hyperactiveImpulsiveTotal}
                                             </span>
                                           </div>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                          <span className="font-semibold text-gray-800">Overall severity total:</span>
+                                          <span className="font-semibold text-navy">Overall severity total:</span>
                                           <span className="inline-flex rounded-md bg-amber-100 px-2 py-0.5 text-sm font-semibold text-amber-900">
                                             {scores.overallSeverityTotal}
                                           </span>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                          <span className="font-semibold text-gray-800">Symptom threshold:</span>
-                                          <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-gray-900">
+                                          <span className="font-semibold text-navy">Symptom threshold:</span>
+                                          <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-sm font-semibold text-navy">
                                             {scores.threshold.ageGroup === "unknown"
                                               ? "Unknown age (using >=6)"
                                               : scores.threshold.ageGroup === "child_or_teen_upto_16"
@@ -1892,17 +1893,17 @@ export default function PatientOverviewPage() {
                                           </span>
                                           <span
                                             className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
-                                              scores.meetsSymptomThreshold ? "bg-green-100 text-green-900" : "bg-gray-100 text-gray-900"
+                                              scores.meetsSymptomThreshold ? "bg-green-100 text-green-900" : "bg-gray-100 text-navy"
                                             }`}
                                           >
                                             {scores.meetsSymptomThreshold ? "Meets threshold" : "Below threshold"}
                                           </span>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                          <span className="font-semibold text-gray-800">Functional impairment present:</span>
+                                          <span className="font-semibold text-navy">Functional impairment present:</span>
                                           <span
                                             className={`inline-flex rounded-md px-2 py-0.5 text-sm font-semibold ${
-                                              scores.functionalImpairmentPresent ? "bg-red-100 text-red-900" : "bg-gray-100 text-gray-900"
+                                              scores.functionalImpairmentPresent ? "bg-red-100 text-red-900" : "bg-gray-100 text-navy"
                                             }`}
                                           >
                                             {scores.functionalImpairmentPresent ? "Yes (impact item >= 2)" : "No"}
@@ -1910,7 +1911,7 @@ export default function PatientOverviewPage() {
                                         </div>
                                       </div>
 
-                                      <h4 className="text-sm font-semibold text-gray-800 pt-2 border-t border-gray-200">Responses</h4>
+                                      <h4 className="text-sm font-semibold text-navy pt-2 border-t border-gray-200">Responses</h4>
                                       <div className="space-y-4">
                                         <div>
                                           <p className="text-xs font-semibold text-gray-700 mb-2">Section A: Inattention</p>
@@ -1920,10 +1921,10 @@ export default function PatientOverviewPage() {
                                                 key={q.linkId}
                                                 className="flex items-start justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
                                               >
-                                                <span className="pr-3 leading-5 text-gray-800">
+                                                <span className="pr-3 leading-5 text-navy">
                                                   {idx + 1}. {q.question}
                                                 </span>
-                                                <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                                <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-navy">
                                                   {adhdTeacherResponseToOptionLabel(fa.questionnaireData![q.linkId])}
                                                 </span>
                                               </li>
@@ -1938,10 +1939,10 @@ export default function PatientOverviewPage() {
                                                 key={q.linkId}
                                                 className="flex items-start justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
                                               >
-                                                <span className="pr-3 leading-5 text-gray-800">
+                                                <span className="pr-3 leading-5 text-navy">
                                                   {idx + 10}. {q.question}
                                                 </span>
-                                                <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                                <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-navy">
                                                   {adhdTeacherResponseToOptionLabel(fa.questionnaireData![q.linkId])}
                                                 </span>
                                               </li>
@@ -1956,8 +1957,8 @@ export default function PatientOverviewPage() {
                                                 key={q.linkId}
                                                 className="flex items-start justify-between gap-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm"
                                               >
-                                                <span className="pr-3 leading-5 text-gray-800">{q.question}</span>
-                                                <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                                <span className="pr-3 leading-5 text-navy">{q.question}</span>
+                                                <span className="mt-0.5 inline-flex shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-navy">
                                                   {adhdTeacherResponseToOptionLabel(fa.questionnaireData![q.linkId])}
                                                 </span>
                                               </li>
@@ -1972,7 +1973,7 @@ export default function PatientOverviewPage() {
                                 questionnaireToQandA(fa.questionnaireData!).map((qa, idx) => (
                                   <div key={idx} className="rounded border border-gray-200 bg-gray-50 p-3">
                                     <p className="text-xs font-medium text-gray-500">{qa.question}</p>
-                                    <p className="mt-1 text-sm text-gray-900">{qa.answer}</p>
+                                    <p className="mt-1 text-sm text-navy">{qa.answer}</p>
                                   </div>
                                 ))
                               )}
@@ -1983,10 +1984,10 @@ export default function PatientOverviewPage() {
                           )}
                           {fa.downloadUrl && (
                             <div className="mt-2 flex flex-wrap gap-3">
-                              <a href={fa.downloadUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-warm-brown hover:underline">
+                              <a href={fa.downloadUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-cta hover:underline">
                                 View PDF →
                               </a>
-                              <a href={fa.downloadUrl} download target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-warm-brown hover:underline">
+                              <a href={fa.downloadUrl} download target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-cta hover:underline">
                                 Download PDF →
                               </a>
                             </div>

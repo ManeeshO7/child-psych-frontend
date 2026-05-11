@@ -30,7 +30,7 @@ const SOCIAL_LINKS = [
 
 export default function Footer() {
   return (
-    <footer className="border-t border-cream-300/80 bg-cream-100">
+    <footer className="border-t border-cream-300/80 bg-header-footer">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
         <div className="flex flex-col items-center justify-between gap-6 text-center md:flex-row md:text-left">
           <p className="text-sm text-gray-600">
@@ -43,7 +43,7 @@ export default function Footer() {
                 href={href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-500 transition-colors hover:text-warm-brown"
+                className="text-gray-500 transition-colors hover:text-cta"
                 aria-label={name}
               >
                 {icon}

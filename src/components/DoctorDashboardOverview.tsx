@@ -154,8 +154,8 @@ export default function DoctorDashboardOverview() {
 
       <section className="mt-6 rounded-xl border border-cream-200 bg-white p-5 shadow-sm">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-warm-brown">Today&apos;s Appointments</h2>
-          <Link href="/doctor/appointments" className="text-sm font-medium text-warm-brown hover:underline">
+          <h2 className="text-lg font-semibold text-cta">Today&apos;s Appointments</h2>
+          <Link href="/doctor/appointments" className="text-sm font-medium text-cta hover:underline">
             View all
           </Link>
         </div>
@@ -169,7 +169,7 @@ export default function DoctorDashboardOverview() {
                 className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-cream-200 bg-cream-50 px-4 py-3"
               >
                 <div className="min-w-0">
-                  <p className="font-medium text-gray-900">
+                  <p className="font-medium text-navy">
                     {formatTimeRangeInPracticeTz(apt.scheduledAt, apt.durationMinutes)} - {apt.patient?.name || "Patient"}
                   </p>
                   <p className="text-sm text-gray-600">
@@ -182,7 +182,7 @@ export default function DoctorDashboardOverview() {
                       href={apt.meetLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex rounded-lg bg-warm-brown px-3 py-1.5 text-sm font-medium text-white hover:bg-warm-brown/90"
+                      className="inline-flex rounded-lg bg-cta px-3 py-1.5 text-sm font-medium text-white hover:bg-cta/90"
                     >
                       Join
                     </a>
@@ -221,7 +221,7 @@ export default function DoctorDashboardOverview() {
           </p>
           <a
             href="/api/auth/google"
-            className="mt-3 inline-block rounded bg-warm-brown px-3 py-1.5 text-sm font-medium text-white hover:opacity-90"
+            className="mt-3 inline-block rounded bg-cta px-3 py-1.5 text-sm font-medium text-white hover:opacity-90"
           >
             Connect Google Calendar
           </a>
@@ -234,13 +234,13 @@ export default function DoctorDashboardOverview() {
       <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         <Link
           href="/doctor/requests"
-          className="card flex flex-col gap-2 transition hover:border-warm-brown/40 hover:shadow-md"
+          className="card flex flex-col gap-2 transition hover:border-cta/40 hover:shadow-md"
         >
-          <h2 className="text-lg font-semibold text-warm-brown">Patient Requests</h2>
+          <h2 className="text-lg font-semibold text-cta">Patient Requests</h2>
           <p className="text-sm text-gray-600">
             Review new patient access requests. Approve to create their account and send login credentials; reject to decline.
           </p>
-          <p className="mt-auto text-2xl font-bold text-gray-900">
+          <p className="mt-auto text-2xl font-bold text-navy">
             {pendingCount === null ? "—" : pendingCount}
           </p>
           <p className="text-xs text-gray-500">pending</p>
@@ -248,13 +248,13 @@ export default function DoctorDashboardOverview() {
 
         <Link
           href="/doctor/appointments"
-          className="card flex flex-col gap-2 transition hover:border-warm-brown/40 hover:shadow-md"
+          className="card flex flex-col gap-2 transition hover:border-cta/40 hover:shadow-md"
         >
-          <h2 className="text-lg font-semibold text-warm-brown">Appointments</h2>
+          <h2 className="text-lg font-semibold text-cta">Appointments</h2>
           <p className="text-sm text-gray-600">
             Your upcoming and past appointments.
           </p>
-          <p className="mt-auto text-2xl font-bold text-gray-900">
+          <p className="mt-auto text-2xl font-bold text-navy">
             {appointmentCount === null ? "—" : appointmentCount}
           </p>
           <p className="text-xs text-gray-500">appointments</p>
@@ -262,13 +262,13 @@ export default function DoctorDashboardOverview() {
 
         <Link
           href="/doctor/patients"
-          className="card flex flex-col gap-2 transition hover:border-warm-brown/40 hover:shadow-md"
+          className="card flex flex-col gap-2 transition hover:border-cta/40 hover:shadow-md"
         >
-          <h2 className="text-lg font-semibold text-warm-brown">Patients</h2>
+          <h2 className="text-lg font-semibold text-cta">Patients</h2>
           <p className="text-sm text-gray-600">
             View all patients, their details, appointments, and form submissions.
           </p>
-          <p className="mt-auto text-2xl font-bold text-gray-900">
+          <p className="mt-auto text-2xl font-bold text-navy">
             {patientCount === null ? "—" : patientCount}
           </p>
           <p className="text-xs text-gray-500">patients</p>
@@ -276,9 +276,9 @@ export default function DoctorDashboardOverview() {
 
         <Link
           href="/doctor/availability"
-          className="card flex flex-col gap-2 transition hover:border-warm-brown/40 hover:shadow-md"
+          className="card flex flex-col gap-2 transition hover:border-cta/40 hover:shadow-md"
         >
-          <h2 className="text-lg font-semibold text-warm-brown">Manage availability</h2>
+          <h2 className="text-lg font-semibold text-cta">Manage availability</h2>
           <p className="text-sm text-gray-600">
             Set your available blocks for the next 7 days. Patients book 30-minute slots within these times.
           </p>

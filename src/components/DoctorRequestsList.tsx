@@ -196,7 +196,7 @@ export default function DoctorRequestsList() {
       <li key={req.id} className="card">
         <div className="flex flex-wrap justify-between gap-4">
           <div className="min-w-0 flex-1">
-            <p className="font-medium text-gray-900">
+            <p className="font-medium text-navy">
               {req.firstName} {req.lastName}
             </p>
             <p className="text-sm text-gray-600">{req.email}</p>
@@ -292,7 +292,7 @@ export default function DoctorRequestsList() {
                   return next;
                 })
               }
-              className="text-sm font-medium text-warm-brown hover:underline"
+              className="text-sm font-medium text-cta hover:underline"
             >
               {expandedPrescreen.has(req.id) ? "Hide" : "Show"} pre-screening responses
             </button>
@@ -309,8 +309,8 @@ export default function DoctorRequestsList() {
                       <dl className="space-y-3">
                         {questionnaireToQandA(req.questionnaireData).map(({ question, answer }, i) => (
                           <div key={i}>
-                            <dt className="font-medium text-warm-brown">{question}</dt>
-                            <dd className="mt-0.5 text-gray-800">{answer}</dd>
+                            <dt className="font-medium text-cta">{question}</dt>
+                            <dd className="mt-0.5 text-navy">{answer}</dd>
                           </div>
                         ))}
                       </dl>
@@ -340,7 +340,7 @@ export default function DoctorRequestsList() {
   return (
     <main className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
       <p className="mb-6">
-        <Link href="/doctor" className="text-sm text-warm-brown hover:underline">
+        <Link href="/doctor" className="text-sm text-cta hover:underline">
           ← Back to dashboard
         </Link>
       </p>
@@ -368,7 +368,7 @@ export default function DoctorRequestsList() {
               setPageByTab({ pending: 1, accepted: 1, rejected: 1 });
             }}
             placeholder="Search by patient name…"
-            className="w-full rounded-lg border border-cream-200 bg-white py-2 pl-10 pr-3 text-sm text-gray-900 placeholder-gray-500 focus:border-warm-brown focus:ring-warm-brown"
+            className="w-full rounded-lg border border-cream-200 bg-white py-2 pl-10 pr-3 text-sm text-navy placeholder-gray-500 focus:border-cta focus:ring-cta"
             aria-label="Search by patient name"
           />
         </div>
@@ -394,7 +394,7 @@ export default function DoctorRequestsList() {
                     onClick={() => setActiveTab(tab.id)}
                     className={`flex-1 rounded-lg px-4 py-3 text-sm font-semibold transition ${
                       activeTab === tab.id
-                        ? "bg-warm-brown text-white"
+                        ? "bg-cta text-white"
                         : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                     }`}
                   >
@@ -424,7 +424,7 @@ export default function DoctorRequestsList() {
                           type="button"
                           onClick={() => setPage("pending", page - 1)}
                           disabled={page <= 1}
-                          className="rounded-lg border border-cream-200 bg-white px-3 py-1.5 text-sm font-medium text-warm-brown disabled:cursor-not-allowed disabled:opacity-50 hover:bg-cream-50"
+                          className="rounded-lg border border-cream-200 bg-white px-3 py-1.5 text-sm font-medium text-cta disabled:cursor-not-allowed disabled:opacity-50 hover:bg-cream-50"
                         >
                           Previous
                         </button>
@@ -435,7 +435,7 @@ export default function DoctorRequestsList() {
                           type="button"
                           onClick={() => setPage("pending", page + 1)}
                           disabled={page >= totalPages}
-                          className="rounded-lg border border-cream-200 bg-white px-3 py-1.5 text-sm font-medium text-warm-brown disabled:cursor-not-allowed disabled:opacity-50 hover:bg-cream-50"
+                          className="rounded-lg border border-cream-200 bg-white px-3 py-1.5 text-sm font-medium text-cta disabled:cursor-not-allowed disabled:opacity-50 hover:bg-cream-50"
                         >
                           Next
                         </button>
@@ -466,7 +466,7 @@ export default function DoctorRequestsList() {
                           type="button"
                           onClick={() => setPage("accepted", page - 1)}
                           disabled={page <= 1}
-                          className="rounded-lg border border-cream-200 bg-white px-3 py-1.5 text-sm font-medium text-warm-brown disabled:cursor-not-allowed disabled:opacity-50 hover:bg-cream-50"
+                          className="rounded-lg border border-cream-200 bg-white px-3 py-1.5 text-sm font-medium text-cta disabled:cursor-not-allowed disabled:opacity-50 hover:bg-cream-50"
                         >
                           Previous
                         </button>
@@ -477,7 +477,7 @@ export default function DoctorRequestsList() {
                           type="button"
                           onClick={() => setPage("accepted", page + 1)}
                           disabled={page >= totalPages}
-                          className="rounded-lg border border-cream-200 bg-white px-3 py-1.5 text-sm font-medium text-warm-brown disabled:cursor-not-allowed disabled:opacity-50 hover:bg-cream-50"
+                          className="rounded-lg border border-cream-200 bg-white px-3 py-1.5 text-sm font-medium text-cta disabled:cursor-not-allowed disabled:opacity-50 hover:bg-cream-50"
                         >
                           Next
                         </button>
@@ -508,7 +508,7 @@ export default function DoctorRequestsList() {
                           type="button"
                           onClick={() => setPage("rejected", page - 1)}
                           disabled={page <= 1}
-                          className="rounded-lg border border-cream-200 bg-white px-3 py-1.5 text-sm font-medium text-warm-brown disabled:cursor-not-allowed disabled:opacity-50 hover:bg-cream-50"
+                          className="rounded-lg border border-cream-200 bg-white px-3 py-1.5 text-sm font-medium text-cta disabled:cursor-not-allowed disabled:opacity-50 hover:bg-cream-50"
                         >
                           Previous
                         </button>
@@ -519,7 +519,7 @@ export default function DoctorRequestsList() {
                           type="button"
                           onClick={() => setPage("rejected", page + 1)}
                           disabled={page >= totalPages}
-                          className="rounded-lg border border-cream-200 bg-white px-3 py-1.5 text-sm font-medium text-warm-brown disabled:cursor-not-allowed disabled:opacity-50 hover:bg-cream-50"
+                          className="rounded-lg border border-cream-200 bg-white px-3 py-1.5 text-sm font-medium text-cta disabled:cursor-not-allowed disabled:opacity-50 hover:bg-cream-50"
                         >
                           Next
                         </button>

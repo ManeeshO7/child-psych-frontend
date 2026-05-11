@@ -431,7 +431,7 @@ export default function DoctorAppointmentsList() {
                 ? "border-green-200 bg-green-50 text-green-900"
                 : notice.type === "error"
                   ? "border-red-200 bg-red-50 text-red-900"
-                  : "border-cream-200 bg-white text-gray-900"
+                  : "border-cream-200 bg-white text-navy"
             }`}
             role="status"
             aria-live="polite"
@@ -451,7 +451,7 @@ export default function DoctorAppointmentsList() {
       )}
 
       <p className="mb-6">
-        <Link href="/doctor" className="text-sm text-warm-brown hover:underline">
+        <Link href="/doctor" className="text-sm text-cta hover:underline">
           ← Back to dashboard
         </Link>
       </p>
@@ -468,7 +468,7 @@ export default function DoctorAppointmentsList() {
               type="button"
               onClick={() => setView("active")}
               className={`rounded-md px-3 py-1.5 ${
-                view === "active" ? "bg-cream-100 text-warm-brown" : "text-gray-700 hover:bg-cream-50"
+                view === "active" ? "bg-cream-100 text-cta" : "text-gray-700 hover:bg-cream-50"
               }`}
             >
               Active
@@ -477,7 +477,7 @@ export default function DoctorAppointmentsList() {
               type="button"
               onClick={() => setView("completed")}
               className={`rounded-md px-3 py-1.5 ${
-                view === "completed" ? "bg-cream-100 text-warm-brown" : "text-gray-700 hover:bg-cream-50"
+                view === "completed" ? "bg-cream-100 text-cta" : "text-gray-700 hover:bg-cream-50"
               }`}
             >
               Completed
@@ -492,13 +492,13 @@ export default function DoctorAppointmentsList() {
               type="date"
               value={filterDate ?? ""}
               onChange={(e) => setFilterDate(e.target.value ? e.target.value : null)}
-              className="rounded-lg border border-cream-200 bg-white px-3 py-1.5 text-sm text-gray-900"
+              className="rounded-lg border border-cream-200 bg-white px-3 py-1.5 text-sm text-navy"
             />
             {filterDate && (
               <button
                 type="button"
                 onClick={() => setFilterDate(null)}
-                className="text-sm text-warm-brown hover:underline"
+                className="text-sm text-cta hover:underline"
               >
                 Clear
               </button>
@@ -506,7 +506,7 @@ export default function DoctorAppointmentsList() {
           </div>
         </div>
         <div className="text-sm text-gray-600">
-          Showing <span className="font-medium text-gray-900">{appointments.length}</span> appointments
+          Showing <span className="font-medium text-navy">{appointments.length}</span> appointments
         </div>
         </div>
         <div>
@@ -525,7 +525,7 @@ export default function DoctorAppointmentsList() {
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               placeholder="Search by patient name…"
-              className="w-full rounded-lg border border-cream-200 bg-white py-2 pl-10 pr-3 text-sm text-gray-900 placeholder-gray-500"
+              className="w-full rounded-lg border border-cream-200 bg-white py-2 pl-10 pr-3 text-sm text-navy placeholder-gray-500"
               aria-label="Search by patient name"
             />
           </div>
@@ -558,7 +558,7 @@ export default function DoctorAppointmentsList() {
                 className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-cream-300/60 bg-cream-200 p-6"
               >
                 <div className="min-w-0 flex-1">
-                  <p className="font-medium text-gray-900">
+                  <p className="font-medium text-navy">
                     {formattedDate}
                   </p>
                   <p className="text-sm text-gray-600">
@@ -584,7 +584,7 @@ export default function DoctorAppointmentsList() {
                             openingMeetTimeoutRef.current = null;
                           }, 2000);
                         }}
-                        className="inline-flex items-center rounded-lg border border-warm-brown/50 bg-warm-brown/5 px-3 py-1.5 text-sm font-medium text-warm-brown hover:bg-warm-brown/10"
+                        className="inline-flex items-center rounded-lg border border-cta/50 bg-cta/5 px-3 py-1.5 text-sm font-medium text-cta hover:bg-cta/10"
                       >
                         {openingMeetId === a.id ? "Opening…" : "Join video call →"}
                       </a>
@@ -735,7 +735,7 @@ export default function DoctorAppointmentsList() {
                     {a.patient && (
                       <Link
                         href={`/doctor/patients/${a.patient.id}`}
-                        className="inline-flex items-center rounded-lg border border-warm-brown/50 bg-white px-3 py-1.5 text-sm font-medium text-warm-brown hover:bg-warm-brown/5"
+                        className="inline-flex items-center rounded-lg border border-cta/50 bg-white px-3 py-1.5 text-sm font-medium text-cta hover:bg-cta/5"
                       >
                         View patient →
                       </Link>

@@ -12,6 +12,7 @@ function ConsentContent() {
   const [acks, setAcks] = useState({
     noEmergency: false,
     notInCrisis: false,
+    adultNotInCrisis: false,
     privatePay: false,
     telePsychOnly: false,
     noGuarantee: false,
@@ -23,6 +24,7 @@ function ConsentContent() {
   const allAcked =
     acks.noEmergency &&
     acks.notInCrisis &&
+    acks.adultNotInCrisis &&
     acks.privatePay &&
     acks.telePsychOnly &&
     acks.noGuarantee &&
@@ -72,6 +74,7 @@ function ConsentContent() {
   const checkedCount = [
     acks.noEmergency,
     acks.notInCrisis,
+    acks.adultNotInCrisis,
     acks.privatePay,
     acks.telePsychOnly,
     acks.noGuarantee,
@@ -84,21 +87,21 @@ function ConsentContent() {
       <main className="min-h-screen bg-cream-50 py-12 sm:py-16">
         <div className="mx-auto max-w-xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <p className="text-lg sm:text-xl font-semibold uppercase tracking-[0.15em] text-warm-brown/90">
+            <p className="text-lg sm:text-xl font-semibold uppercase tracking-[0.15em] text-cta/90">
               Consent to review
             </p>
             <h1 className="mt-2 section-heading text-red-600">
               Required Acknowledgements
             </h1>
             <p className="mt-3 text-sm text-gray-600 max-w-md mx-auto">
-              <span className="text-red-600 font-medium">*</span> All acknowledgements below are required to proceed. Please read and confirm each statement.
+              Please read and confirm each statement.
             </p>
           </div>
 
           <div className="card mt-8 sm:mt-10 p-6 sm:p-8">
             <div className="mb-5 flex items-center justify-between">
               <span className="text-sm font-medium text-gray-500">
-                {checkedCount} of 6 selected
+                {checkedCount} of 7 selected
               </span>
               {allAcked && (
                 <span className="text-sm font-medium text-green-700">Ready to continue</span>
@@ -115,10 +118,25 @@ function ConsentContent() {
                       setAcks((p) => ({ ...p, noEmergency: e.target.checked }));
                       if (e.target.checked) setErrorMessage("");
                     }}
-                    className="mt-0.5 h-5 w-5 shrink-0 rounded border-gray-300 text-warm-brown focus:ring-warm-brown focus:ring-offset-0"
+                    className="mt-0.5 h-5 w-5 shrink-0 rounded border-gray-300 text-cta focus:ring-cta focus:ring-offset-0"
                   />
-                  <span className="text-[15px] text-gray-800 leading-snug">
+                  <span className="text-[15px] text-navy leading-snug">
                     <span className="text-red-600">*</span> I understand this practice does not provide emergency or crisis care
+                  </span>
+                </label>
+
+                <label className="flex cursor-pointer items-start gap-4 py-4 first:pt-0 last:pb-0 transition-colors hover:bg-gray-50/50 -mx-2 px-2 rounded-lg">
+                  <input
+                    type="checkbox"
+                    checked={acks.adultNotInCrisis}
+                    onChange={(e) => {
+                      setAcks((p) => ({ ...p, adultNotInCrisis: e.target.checked }));
+                      if (e.target.checked) setErrorMessage("");
+                    }}
+                    className="mt-0.5 h-5 w-5 shrink-0 rounded border-gray-300 text-cta focus:ring-cta focus:ring-offset-0"
+                  />
+                  <span className="text-[15px] text-navy leading-snug">
+                    <span className="text-red-600">*</span> I am not in psychiatric crisis
                   </span>
                 </label>
 
@@ -130,9 +148,9 @@ function ConsentContent() {
                       setAcks((p) => ({ ...p, notInCrisis: e.target.checked }));
                       if (e.target.checked) setErrorMessage("");
                     }}
-                    className="mt-0.5 h-5 w-5 shrink-0 rounded border-gray-300 text-warm-brown focus:ring-warm-brown focus:ring-offset-0"
+                    className="mt-0.5 h-5 w-5 shrink-0 rounded border-gray-300 text-cta focus:ring-cta focus:ring-offset-0"
                   />
-                  <span className="text-[15px] text-gray-800 leading-snug">
+                  <span className="text-[15px] text-navy leading-snug">
                     <span className="text-red-600">*</span> My child is not currently in psychiatric crisis
                   </span>
                 </label>
@@ -145,9 +163,9 @@ function ConsentContent() {
                       setAcks((p) => ({ ...p, privatePay: e.target.checked }));
                       if (e.target.checked) setErrorMessage("");
                     }}
-                    className="mt-0.5 h-5 w-5 shrink-0 rounded border-gray-300 text-warm-brown focus:ring-warm-brown focus:ring-offset-0"
+                    className="mt-0.5 h-5 w-5 shrink-0 rounded border-gray-300 text-cta focus:ring-cta focus:ring-offset-0"
                   />
-                  <span className="text-[15px] text-gray-800 leading-snug">
+                  <span className="text-[15px] text-navy leading-snug">
                     <span className="text-red-600">*</span> I understand this is a private, fee-for-service practice and does not bill insurance
                   </span>
                 </label>
@@ -160,9 +178,9 @@ function ConsentContent() {
                       setAcks((p) => ({ ...p, telePsychOnly: e.target.checked }));
                       if (e.target.checked) setErrorMessage("");
                     }}
-                    className="mt-0.5 h-5 w-5 shrink-0 rounded border-gray-300 text-warm-brown focus:ring-warm-brown focus:ring-offset-0"
+                    className="mt-0.5 h-5 w-5 shrink-0 rounded border-gray-300 text-cta focus:ring-cta focus:ring-offset-0"
                   />
-                  <span className="text-[15px] text-gray-800 leading-snug">
+                  <span className="text-[15px] text-navy leading-snug">
                     <span className="text-red-600">*</span> I understand that this is strictly a tele psychiatric practice
                   </span>
                 </label>
@@ -175,9 +193,9 @@ function ConsentContent() {
                       setAcks((p) => ({ ...p, noGuarantee: e.target.checked }));
                       if (e.target.checked) setErrorMessage("");
                     }}
-                    className="mt-0.5 h-5 w-5 shrink-0 rounded border-gray-300 text-warm-brown focus:ring-warm-brown focus:ring-offset-0"
+                    className="mt-0.5 h-5 w-5 shrink-0 rounded border-gray-300 text-cta focus:ring-cta focus:ring-offset-0"
                   />
-                  <span className="text-[15px] text-gray-800 leading-snug">
+                  <span className="text-[15px] text-navy leading-snug">
                     <span className="text-red-600">*</span> I understand that submitting this form does not guarantee acceptance
                   </span>
                 </label>
@@ -190,9 +208,9 @@ function ConsentContent() {
                       setAcks((p) => ({ ...p, noRelationship: e.target.checked }));
                       if (e.target.checked) setErrorMessage("");
                     }}
-                    className="mt-0.5 h-5 w-5 shrink-0 rounded border-gray-300 text-warm-brown focus:ring-warm-brown focus:ring-offset-0"
+                    className="mt-0.5 h-5 w-5 shrink-0 rounded border-gray-300 text-cta focus:ring-cta focus:ring-offset-0"
                   />
-                  <span className="text-[15px] text-gray-800 leading-snug">
+                  <span className="text-[15px] text-navy leading-snug">
                     <span className="text-red-600">*</span> I understand that no doctor-patient relationship is created by submitting this form
                   </span>
                 </label>
@@ -230,7 +248,7 @@ export default function ConsentPage() {
         <Header />
         <main className="min-h-screen bg-cream-50 py-16">
           <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
-            <p className="text-warm-brown">Loading…</p>
+            <p className="text-cta">Loading…</p>
           </div>
         </main>
         <Footer />
