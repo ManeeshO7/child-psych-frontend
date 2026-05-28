@@ -66,6 +66,15 @@ body {
   }
 }
 
+/* Defer rendering of off-screen sections for smoother scroll */
+#about,
+#services,
+#testimonials,
+#contact {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 600px;
+}
+
 @keyframes fadeInUp {
   from {
     opacity: 0;

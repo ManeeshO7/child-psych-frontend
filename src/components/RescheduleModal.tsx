@@ -199,14 +199,28 @@ export default function RescheduleModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-lg bg-white shadow-xl">
         <div className="border-b border-gray-200 px-6 py-4">
-          <h2 className="text-xl font-semibold text-navy">
-            {isChangeProposed ? "Change proposed time" : "Reschedule appointment"}
-          </h2>
-          <p className="mt-1 text-sm text-gray-600">
-            {isChangeProposed
-              ? "Pick a new date and time before confirming. You'll add payment and confirm the appointment after."
-              : "Choose a new date and time. You may reschedule once per appointment."}
-          </p>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-semibold text-navy">
+                {isChangeProposed ? "Change proposed time" : "Reschedule appointment"}
+              </h2>
+              <p className="mt-1 text-sm text-gray-600">
+                {isChangeProposed
+                  ? "Pick a new date and time before confirming. You'll add payment and confirm the appointment after."
+                  : "Choose a new date and time. You may reschedule once per appointment."}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="shrink-0 rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+              aria-label="Close"
+            >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
         <div className="px-6 py-4 space-y-4">
           {showConfirmation && selectedSlot ? (
@@ -285,7 +299,7 @@ export default function RescheduleModal({
                     ))}
                     {Array.from({ length: calendarGrid.lastDate }, (_, i) => {
                       const day = i + 1;
-                      const { monthKey, year, month } = calendarGrid;
+                      const { year, month } = calendarGrid;
                       const iso = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
                       const hasSlots = datesWithSlots.has(iso);
                       const isSelected = selectedDate === iso;

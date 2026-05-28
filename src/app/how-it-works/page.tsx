@@ -1,402 +1,533 @@
+"use client";
+
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import FaqAccordion from "@/components/FaqAccordion";
+import { motion } from "framer-motion";
+import type { Variants } from "framer-motion";
+import {
+  ClipboardList, Mail, Calendar, Video,
+  ShieldCheck, Lock, FolderOpen,
+  FileText, Stethoscope, Pill, CalendarCheck,
+  MapPin, LayoutDashboard, User,
+} from "lucide-react";
+
+const ease = [0.22, 1, 0.36, 1] as const;
+
+const fadeUp: Variants = {
+  hidden: { opacity: 0, y: 28 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.65, ease } },
+};
+
+const fadeLeft: Variants = {
+  hidden: { opacity: 0, x: -24 },
+  show: { opacity: 1, x: 0, transition: { duration: 0.65, ease } },
+};
+
+const fadeRight: Variants = {
+  hidden: { opacity: 0, x: 24 },
+  show: { opacity: 1, x: 0, transition: { duration: 0.65, ease } },
+};
+
+const stagger: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.12, delayChildren: 0.05 } },
+};
+
+const steps = [
+  { step: 1, icon: ClipboardList, title: "Request Access", body: "Submit a short request form so we can confirm that our practice is a good clinical fit for your child." },
+  { step: 2, icon: Mail, title: "Receive Approval", body: "Once approved, you will receive login credentials to access the secure patient portal." },
+  { step: 3, icon: FileText, title: "Complete Intake Forms", body: "Fill out basic information, preferred pharmacy, and any required clinical intake forms before your visit." },
+  { step: 4, icon: Calendar, title: "Schedule Your Appointment", body: "Choose an available time for your first telehealth consultation." },
+  { step: 5, icon: Video, title: "Attend Your Video Visit", body: "Meet with your doctor through a secure video session from the comfort of your home." },
+];
+
+const appointmentTypes = [
+  {
+    title: "Orientation Consultation",
+    duration: "30 minutes",
+    desc: "Introductory visit to understand your concerns and explain how our practice works.",
+    bullets: ["Review current concerns", "Discuss care approach", "Determine next steps"],
+    iconBg: "bg-cta/10 text-cta",
+    accent: "from-cta/5 to-cta/10",
+    icon: <MapPin className="h-7 w-7" strokeWidth={1.5} />,
+    featured: false,
+  },
+  {
+    title: "Clinical Intake",
+    duration: "75 minutes",
+    desc: "A comprehensive psychiatric evaluation to understand symptoms, history, and treatment needs.",
+    bullets: ["Review medical & mental health history", "Discuss symptoms and goals", "Develop initial treatment plan"],
+    iconBg: "bg-cta/10 text-cta",
+    accent: "from-cta/5 to-cta/10",
+    icon: <Stethoscope className="h-7 w-7" strokeWidth={1.5} />,
+    featured: true,
+  },
+  {
+    title: "Follow-up Visits",
+    duration: "30–45 minutes",
+    desc: "Ongoing appointments to monitor progress and adjust treatment as needed.",
+    bullets: ["Medication management", "Progress check-ins", "Treatment adjustments"],
+    iconBg: "bg-cta/10 text-cta",
+    accent: "from-cta/5 to-cta/10",
+    icon: <CalendarCheck className="h-7 w-7" strokeWidth={1.5} />,
+    featured: false,
+  },
+];
+
+const afterVisit = [
+  { icon: <FileText className="h-6 w-6" strokeWidth={1.5} />, title: "Diagnosis", desc: "Identify the condition when clinically appropriate.", color: "bg-cta/10 text-cta", glow: "rgba(122,158,132,0.15)" },
+  { icon: <ClipboardList className="h-6 w-6" strokeWidth={1.5} />, title: "Treatment Plan", desc: "Recommend therapy, psychotherapy, or other evidence-based options.", color: "bg-cta/10 text-cta", glow: "rgba(122,158,132,0.15)" },
+  { icon: <Pill className="h-6 w-6" strokeWidth={1.5} />, title: "Medication Support", desc: "Prescribe medication when clinically indicated and appropriate.", color: "bg-cta/10 text-cta", glow: "rgba(122,158,132,0.15)" },
+  { icon: <CalendarCheck className="h-6 w-6" strokeWidth={1.5} />, title: "Follow-up Care", desc: "Schedule monitoring visits to track progress and adjust care.", color: "bg-cta/10 text-cta", glow: "rgba(122,158,132,0.15)" },
+];
+
+const portalFeatures = [
+  { icon: <Calendar className="h-6 w-6" strokeWidth={1.5} />, title: "Appointments", bullets: ["Schedule or reschedule visits", "Join secure video sessions"], color: "bg-cta/10 text-cta", barColor: "bg-cta" },
+  { icon: <LayoutDashboard className="h-6 w-6" strokeWidth={1.5} />, title: "Health & Records", bullets: ["Complete intake forms", "View past appointment notes"], color: "bg-cta/10 text-cta", barColor: "bg-cta" },
+  { icon: <User className="h-6 w-6" strokeWidth={1.5} />, title: "Account", bullets: ["Update pharmacy & contact info", "Manage billing & payments"], color: "bg-cta/10 text-cta", barColor: "bg-cta" },
+];
 
 export default function HowItWorksPage() {
   return (
     <>
       <Header />
-      <main>
-        {/* Hero — soft gradient (section1.png) */}
-        <section className="relative min-h-[420px] w-full overflow-hidden py-24 sm:min-h-[480px] sm:py-32">
-          <div className="pointer-events-none absolute inset-0 z-0 bg-cream-50">
-            <div
-              className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-              style={{ backgroundImage: "url(/section1.png)" }}
-              aria-hidden
-            />
-            <div className="absolute inset-0 bg-white/35" aria-hidden />
-          </div>
-          <div className="relative z-10 mx-auto flex max-w-3xl flex-col items-center px-4 text-center sm:px-6 lg:px-8">
-            <h1 className="section-heading text-3xl text-navy sm:text-4xl md:text-5xl">
+      <main className="bg-gradient-to-br from-[#f5f0e8] via-[#eef4ec] to-[#e2ede4]">
+
+        {/* ── Hero ── */}
+        <section className="relative min-h-[460px] w-full overflow-hidden py-28 sm:py-36">
+          <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-cta/10 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-16 right-0 h-56 w-56 rounded-full bg-cta/8 blur-3xl" />
+
+          <motion.div
+            className="relative z-10 mx-auto flex max-w-3xl flex-col items-center gap-0 px-4 text-center sm:px-6 lg:px-8"
+            variants={stagger} initial="hidden" animate="show"
+          >
+            <motion.span variants={fadeUp} className="inline-flex items-center gap-2 rounded-full bg-cta/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-cta ring-1 ring-cta/20">
+              <span className="h-1.5 w-1.5 rounded-full bg-cta animate-pulse" />
+              Your Journey to Care
+            </motion.span>
+            <motion.h1 variants={fadeUp} className="mt-5 section-heading text-4xl text-navy sm:text-5xl md:text-6xl">
               How TelePsych Works
-            </h1>
-            <p className="mt-4 text-lg text-gray-700 sm:text-xl">
-              Getting started is simple. Request access to our secure patient portal, complete your profile, and book your first appointment—all online.
-            </p>
-            <p className="mt-3 text-base font-medium text-gray-700">
+            </motion.h1>
+            <motion.p variants={fadeUp} className="mt-5 text-lg leading-relaxed text-gray-700 sm:text-xl">
+              Getting started is simple. Request access to our secure patient portal, complete your profile, and book your first appointment — all online.
+            </motion.p>
+            <motion.p variants={fadeUp} className="mt-3 text-base font-semibold text-cta">
               Most new patients book their first visit within a few days.
-            </p>
-          </div>
+            </motion.p>
+            <motion.div variants={fadeUp} className="mt-8 flex flex-wrap justify-center gap-4">
+              <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
+                <Link href="/request-access" className="btn-primary px-8 py-3.5 text-base">
+                  Request Access
+                </Link>
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
+                <Link href="#journey" className="inline-flex items-center rounded-xl border-2 border-cta/40 bg-white/60 px-8 py-3.5 text-base font-semibold text-cta backdrop-blur-sm transition hover:bg-white/80">
+                  See how it works
+                </Link>
+              </motion.div>
+            </motion.div>
+          </motion.div>
         </section>
 
-        {/* Your care journey — timeline */}
-        <section className="bg-cream-50 py-16 sm:py-24">
-          <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-            <h2 className="section-heading section-heading-accent text-2xl sm:text-3xl">
-              Your care journey
-            </h2>
-            <div className="mt-10 relative">
-              {/* Vertical timeline line */}
-              <div className="absolute left-5 top-5 bottom-5 w-0.5 bg-cta/30 sm:left-6" aria-hidden />
-              <ol className="space-y-0">
-                {[
-                  {
-                    step: 1,
-                    title: "Request Access",
-                    body: "Submit a short request form so we can confirm that our practice is a good clinical fit for your child.",
-                  },
-                  {
-                    step: 2,
-                    title: "Receive Approval",
-                    body: "Once approved, you will receive login credentials to access the secure patient portal.",
-                  },
-                  {
-                    step: 3,
-                    title: "Complete Intake Forms",
-                    body: "Fill out basic information, preferred pharmacy, and any required clinical intake forms before your visit.",
-                  },
-                  {
-                    step: 4,
-                    title: "Schedule Your Appointment",
-                    body: "Choose an available time for your first telehealth consultation.",
-                  },
-                  {
-                    step: 5,
-                    title: "Attend Your Video Visit",
-                    body: "Meet with your doctor through a secure video session from the comfort of your home.",
-                  },
-                ].map(({ step, title, body }) => (
-                  <li key={step} className="relative flex gap-6 pb-10 last:pb-0">
-                    <span
-                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-cta bg-cream-50 text-sm font-bold text-cta sm:h-12 sm:w-12 sm:text-base"
-                      aria-hidden
+        {/* ── Care journey ── */}
+        <section id="journey" className="bg-[#d6e8d8] py-20 sm:py-28">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <motion.div variants={stagger} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} className="flex flex-col items-start">
+              <motion.span variants={fadeLeft} className="inline-flex items-center gap-2 rounded-full bg-cta/10 px-3.5 py-1 text-xs font-semibold uppercase tracking-widest text-cta ring-1 ring-cta/20">
+                <span className="h-1.5 w-1.5 rounded-full bg-cta" /> Step by Step
+              </motion.span>
+              <motion.h2 variants={fadeLeft} className="mt-4 section-heading section-heading-accent text-2xl sm:text-3xl">
+                Your care journey
+              </motion.h2>
+              <motion.p variants={fadeUp} className="mt-3 max-w-2xl text-base text-gray-600">
+                From your first message to your first visit — here's exactly what to expect.
+              </motion.p>
+            </motion.div>
+
+            <div className="relative mt-14">
+              {/* Animated connector line */}
+              <motion.div className="absolute left-[5%] right-[5%] top-[52px] hidden h-px bg-cta/15 lg:block"
+                initial={{ scaleX: 0 }} whileInView={{ scaleX: 1 }} viewport={{ once: true }}
+                transition={{ duration: 1.0, ease, delay: 0.1 }} style={{ originX: 0 }} />
+              <motion.div className="absolute left-[5%] right-[5%] top-[52px] hidden h-px bg-cta/50 lg:block"
+                initial={{ scaleX: 0 }} whileInView={{ scaleX: 1 }} viewport={{ once: true }}
+                transition={{ duration: 1.4, ease, delay: 0.35 }} style={{ originX: 0 }} />
+
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
+                {steps.map(({ step, icon: Icon, title, body }, i) => (
+                  <motion.div
+                    key={step}
+                    initial={{ opacity: 0, y: 48, scale: 0.92 }}
+                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.1 + i * 0.15, duration: 0.7, ease }}
+                    whileHover={{ y: -10, boxShadow: "0 16px 40px rgba(0,0,0,0.11)", transition: { duration: 0.22 } }}
+                    className="group relative flex flex-col overflow-hidden rounded-2xl bg-white p-6 shadow-[0_2px_16px_rgba(0,0,0,0.06)] ring-1 ring-black/[0.04]"
+                  >
+                    {/* Gradient fill on hover */}
+                    <motion.div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-cta/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                    <motion.span
+                      className="relative z-10 mb-5 flex h-11 w-11 items-center justify-center rounded-full bg-cta text-sm font-bold text-white shadow-[0_4px_14px_rgba(122,158,132,0.45)]"
+                      initial={{ scale: 0, rotate: -15 }}
+                      whileInView={{ scale: 1, rotate: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: 0.25 + i * 0.15, duration: 0.5, type: "spring", stiffness: 220 }}
                     >
                       {step}
-                    </span>
-                    <div className="flex-1 pt-0.5">
-                      <h3 className="font-semibold text-navy">
-                        Step {step} — {title}
-                      </h3>
-                      <p className="mt-2 text-base leading-relaxed text-gray-700">{body}</p>
-                    </div>
-                  </li>
+                    </motion.span>
+
+                    <motion.div
+                      className="relative z-10 mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-cta/10 text-cta"
+                      whileHover={{ scale: 1.18, rotate: 6, transition: { duration: 0.2 } }}
+                    >
+                      <Icon className="h-5 w-5" strokeWidth={1.6} />
+                    </motion.div>
+
+                    <h3 className="relative z-10 font-semibold text-navy">{title}</h3>
+                    <p className="relative z-10 mt-2 text-sm leading-relaxed text-gray-600">{body}</p>
+
+                    <motion.div
+                      className="absolute bottom-0 left-0 right-0 h-[3px] rounded-b-2xl bg-gradient-to-r from-cta to-cta/40"
+                      initial={{ scaleX: 0 }}
+                      whileHover={{ scaleX: 1 }}
+                      transition={{ duration: 0.35 }}
+                      style={{ originX: 0 }}
+                    />
+                  </motion.div>
                 ))}
-              </ol>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* How to get started — white */}
-        <section className="bg-white py-16 sm:py-24">
-          <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-            <h2 className="section-heading section-heading-accent text-2xl sm:text-3xl">
-              How to get started
-            </h2>
-            <ol className="mt-6 space-y-6 text-base leading-relaxed text-gray-700">
-              <li className="flex gap-4">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cta/10 text-cta" aria-hidden>
-                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
+        {/* ── Appointment types ── */}
+        <section className="bg-[#eef4ec] py-20 sm:py-28">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <motion.div variants={stagger} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} className="flex flex-col items-start">
+              <motion.span variants={fadeLeft} className="inline-flex items-center gap-2 rounded-full bg-cta/10 px-3.5 py-1 text-xs font-semibold uppercase tracking-widest text-cta ring-1 ring-cta/20">
+                <span className="h-1.5 w-1.5 rounded-full bg-cta" /> Visit Types
+              </motion.span>
+              <motion.h2 variants={fadeLeft} className="mt-4 section-heading section-heading-accent text-2xl sm:text-3xl">
+                Appointment types
+              </motion.h2>
+              <motion.p variants={fadeUp} className="mt-3 max-w-2xl text-base text-gray-600">
+                Each appointment is designed for a specific stage of your care.
+              </motion.p>
+            </motion.div>
+
+            <div className="mt-12 grid gap-8 lg:grid-cols-3">
+              {appointmentTypes.map((apt, i) => (
+                <motion.div
+                  key={apt.title}
+                  initial={{ opacity: 0, y: 36 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.14, duration: 0.7, ease }}
+                  whileHover={{ y: -10, transition: { duration: 0.22 } }}
+                  className={`group relative overflow-hidden rounded-2xl border p-8 shadow-[0_4px_24px_rgba(0,0,0,0.05)] transition-shadow hover:shadow-[0_10px_40px_rgba(0,0,0,0.10)] ${apt.featured ? "border-cta/30 bg-white ring-2 ring-cta/20" : "border-cream-300 bg-white"}`}
+                >
+                  {apt.featured && (
+                    <span className="absolute right-4 top-4 rounded-full bg-cta px-3 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
+                      Most Common
+                    </span>
+                  )}
+
+                  {/* Gradient bg on hover */}
+                  <motion.div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${apt.accent} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+
+                  <motion.span
+                    className={`relative z-10 flex h-14 w-14 items-center justify-center rounded-xl ${apt.iconBg}`}
+                    whileHover={{ scale: 1.15, rotate: -6, transition: { duration: 0.2 } }}
+                  >
+                    {apt.icon}
+                  </motion.span>
+
+                  <h3 className="relative z-10 mt-5 text-lg font-semibold text-navy">{apt.title}</h3>
+
+                  <motion.span
+                    className="relative z-10 mt-3 inline-block rounded-lg border border-cta/30 bg-cta/10 px-4 py-1.5 text-sm font-bold text-cta"
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    whileInView={{ scale: 1, opacity: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.2 + i * 0.14, duration: 0.4, type: "spring" }}
+                  >
+                    {apt.duration}
+                  </motion.span>
+
+                  <motion.div
+                    className="relative z-10 mt-4 h-px w-12 bg-cta/30"
+                    initial={{ scaleX: 0 }}
+                    whileInView={{ scaleX: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.3 + i * 0.14, duration: 0.6, ease }}
+                    style={{ originX: 0 }}
+                  />
+
+                  <p className="relative z-10 mt-4 text-sm leading-relaxed text-gray-700">{apt.desc}</p>
+                  <ul className="relative z-10 mt-4 space-y-1.5 text-sm text-gray-600">
+                    {apt.bullets.map((b, bi) => (
+                      <motion.li
+                        key={b}
+                        className="flex items-start gap-2"
+                        initial={{ opacity: 0, x: -10 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.35 + i * 0.14 + bi * 0.06, duration: 0.4, ease }}
+                      >
+                        <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-cta/60" />
+                        {b}
+                      </motion.li>
+                    ))}
+                  </ul>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── After your first appointment ── */}
+        <section className="bg-[#d6e8d8] py-20 sm:py-28">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <motion.div variants={stagger} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} className="flex flex-col items-start">
+              <motion.span variants={fadeLeft} className="inline-flex items-center gap-2 rounded-full bg-cta/10 px-3.5 py-1 text-xs font-semibold uppercase tracking-widest text-cta ring-1 ring-cta/20">
+                <span className="h-1.5 w-1.5 rounded-full bg-cta" /> What Comes Next
+              </motion.span>
+              <motion.h2 variants={fadeLeft} className="mt-4 section-heading section-heading-accent text-2xl sm:text-3xl">
+                After your first appointment
+              </motion.h2>
+              <motion.p variants={fadeUp} className="mt-3 max-w-2xl text-base text-gray-600">
+                Following your evaluation, your doctor will discuss next steps with you.
+              </motion.p>
+            </motion.div>
+
+            <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {afterVisit.map((item, i) => (
+                <motion.div
+                  key={item.title}
+                  initial={{ opacity: 0, scale: 0.88, y: 20 }}
+                  whileInView={{ opacity: 1, scale: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.13, duration: 0.6, ease }}
+                  whileHover={{ y: -8, boxShadow: `0 12px 32px ${item.glow}`, transition: { duration: 0.22 } }}
+                  className="group relative flex flex-col rounded-2xl bg-white p-6 shadow-[0_2px_16px_rgba(0,0,0,0.05)] ring-1 ring-black/[0.04] overflow-hidden"
+                >
+                  <motion.span
+                    className={`flex h-12 w-12 items-center justify-center rounded-xl ${item.color}`}
+                    whileHover={{ scale: 1.2, rotate: 8, transition: { duration: 0.2 } }}
+                    initial={{ rotate: -10, scale: 0.7 }}
+                    whileInView={{ rotate: 0, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.2 + i * 0.13, duration: 0.45, type: "spring", stiffness: 180 }}
+                  >
+                    {item.icon}
+                  </motion.span>
+                  <h3 className="mt-4 font-semibold text-navy">{item.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-gray-600">{item.desc}</p>
+
+                  {/* Number badge */}
+                  <span className="absolute right-4 top-4 flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 text-xs font-bold text-gray-400">
+                    {i + 1}
+                  </span>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── Patient portal ── */}
+        <section className="relative overflow-hidden bg-[#eef4ec] py-20 sm:py-28">
+          <div className="pointer-events-none absolute -right-20 top-0 h-64 w-64 rounded-full bg-cta/8 blur-3xl" />
+          <div className="pointer-events-none absolute -left-16 bottom-0 h-48 w-48 rounded-full bg-cta/8 blur-3xl" />
+
+          <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <motion.div variants={stagger} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} className="flex flex-col items-start">
+              <motion.span variants={fadeLeft} className="inline-flex items-center gap-2 rounded-full bg-cta/10 px-3.5 py-1 text-xs font-semibold uppercase tracking-widest text-cta ring-1 ring-cta/20">
+                <span className="h-1.5 w-1.5 rounded-full bg-cta" /> Patient Portal
+              </motion.span>
+              <motion.h2 variants={fadeLeft} className="mt-4 section-heading section-heading-accent text-2xl sm:text-3xl">
+                Your secure patient portal
+              </motion.h2>
+              <motion.p variants={fadeUp} className="mt-3 max-w-2xl text-base text-gray-600">
+                Everything you need to manage your care — in one place, accessible any time.
+              </motion.p>
+            </motion.div>
+
+            <div className="mt-12 grid gap-8 lg:grid-cols-3">
+              {portalFeatures.map((f, i) => (
+                <motion.div
+                  key={f.title}
+                  initial={{ opacity: 0, y: 32, rotateX: 8 }}
+                  whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.14, duration: 0.7, ease }}
+                  whileHover={{ y: -8, transition: { duration: 0.22 } }}
+                  className="group relative overflow-hidden rounded-2xl bg-white p-7 shadow-[0_2px_16px_rgba(0,0,0,0.05)] ring-1 ring-black/[0.04]"
+                >
+                  {/* Top accent bar */}
+                  <motion.div
+                    className={`absolute top-0 left-0 right-0 h-1 ${f.barColor} rounded-t-2xl`}
+                    initial={{ scaleX: 0 }}
+                    whileInView={{ scaleX: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.2 + i * 0.14, duration: 0.7, ease }}
+                    style={{ originX: 0 }}
+                  />
+
+                  <motion.span
+                    className={`flex h-12 w-12 items-center justify-center rounded-xl ${f.color}`}
+                    whileHover={{ scale: 1.18, rotate: -5, transition: { duration: 0.2 } }}
+                    initial={{ scale: 0.7, opacity: 0 }}
+                    whileInView={{ scale: 1, opacity: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.15 + i * 0.14, duration: 0.5, type: "spring", stiffness: 200 }}
+                  >
+                    {f.icon}
+                  </motion.span>
+
+                  <h3 className="mt-5 font-semibold text-navy">{f.title}</h3>
+                  <ul className="mt-3 space-y-2 text-sm text-gray-600">
+                    {f.bullets.map((b, bi) => (
+                      <motion.li
+                        key={b}
+                        className="flex items-start gap-2"
+                        initial={{ opacity: 0, x: -8 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.3 + i * 0.14 + bi * 0.07, duration: 0.4, ease }}
+                      >
+                        <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-cta/60" />
+                        {b}
+                      </motion.li>
+                    ))}
+                  </ul>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── Secure care + FAQ ── */}
+        <section className="bg-[#d6e8d8] py-20 sm:py-28">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="grid gap-16 lg:grid-cols-2 lg:gap-24 lg:items-start">
+
+              {/* Left: secure care */}
+              <motion.div variants={stagger} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} className="flex flex-col items-start">
+                <motion.span variants={fadeLeft} className="inline-flex items-center gap-2 rounded-full bg-cta/10 px-3.5 py-1 text-xs font-semibold uppercase tracking-widest text-cta ring-1 ring-cta/20">
+                  <span className="h-1.5 w-1.5 rounded-full bg-cta" /> Privacy & Security
+                </motion.span>
+                <motion.h2 variants={fadeLeft} className="mt-4 section-heading section-heading-accent text-2xl sm:text-3xl">
+                  Secure and private care
+                </motion.h2>
+                <motion.p variants={fadeUp} className="mt-4 text-base font-semibold text-navy">
+                  Protecting your privacy is a top priority.
+                </motion.p>
+                <motion.p variants={fadeUp} className="mt-3 text-base leading-relaxed text-gray-700">
+                  Our platform uses secure, encrypted telehealth technology designed to protect your personal health information and meet healthcare security standards.
+                </motion.p>
+                <motion.p variants={fadeUp} className="mt-3 text-base leading-relaxed text-gray-700">
+                  All appointments take place through secure video visits, allowing families to access care safely from home.
+                </motion.p>
+                <motion.div variants={stagger} className="mt-8 flex flex-col gap-3">
+                  {[
+                    { icon: <ShieldCheck className="h-5 w-5" strokeWidth={1.6} />, label: "HIPAA-aware platform" },
+                    { icon: <Lock className="h-5 w-5" strokeWidth={1.6} />, label: "Encrypted video visits" },
+                    { icon: <FolderOpen className="h-5 w-5" strokeWidth={1.6} />, label: "Secure patient portal" },
+                  ].map(({ icon, label }, i) => (
+                    <motion.span
+                      key={label}
+                      variants={fadeLeft}
+                      whileHover={{ x: 6, transition: { duration: 0.2 } }}
+                      className="inline-flex items-center gap-3 rounded-xl border border-cta/30 bg-white/90 px-5 py-3 text-sm font-medium text-navy shadow-sm cursor-default"
+                    >
+                      <motion.span
+                        className="text-cta"
+                        initial={{ scale: 0 }}
+                        whileInView={{ scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.4 + i * 0.1, type: "spring", stiffness: 220 }}
+                      >
+                        {icon}
+                      </motion.span>
+                      {label}
+                    </motion.span>
+                  ))}
+                </motion.div>
+              </motion.div>
+
+              {/* Right: FAQ */}
+              <motion.div
+                variants={fadeRight}
+                initial="hidden"
+                whileInView="show"
+                viewport={{ once: true, amount: 0.2 }}
+                className="flex flex-col items-start"
+              >
+                <span className="inline-flex items-center gap-2 rounded-full bg-cta/10 px-3.5 py-1 text-xs font-semibold uppercase tracking-widest text-cta ring-1 ring-cta/20">
+                  <span className="h-1.5 w-1.5 rounded-full bg-cta" /> FAQs
                 </span>
-                <div>
-                  <span className="font-semibold text-navy">Request access</span>
-                  <p className="mt-1">
-                    Complete the short request form so we can confirm that our practice is a good clinical fit.
-                  </p>
+                <h2 className="mt-4 section-heading section-heading-accent text-2xl sm:text-3xl">
+                  Common questions
+                </h2>
+                <div className="mt-6">
+                  <FaqAccordion
+                    items={[
+                      { question: "How long does approval take?", answer: "Most access requests are reviewed within 1–2 business days." },
+                      { question: "Do I need to install any software for video visits?", answer: "No. Appointments take place through a secure link that works in most modern web browsers." },
+                      { question: "Can parents attend appointments?", answer: "Yes. For children and adolescents, a parent or guardian is typically involved in the visit." },
+                      { question: "What if I need to reschedule?", answer: "Appointments can be rescheduled directly through the patient portal." },
+                    ]}
+                  />
                 </div>
-              </li>
-              <li className="flex gap-4">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cta/10 text-cta" aria-hidden>
-                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                </span>
-                <div>
-                  <span className="font-semibold text-navy">Receive approval</span>
-                  <p className="mt-1">
-                    Once approved, you will receive login credentials for your secure patient portal.
-                  </p>
-                </div>
-              </li>
-              <li className="flex gap-4">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cta/10 text-cta" aria-hidden>
-                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                </span>
-                <div>
-                  <span className="font-semibold text-navy">Complete your profile</span>
-                  <p className="mt-1">
-                    Fill in basic patient details, contact information, preferred pharmacy, and guardian information if applicable.
-                  </p>
-                </div>
-              </li>
-              <li className="flex gap-4">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cta/10 text-cta" aria-hidden>
-                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </span>
-                <div>
-                  <span className="font-semibold text-navy">Schedule your first visit</span>
-                  <p className="mt-1">
-                    Choose an available appointment time for your initial consultation.
-                  </p>
-                </div>
-              </li>
-            </ol>
-          </div>
-        </section>
-
-        {/* Appointment types — soft cream */}
-        <section className="bg-cream-50 py-16 sm:py-24">
-          <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
-            <h2 className="section-heading section-heading-accent text-2xl sm:text-3xl">
-              Appointment types
-            </h2>
-            <div className="mt-8 grid gap-8 sm:grid-cols-1 lg:grid-cols-3">
-              <div className="rounded-[14px] border border-cream-300 bg-cream-50/70 p-7 shadow-[0_8px_30px_rgba(0,0,0,0.05)] transition-all duration-200 hover:-translate-y-1.5 hover:border-cta/20 hover:shadow-[0_14px_40px_rgba(0,0,0,0.08)] min-w-0">
-                <span className="flex h-14 w-14 items-center justify-center rounded-xl bg-cta/15 text-cta" aria-hidden>
-                  <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                  </svg>
-                </span>
-                <h3 className="mt-4 font-semibold text-navy">Orientation consultation</h3>
-                <span className="mt-3 inline-block rounded-lg border border-cta/30 bg-cta/10 px-4 py-2 text-lg font-bold text-cta">
-                  30 minutes
-                </span>
-                <div className="mt-4 h-px w-14 bg-cta/25" aria-hidden />
-                <p className="mt-4 text-sm leading-relaxed text-gray-700">
-                  Introductory visit to understand your concerns and explain how our practice works.
-                </p>
-                <ul className="mt-3 space-y-1.5 text-sm text-gray-700">
-                  <li>• Review current concerns</li>
-                  <li>• Discuss care approach</li>
-                  <li>• Determine next steps</li>
-                </ul>
-              </div>
-              <div className="rounded-[14px] border border-cream-300 bg-cream-50/70 p-7 shadow-[0_8px_30px_rgba(0,0,0,0.05)] transition-all duration-200 hover:-translate-y-1.5 hover:border-cta/20 hover:shadow-[0_14px_40px_rgba(0,0,0,0.08)] min-w-0">
-                <span className="flex h-14 w-14 items-center justify-center rounded-xl bg-cta/15 text-cta" aria-hidden>
-                  <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </span>
-                <h3 className="mt-4 font-semibold text-navy">Clinical intake</h3>
-                <span className="mt-3 inline-block rounded-lg border border-cta/30 bg-cta/10 px-4 py-2 text-lg font-bold text-cta">
-                  75 minutes
-                </span>
-                <div className="mt-4 h-px w-14 bg-cta/25" aria-hidden />
-                <p className="mt-4 text-sm leading-relaxed text-gray-700">
-                  A comprehensive psychiatric evaluation to understand symptoms, history, and treatment needs.
-                </p>
-                <ul className="mt-3 space-y-1.5 text-sm text-gray-700">
-                  <li>• Review medical & mental health history</li>
-                  <li>• Discuss symptoms and goals</li>
-                  <li>• Develop initial treatment plan</li>
-                </ul>
-              </div>
-              <div className="rounded-[14px] border border-cream-300 bg-cream-50/70 p-7 shadow-[0_8px_30px_rgba(0,0,0,0.05)] transition-all duration-200 hover:-translate-y-1.5 hover:border-cta/20 hover:shadow-[0_14px_40px_rgba(0,0,0,0.08)] min-w-0">
-                <span className="flex h-14 w-14 items-center justify-center rounded-xl bg-cta/15 text-cta" aria-hidden>
-                  <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                  </svg>
-                </span>
-                <h3 className="mt-4 font-semibold text-navy">Follow-up visits</h3>
-                <span className="mt-3 inline-block rounded-lg border border-cta/30 bg-cta/10 px-4 py-2 text-lg font-bold text-cta">
-                  30–45 minutes
-                </span>
-                <div className="mt-4 h-px w-14 bg-cta/25" aria-hidden />
-                <p className="mt-4 text-sm leading-relaxed text-gray-700">
-                  Ongoing appointments to monitor progress and adjust treatment as needed.
-                </p>
-                <ul className="mt-3 space-y-1.5 text-sm text-gray-700">
-                  <li>• Medication management</li>
-                  <li>• Progress check-ins</li>
-                  <li>• Treatment adjustments</li>
-                </ul>
-              </div>
+                <motion.div whileHover={{ x: 4, transition: { duration: 0.2 } }}>
+                  <Link href="/faq" className="mt-6 inline-flex items-center gap-1.5 font-medium text-cta hover:underline">
+                    View full FAQ
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Link>
+                </motion.div>
+              </motion.div>
             </div>
           </div>
         </section>
 
-        {/* After your first visit */}
-        <section className="bg-white py-16 sm:py-24">
-          <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-            <h2 className="section-heading section-heading-accent text-2xl sm:text-3xl">
-              After your first appointment
-            </h2>
-            <p className="mt-4 text-base leading-relaxed text-gray-700">
-              After your evaluation, your doctor may:
-            </p>
-            <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="flex flex-col items-start">
-                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-cta/15 text-cta" aria-hidden>
-                  <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                  </svg>
-                </span>
-                <h3 className="mt-3 font-semibold text-navy">Diagnosis</h3>
-                <p className="mt-1 text-sm leading-relaxed text-gray-700">Identify the condition when appropriate.</p>
-              </div>
-              <div className="flex flex-col items-start">
-                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-cta/15 text-cta" aria-hidden>
-                  <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </span>
-                <h3 className="mt-3 font-semibold text-navy">Treatment plan</h3>
-                <p className="mt-1 text-sm leading-relaxed text-gray-700">Recommend therapy or other options.</p>
-              </div>
-              <div className="flex flex-col items-start">
-                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-cta/15 text-cta" aria-hidden>
-                  <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                  </svg>
-                </span>
-                <h3 className="mt-3 font-semibold text-navy">Medication support</h3>
-                <p className="mt-1 text-sm leading-relaxed text-gray-700">Prescribe medication when clinically indicated.</p>
-              </div>
-              <div className="flex flex-col items-start">
-                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-cta/15 text-cta" aria-hidden>
-                  <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </span>
-                <h3 className="mt-3 font-semibold text-navy">Follow-up care</h3>
-                <p className="mt-1 text-sm leading-relaxed text-gray-700">Schedule monitoring visits to track progress.</p>
-              </div>
-            </div>
-          </div>
-        </section>
+        {/* ── CTA ── */}
+        <section className="relative overflow-hidden bg-[#eef4ec] py-24 sm:py-32">
+          <div className="pointer-events-none absolute -top-12 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-cta/10 blur-3xl" />
 
-        {/* Patient portal — white */}
-        <section className="bg-white py-16 sm:py-24">
-          <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-            <h2 className="section-heading section-heading-accent text-2xl sm:text-3xl">
-              Your secure patient portal
-            </h2>
-            <p className="mt-4 text-base leading-relaxed text-gray-700">
-              Our portal makes it easy to manage your care online.
-            </p>
-            <div className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-              <div>
-                <h3 className="font-semibold text-navy">Appointments</h3>
-                <ul className="mt-2 space-y-1.5 text-sm leading-relaxed text-gray-700">
-                  <li>• Schedule or reschedule visits</li>
-                  <li>• Join video sessions</li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="font-semibold text-navy">Health & Records</h3>
-                <ul className="mt-2 space-y-1.5 text-sm leading-relaxed text-gray-700">
-                  <li>• Complete intake forms</li>
-                  <li>• View past appointments</li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="font-semibold text-navy">Account</h3>
-                <ul className="mt-2 space-y-1.5 text-sm leading-relaxed text-gray-700">
-                  <li>• Update pharmacy & contact info</li>
-                  <li>• Manage billing</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Secure care + FAQ — section4.png background + light sage */}
-        <section className="relative min-h-[400px] overflow-hidden py-16 sm:py-24">
-          <div className="pointer-events-none absolute inset-0 z-0 bg-cream-50">
-            <div
-              className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-              style={{ backgroundImage: "url(/section4.png)" }}
-              aria-hidden
-            />
-            <div className="absolute inset-0 bg-white/40" aria-hidden />
-          </div>
-          <div className="relative z-10 mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-            <h2 className="section-heading section-heading-accent text-2xl sm:text-3xl">
-              Secure and private care
-            </h2>
-            <p className="mt-5 text-base font-medium text-navy">
-              Protecting your privacy is a top priority.
-            </p>
-            <p className="mt-4 text-base leading-relaxed text-gray-700">
-              Our platform uses secure, encrypted telehealth technology designed to protect your personal health information and meet healthcare security standards.
-            </p>
-            <p className="mt-4 text-base leading-relaxed text-gray-700">
-              All appointments take place through secure video visits, allowing families to access care safely from home.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-6">
-              <span className="inline-flex items-center gap-3 rounded-xl border border-cta/30 bg-white/90 px-5 py-3 text-sm font-medium text-navy shadow-sm">
-                <svg className="h-6 w-6 shrink-0 text-cta" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
-                HIPAA-aware platform
-              </span>
-              <span className="inline-flex items-center gap-3 rounded-xl border border-cta/30 bg-white/90 px-5 py-3 text-sm font-medium text-navy shadow-sm">
-                <svg className="h-6 w-6 shrink-0 text-cta" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-                Encrypted video visits
-              </span>
-              <span className="inline-flex items-center gap-3 rounded-xl border border-cta/30 bg-white/90 px-5 py-3 text-sm font-medium text-navy shadow-sm">
-                <svg className="h-6 w-6 shrink-0 text-cta" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                </svg>
-                Secure patient portal
-              </span>
-            </div>
-
-            <h2 className="section-heading section-heading-accent mt-16 text-2xl sm:text-3xl">
-              Common questions
-            </h2>
-            <FaqAccordion
-              items={[
-                { question: "How long does approval take?", answer: "Most access requests are reviewed within 1–2 business days." },
-                { question: "Do I need to install any software for video visits?", answer: "No. Appointments take place through a secure link that works in most modern web browsers." },
-                { question: "Can parents attend appointments?", answer: "Yes. For children and adolescents, a parent or guardian is typically involved in the visit." },
-                { question: "What if I need to reschedule?", answer: "Appointments can be rescheduled directly through the patient portal." },
-              ]}
-            />
-            <Link
-              href="/faq"
-              className="mt-6 inline-block font-medium text-cta hover:underline"
-            >
-              View full FAQ →
-            </Link>
-          </div>
-        </section>
-
-        {/* CTA — gradient */}
-        <section className="bg-section-cta-gradient py-20 sm:py-28">
-          <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
-            <h2 className="section-heading text-2xl text-navy sm:text-3xl">
+          <motion.div
+            className="relative z-10 mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8"
+            variants={stagger} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.3 }}
+          >
+            <motion.span variants={fadeUp} className="inline-flex items-center gap-2 rounded-full bg-cta/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-cta ring-1 ring-cta/20">
+              <span className="h-1.5 w-1.5 rounded-full bg-cta animate-pulse" /> Get Started Today
+            </motion.span>
+            <motion.h2 variants={fadeUp} className="mt-5 section-heading text-3xl text-navy sm:text-4xl">
               Ready to begin care?
-            </h2>
-            <p className="mt-4 text-base text-gray-700 sm:text-lg">
-              Getting started takes only a few minutes.
-              Request access to the patient portal and schedule your first visit.
-            </p>
-            <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-              <Link
-                href="/request-access"
-                className="btn-primary inline-flex items-center px-6 py-3 text-base font-medium"
-              >
-                Request Access
-              </Link>
-              <Link
-                href="/login"
-                className="inline-flex items-center rounded-xl border-2 border-cta bg-white px-6 py-3 text-base font-medium text-cta transition hover:bg-cream-100"
-              >
-                Patient Login
-              </Link>
-            </div>
-          </div>
+            </motion.h2>
+            <motion.p variants={fadeUp} className="mt-5 text-base text-gray-700 sm:text-lg">
+              Getting started takes only a few minutes. Request access to the patient portal and schedule your first visit.
+            </motion.p>
+            <motion.div variants={fadeUp} className="mt-10 flex flex-wrap items-center justify-center gap-4">
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
+                <Link href="/request-access" className="btn-primary inline-flex items-center px-8 py-3.5 text-base font-medium">
+                  Request Access
+                </Link>
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
+                <Link href="/login" className="inline-flex items-center rounded-xl border-2 border-cta bg-white px-8 py-3.5 text-base font-medium text-cta transition hover:bg-cream-100">
+                  Patient Login
+                </Link>
+              </motion.div>
+            </motion.div>
+          </motion.div>
         </section>
+
       </main>
       <Footer />
     </>

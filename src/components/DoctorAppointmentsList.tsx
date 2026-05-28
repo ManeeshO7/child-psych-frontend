@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo, useRef, useTransition } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AssignFormsModal from "@/components/AssignFormsModal";
@@ -37,6 +37,10 @@ type Appointment = {
   formsAssignedCount?: number;
   /** If false, doctor marked "no forms required" for this appointment */
   requireFormsBeforeConfirm?: boolean;
+  /** ISO timestamp of when payment was collected */
+  chargedAt?: string | null;
+  /** Amount charged in cents */
+  amountCents?: number | null;
 };
 
 type FormattedAppointment = {
@@ -56,7 +60,7 @@ export default function DoctorAppointmentsList() {
   const [searchInput, setSearchInput] = useState("");
   const [searchApplied, setSearchApplied] = useState("");
   const [loading, setLoading] = useState(true);
-  const [chargingId, setChargingId] = useState<string | null>(null);
+
   const [completingId, setCompletingId] = useState<string | null>(null);
   const [openingMeetId, setOpeningMeetId] = useState<string | null>(null);
   const [openingChargeModalId, setOpeningChargeModalId] = useState<string | null>(null);
@@ -85,7 +89,6 @@ export default function DoctorAppointmentsList() {
     message: string;
   } | null>(null);
   const [tzLabel, setTzLabel] = useState("PT");
-  const [, startTransition] = useTransition();
   const loadingRef = useRef(false);
   const mountedRef = useRef(true); // Track if component is mounted
   const activeLoadControllerRef = useRef<AbortController | null>(null);
@@ -293,49 +296,6 @@ export default function DoctorAppointmentsList() {
     await load(prevCursor, undefined, searchApplied);
   }
 
-  async function chargeAppointment(id: string) {
-    if (chargingId !== null) {
-      return; // Prevent multiple simultaneous charges
-    }
-    setChargingId(id);
-    try {
-      const res = await fetch(`/api/appointments/${id}/charge`, {
-        method: "POST",
-        credentials: "include",
-      });
-      if (res.status === 401) {
-        setChargingId(null);
-        router.push("/doctor/login");
-        return;
-      }
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        showNotice("error", err.detail || "Charge failed");
-        setChargingId(null);
-        return;
-      }
-      const result = await res.json().catch(() => ({}));
-      if (result.ok && result.message) {
-        showNotice("success", result.message);
-      }
-      // Longer delay before reloading to prevent rapid state updates
-      await new Promise(resolve => setTimeout(resolve, 800));
-      // Only reload if still mounted and not already loading
-      if (mountedRef.current && !loadingRef.current) {
-        await load(pageCursor);
-      }
-    } catch (err) {
-      console.error("Charge error:", err);
-      if (mountedRef.current) {
-        showNotice("error", "Network error while charging. Please try again.");
-      }
-    } finally {
-      if (mountedRef.current) {
-        setChargingId(null);
-      }
-    }
-  }
-
   function openChargeModal(appointment: Appointment) {
     if (openingChargeModalId === appointment.id || chargeConfirmAppointment?.id === appointment.id) {
       return;
@@ -421,12 +381,41 @@ export default function DoctorAppointmentsList() {
     }
   }
 
+  const TYPE_LABELS: Record<string, string> = {
+    orientation_consult: "Orientation Consult",
+    clinical_intake: "Clinical Intake",
+    followup_med_30: "Follow-up · Med (30 min)",
+    followup_med_therapy_45: "Follow-up · Med + Therapy (45 min)",
+    intake: "Intake",
+  };
+
+  const STATUS_STYLES: Record<string, string> = {
+    scheduled: "bg-blue-100 text-blue-800",
+    pending_confirmation: "bg-orange-100 text-orange-800",
+    card_on_file: "bg-amber-100 text-amber-800",
+    paid: "bg-indigo-100 text-indigo-800",
+    completed: "bg-green-100 text-green-800",
+    cancelled: "bg-gray-100 text-gray-500",
+  };
+
+  const STATUS_LABELS: Record<string, string> = {
+    scheduled: "Scheduled",
+    pending_confirmation: "Pending Confirmation",
+    card_on_file: "Card on File",
+    paid: "Paid",
+    completed: "Completed",
+    cancelled: "Cancelled",
+  };
+
   return (
+    <div className="min-h-screen bg-cream-50/60">
     <main className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+
+      {/* Toast notice */}
       {notice && (
         <div className="fixed inset-x-0 top-4 z-50 flex justify-center px-4">
           <div
-            className={`w-full max-w-xl rounded-lg border px-4 py-3 shadow-lg ${
+            className={`flex w-full max-w-xl items-start justify-between gap-3 rounded-2xl border px-5 py-3.5 shadow-lg ${
               notice.type === "success"
                 ? "border-green-200 bg-green-50 text-green-900"
                 : notice.type === "error"
@@ -436,352 +425,312 @@ export default function DoctorAppointmentsList() {
             role="status"
             aria-live="polite"
           >
-            <div className="flex items-start justify-between gap-3">
-              <p className="text-sm font-medium">{notice.message}</p>
-              <button
-                type="button"
-                onClick={() => setNotice(null)}
-                className="text-sm opacity-70 hover:opacity-100"
-              >
-                ✕
-              </button>
-            </div>
+            <p className="text-sm font-medium">{notice.message}</p>
+            <button type="button" onClick={() => setNotice(null)} className="text-sm opacity-60 hover:opacity-100">✕</button>
           </div>
         </div>
       )}
 
-      <p className="mb-6">
-        <Link href="/doctor" className="text-sm text-cta hover:underline">
-          ← Back to dashboard
-        </Link>
-      </p>
-      <h1 className="section-heading">Appointments</h1>
-      <p className="mt-2 text-gray-600">
-        Your upcoming and past appointments.
-      </p>
+      {/* Page header */}
+      <Link href="/doctor" className="inline-flex items-center gap-1 text-sm text-cta hover:underline mb-6">
+        ← Back to dashboard
+      </Link>
 
-      <div className="mt-6 space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-3">
-          <div className="inline-flex rounded-lg border border-cream-200 bg-white p-1 text-sm">
-            <button
-              type="button"
-              onClick={() => setView("active")}
-              className={`rounded-md px-3 py-1.5 ${
-                view === "active" ? "bg-cream-100 text-cta" : "text-gray-700 hover:bg-cream-50"
-              }`}
-            >
-              Active
-            </button>
-            <button
-              type="button"
-              onClick={() => setView("completed")}
-              className={`rounded-md px-3 py-1.5 ${
-                view === "completed" ? "bg-cream-100 text-cta" : "text-gray-700 hover:bg-cream-50"
-              }`}
-            >
-              Completed
-            </button>
+      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50">
+            <svg className="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
+            </svg>
           </div>
-          <div className="flex items-center gap-2">
-            <label htmlFor="appt-date-filter" className="text-sm text-gray-600 whitespace-nowrap">
-              Filter by date:
-            </label>
-            <input
-              id="appt-date-filter"
-              type="date"
-              value={filterDate ?? ""}
-              onChange={(e) => setFilterDate(e.target.value ? e.target.value : null)}
-              className="rounded-lg border border-cream-200 bg-white px-3 py-1.5 text-sm text-navy"
-            />
-            {filterDate && (
-              <button
-                type="button"
-                onClick={() => setFilterDate(null)}
-                className="text-sm text-cta hover:underline"
-              >
-                Clear
-              </button>
-            )}
+          <div>
+            <h1 className="text-2xl font-bold text-navy">Appointments</h1>
+            <p className="text-sm text-gray-500">
+              {appointments.length > 0 ? `${appointments.length} appointment${appointments.length !== 1 ? "s" : ""}` : "Upcoming and past appointments"}
+            </p>
           </div>
         </div>
-        <div className="text-sm text-gray-600">
-          Showing <span className="font-medium text-navy">{appointments.length}</span> appointments
-        </div>
-        </div>
-        <div>
-          <label htmlFor="appt-patient-search" className="sr-only">
-            Search by patient name
-          </label>
-          <div className="relative max-w-md">
-            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" aria-hidden>
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-              </svg>
-            </span>
-            <input
-              id="appt-patient-search"
-              type="search"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Search by patient name…"
-              className="w-full rounded-lg border border-cream-200 bg-white py-2 pl-10 pr-3 text-sm text-navy placeholder-gray-500"
-              aria-label="Search by patient name"
-            />
-          </div>
+
+        {/* Search */}
+        <div className="relative w-full max-w-sm">
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+            </svg>
+          </span>
+          <input
+            id="appt-patient-search"
+            type="search"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="Search by patient name…"
+            className="w-full rounded-xl border border-cream-200 bg-white py-2.5 pl-9 pr-3 text-sm text-navy placeholder-gray-400 shadow-sm focus:border-cta focus:outline-none focus:ring-2 focus:ring-cta/20"
+            aria-label="Search by patient name"
+          />
         </div>
       </div>
 
+      {/* Filters row */}
+      <div className="mb-6 flex flex-wrap items-center gap-3">
+        {/* Tab toggle */}
+        <div className="rounded-xl border border-cream-200 bg-white p-1.5 shadow-sm flex gap-1">
+          {(["active", "completed"] as const).map((v) => (
+            <button
+              key={v}
+              type="button"
+              onClick={() => setView(v)}
+              className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
+                view === v ? "bg-cta text-white shadow-sm" : "text-gray-500 hover:text-navy"
+              }`}
+            >
+              {v === "active" ? "Active" : "Completed"}
+            </button>
+          ))}
+        </div>
+
+        {/* Date filter */}
+        <div className="flex items-center gap-2">
+          <label htmlFor="appt-date-filter" className="text-sm text-gray-500 whitespace-nowrap">Filter by date:</label>
+          <input
+            id="appt-date-filter"
+            type="date"
+            value={filterDate ?? ""}
+            onChange={(e) => setFilterDate(e.target.value || null)}
+            className="rounded-xl border border-cream-200 bg-white px-3 py-2 text-sm text-navy shadow-sm focus:border-cta focus:outline-none"
+          />
+          {filterDate && (
+            <button type="button" onClick={() => setFilterDate(null)} className="text-sm text-cta hover:underline">
+              Clear
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Content */}
       <div key={`appointments-${view}-${pageCursor ?? "root"}-${filterDate ?? "all"}-${searchApplied || "none"}`}>
         {loading ? (
-          <p className="mt-10 text-gray-500">Loading…</p>
+          <div className="flex items-center justify-center py-32">
+            <div className="flex flex-col items-center gap-3">
+              <svg className="h-7 w-7 animate-spin text-cta" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+              </svg>
+              <p className="text-sm text-gray-500">Loading appointments…</p>
+            </div>
+          </div>
         ) : appointments.length === 0 ? (
-          <p className="mt-10 text-gray-500">
-            {searchApplied
-              ? `No appointments found for patient "${searchApplied}".`
-              : filterDate
-                ? `No appointments on ${new Date(filterDate + "T12:00:00").toLocaleDateString("en-US", {
-                    timeZone: "America/Los_Angeles",
-                    weekday: "short",
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}.`
-                : "No appointments yet."}
-          </p>
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-cream-300 bg-white py-20 text-center">
+            <svg className="h-10 w-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
+            </svg>
+            <p className="mt-3 text-sm font-medium text-gray-500">
+              {searchApplied
+                ? `No appointments found for "${searchApplied}"`
+                : filterDate
+                  ? `No appointments on ${new Date(filterDate + "T12:00:00").toLocaleDateString("en-US", { timeZone: "America/Los_Angeles", weekday: "short", month: "short", day: "numeric", year: "numeric" })}`
+                  : "No appointments yet"}
+            </p>
+          </div>
         ) : (
-          <div className="mt-10 space-y-6">
+          <div className="space-y-4">
             <ul className="space-y-3">
               {formattedAppointments.map(({ appointment: a, formattedDate }, idx) => (
               <li
                 key={`${a.id}-${a.status}-${a.type}-${a.scheduledAt ?? "na"}-${idx}`}
-                className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-cream-300/60 bg-cream-200 p-6"
+                className="rounded-2xl border border-cream-200 bg-white shadow-sm overflow-hidden"
               >
-                <div className="min-w-0 flex-1">
-                  <p className="font-medium text-navy">
-                    {formattedDate}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    {a.durationMinutes} min · {a.type}
-                    {a.patient?.name && ` · ${a.patient.name}`}
-                  </p>
-                  <div className="mt-3 flex flex-wrap items-center gap-2">
-                    {a.meetLink && (a.status === "scheduled" || a.status === "card_on_file" || a.status === "paid") && (
-                      <a
-                        href={a.meetLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => {
-                          if (openingMeetId === a.id) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            return;
-                          }
-                          if (openingMeetTimeoutRef.current) clearTimeout(openingMeetTimeoutRef.current);
-                          setOpeningMeetId(a.id);
-                          openingMeetTimeoutRef.current = window.setTimeout(() => {
-                            setOpeningMeetId((curr) => (curr === a.id ? null : curr));
-                            openingMeetTimeoutRef.current = null;
-                          }, 2000);
-                        }}
-                        className="inline-flex items-center rounded-lg border border-cta/50 bg-cta/5 px-3 py-1.5 text-sm font-medium text-cta hover:bg-cta/10"
-                      >
-                        {openingMeetId === a.id ? "Opening…" : "Join video call →"}
-                      </a>
-                    )}
-                    {a.status === "pending_confirmation" && (
-                      <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); setRescheduleAppointment(a); }}
-                        className="inline-flex items-center rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                      >
-                        Change time
-                      </button>
-                    )}
-                    {canReschedule(a) && (
-                      <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); setRescheduleAppointment(a); }}
-                        className="inline-flex items-center rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                      >
-                        Reschedule
-                      </button>
-                    )}
-                    {a.status === "card_on_file" && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openChargeModal(a);
-                        }}
-                        disabled={openingChargeModalId === a.id}
-                        className="inline-flex items-center rounded-lg border border-amber-300 bg-amber-50 px-3 py-1.5 text-sm font-medium text-amber-800 hover:bg-amber-100 disabled:opacity-50"
-                      >
-                        {openingChargeModalId === a.id ? "Opening…" : "Charge now"}
-                      </button>
-                    )}
-                    {a.status === "paid" && (
-                      <button
-                        type="button"
-                        onClick={() => completeAppointment(a.id)}
-                        disabled={completingId !== null}
-                        className="inline-flex items-center rounded-lg border border-green-300 bg-green-50 px-3 py-1.5 text-sm font-medium text-green-800 hover:bg-green-100 disabled:opacity-50"
-                      >
-                        {completingId === a.id ? "Marking…" : "Mark as complete"}
-                      </button>
-                    )}
-                    {a.patient && (a.status === "scheduled" || a.status === "pending_confirmation" || a.status === "card_on_file" || a.status === "paid") && ["clinical_intake", "followup_med_30", "followup_med_therapy_45"].includes(a.type) && (
-                      (() => {
-                        const noFormsRequired = a.requireFormsBeforeConfirm === false;
-                        const hasForms = a.hasFormsForThisAppointment === true;
-                        const count = a.formsAssignedCount ?? 0;
-                        if (noFormsRequired) {
-                          return (
-                            <span className="inline-flex items-center rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 text-sm text-gray-600">
-                              No forms required
-                            </span>
-                          );
-                        }
-                        if (hasForms) {
-                          return (
-                            <span className="inline-flex items-center rounded-lg border border-teal-200 bg-teal-50 px-3 py-1.5 text-sm font-medium text-teal-800">
-                              {count === 1 ? "1 form assigned" : `${count} forms assigned`}
-                            </span>
-                          );
-                        }
-                        return (
-                          <button
-                            type="button"
+                {/* Status strip */}
+                <div className={`h-1 w-full ${
+                  a.status === "scheduled" ? "bg-blue-400" :
+                  a.status === "pending_confirmation" ? "bg-orange-400" :
+                  a.status === "card_on_file" ? "bg-amber-400" :
+                  a.status === "paid" ? "bg-indigo-400" :
+                  a.status === "completed" ? "bg-green-400" :
+                  "bg-gray-200"
+                }`} />
+
+                <div className="p-5">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      {/* Patient + date */}
+                      <div className="flex items-center gap-3">
+                        {a.patient?.name && (
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-cta/10 text-sm font-semibold text-cta">
+                            {a.patient.name[0].toUpperCase()}
+                          </div>
+                        )}
+                        <div>
+                          <p className="font-semibold text-navy">{a.patient?.name ?? "Patient"}</p>
+                          <p className="text-xs text-gray-500">{formattedDate}</p>
+                        </div>
+                      </div>
+
+                      {/* Type + duration */}
+                      <div className="mt-3 flex flex-wrap items-center gap-2">
+                        <span className="inline-flex items-center rounded-full bg-cream-100 px-2.5 py-1 text-xs font-medium text-navy">
+                          {TYPE_LABELS[a.type] ?? a.type}
+                        </span>
+                        <span className="text-xs text-gray-400">{a.durationMinutes} min</span>
+                      </div>
+
+                      {/* Payment info */}
+                      {(a.status === "paid" || a.status === "completed") && a.chargedAt && (
+                        <div className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-green-50 border border-green-200 px-2.5 py-1">
+                          <svg className="h-3.5 w-3.5 text-green-600" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span className="text-xs font-medium text-green-800">
+                            Payment collected
+                            {a.amountCents ? ` · $${(a.amountCents / 100).toFixed(2)}` : ""}
+                            {" · "}
+                            {new Date(a.chargedAt).toLocaleString("en-US", {
+                              timeZone: "America/Los_Angeles",
+                              month: "short", day: "numeric", year: "numeric",
+                              hour: "numeric", minute: "2-digit", hour12: true,
+                            })}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Action buttons */}
+                      <div className="mt-3 flex flex-wrap items-center gap-2">
+                        {a.meetLink && (a.status === "scheduled" || a.status === "card_on_file" || a.status === "paid") && (
+                          <a
+                            href={a.meetLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             onClick={(e) => {
-                              e.stopPropagation();
-                              setAssignFormsAppointment({ id: a.id, patientId: a.patient!.id });
-                              setAssignFormsModalOpen(true);
+                              if (openingMeetId === a.id) { e.preventDefault(); e.stopPropagation(); return; }
+                              if (openingMeetTimeoutRef.current) clearTimeout(openingMeetTimeoutRef.current);
+                              setOpeningMeetId(a.id);
+                              openingMeetTimeoutRef.current = window.setTimeout(() => {
+                                setOpeningMeetId((curr) => (curr === a.id ? null : curr));
+                                openingMeetTimeoutRef.current = null;
+                              }, 2000);
                             }}
-                            className="inline-flex items-center rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-sm font-medium text-amber-800 hover:bg-amber-100 hover:border-amber-300"
+                            className="inline-flex items-center gap-1.5 rounded-xl border border-cta/40 bg-cta/5 px-3 py-1.5 text-xs font-semibold text-cta hover:bg-cta/10"
                           >
-                            No forms assigned
-                          </button>
-                        );
-                      })()
-                    )}
-                    {a.status === "completed" && a.type === "orientation_consult" && a.patient && (
-                      <>
-                        {!a.patientHasPendingClinicalIntake && (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setScheduleClinicalIntakeAppointment({
-                                id: a.id,
-                                patientId: a.patient!.id,
-                                patientName: a.patient!.name || "",
-                              });
-                              setScheduleClinicalIntakeOpen(true);
-                            }}
-                            className="inline-flex items-center rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                          >
-                            Schedule clinical intake →
+                            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>
+                            {openingMeetId === a.id ? "Opening…" : "Join video call"}
+                          </a>
+                        )}
+                        {a.status === "pending_confirmation" && (
+                          <button type="button" onClick={(e) => { e.stopPropagation(); setRescheduleAppointment(a); }}
+                            className="inline-flex items-center rounded-xl border border-cream-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm hover:border-cta/30 hover:text-cta">
+                            Change time
                           </button>
                         )}
-                        <button
-                          type="button"
-                          onClick={(e) => { e.stopPropagation(); rejectAfterOrientation(a.id); }}
-                          disabled={rejectingId !== null}
-                          className="inline-flex items-center rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-100 disabled:opacity-50"
-                        >
-                          {rejectingId === a.id ? "Rejecting…" : "Reject patient"}
-                        </button>
-                      </>
-                    )}
-                    {a.status === "completed" &&
-                      FOLLOWUP_ELIGIBLE_TYPES.includes(a.type) &&
-                      a.patient &&
-                      !a.patientHasScheduledFollowup &&
-                      a.id === latestScheduleFollowupId && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const patientId = a.patient!.id;
-                          const patientName = a.patient!.name || "";
-                          if (openingFollowupForPatientId === patientId || scheduleFollowupOpen) return;
-                          setOpeningFollowupForPatientId(patientId);
-                          // Defer fetch and modal open to avoid blocking the main thread (prevents Chrome hang/crash)
-                          const openModal = (allowedTypes: string[]) => {
-                            setScheduleFollowupPatient({ patientId, patientName, allowedTypes });
-                            setScheduleFollowupOpen(true);
-                          };
-                          requestAnimationFrame(() => {
-                            fetch(`/api/appointments/patient/${patientId}/allowed-followup-types`, { credentials: "include" })
-                              .then((res) => (res.ok ? res.json() : {}))
-                              .then((data: { allowedTypes?: string[] }) => {
-                                const allowed = data.allowedTypes ?? ["followup_med_30", "followup_med_therapy_45"];
-                                requestAnimationFrame(() => openModal(allowed));
-                              })
-                              .catch(() => {
-                                requestAnimationFrame(() => openModal(["followup_med_30", "followup_med_therapy_45"]));
-                              })
-                              .finally(() => {
-                                setOpeningFollowupForPatientId((curr) => (curr === patientId ? null : curr));
+                        {canReschedule(a) && (
+                          <button type="button" onClick={(e) => { e.stopPropagation(); setRescheduleAppointment(a); }}
+                            className="inline-flex items-center rounded-xl border border-cream-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm hover:border-cta/30 hover:text-cta">
+                            Reschedule
+                          </button>
+                        )}
+                        {a.status === "card_on_file" && (
+                          <button type="button" onClick={(e) => { e.stopPropagation(); openChargeModal(a); }}
+                            disabled={openingChargeModalId === a.id}
+                            className="inline-flex items-center rounded-xl border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-100 disabled:opacity-50">
+                            {openingChargeModalId === a.id ? "Opening…" : "Charge now"}
+                          </button>
+                        )}
+                        {a.status === "paid" && (
+                          <button type="button" onClick={() => completeAppointment(a.id)} disabled={completingId !== null}
+                            className="inline-flex items-center rounded-xl border border-green-200 bg-green-50 px-3 py-1.5 text-xs font-semibold text-green-800 hover:bg-green-100 disabled:opacity-50">
+                            {completingId === a.id ? "Marking…" : "Mark as complete"}
+                          </button>
+                        )}
+                        {a.patient && (a.status === "scheduled" || a.status === "pending_confirmation" || a.status === "card_on_file" || a.status === "paid") && ["clinical_intake", "followup_med_30", "followup_med_therapy_45"].includes(a.type) && (
+                          (() => {
+                            const noFormsRequired = a.requireFormsBeforeConfirm === false;
+                            const hasForms = a.hasFormsForThisAppointment === true;
+                            const count = a.formsAssignedCount ?? 0;
+                            if (noFormsRequired) return (
+                              <span className="inline-flex items-center rounded-xl border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs text-gray-500">No forms required</span>
+                            );
+                            if (hasForms) return (
+                              <span className="inline-flex items-center rounded-xl border border-teal-200 bg-teal-50 px-3 py-1.5 text-xs font-semibold text-teal-800">
+                                {count === 1 ? "1 form assigned" : `${count} forms assigned`}
+                              </span>
+                            );
+                            return (
+                              <button type="button" onClick={(e) => { e.stopPropagation(); setAssignFormsAppointment({ id: a.id, patientId: a.patient!.id }); setAssignFormsModalOpen(true); }}
+                                className="inline-flex items-center rounded-xl border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-100">
+                                No forms assigned
+                              </button>
+                            );
+                          })()
+                        )}
+                        {a.status === "completed" && a.type === "orientation_consult" && a.patient && (
+                          <>
+                            {!a.patientHasPendingClinicalIntake && (
+                              <button type="button" onClick={(e) => { e.stopPropagation(); setScheduleClinicalIntakeAppointment({ id: a.id, patientId: a.patient!.id, patientName: a.patient!.name || "" }); setScheduleClinicalIntakeOpen(true); }}
+                                className="inline-flex items-center rounded-xl border border-cream-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm hover:border-cta/30 hover:text-cta">
+                                Schedule clinical intake →
+                              </button>
+                            )}
+                            <button type="button" onClick={(e) => { e.stopPropagation(); rejectAfterOrientation(a.id); }} disabled={rejectingId !== null}
+                              className="inline-flex items-center rounded-xl border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100 disabled:opacity-50">
+                              {rejectingId === a.id ? "Rejecting…" : "Reject patient"}
+                            </button>
+                          </>
+                        )}
+                        {a.status === "completed" && FOLLOWUP_ELIGIBLE_TYPES.includes(a.type) && a.patient && !a.patientHasScheduledFollowup && a.id === latestScheduleFollowupId && (
+                          <button type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const patientId = a.patient!.id;
+                              const patientName = a.patient!.name || "";
+                              if (openingFollowupForPatientId === patientId || scheduleFollowupOpen) return;
+                              setOpeningFollowupForPatientId(patientId);
+                              const openModal = (allowedTypes: string[]) => { setScheduleFollowupPatient({ patientId, patientName, allowedTypes }); setScheduleFollowupOpen(true); };
+                              requestAnimationFrame(() => {
+                                fetch(`/api/appointments/patient/${patientId}/allowed-followup-types`, { credentials: "include" })
+                                  .then((res) => (res.ok ? res.json() : {}))
+                                  .then((data: { allowedTypes?: string[] }) => { const allowed = data.allowedTypes ?? ["followup_med_30", "followup_med_therapy_45"]; requestAnimationFrame(() => openModal(allowed)); })
+                                  .catch(() => { requestAnimationFrame(() => openModal(["followup_med_30", "followup_med_therapy_45"])); })
+                                  .finally(() => { setOpeningFollowupForPatientId((curr) => (curr === patientId ? null : curr)); });
                               });
-                          });
-                        }}
-                        disabled={openingFollowupForPatientId === a.patient.id}
-                        className="inline-flex items-center rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                      >
-                        {openingFollowupForPatientId === a.patient.id ? "Opening…" : "Schedule follow-up →"}
-                      </button>
-                    )}
-                    {a.patient && (
-                      <Link
-                        href={`/doctor/patients/${a.patient.id}`}
-                        className="inline-flex items-center rounded-lg border border-cta/50 bg-white px-3 py-1.5 text-sm font-medium text-cta hover:bg-cta/5"
-                      >
-                        View patient →
-                      </Link>
-                    )}
+                            }}
+                            disabled={openingFollowupForPatientId === a.patient.id}
+                            className="inline-flex items-center rounded-xl border border-cream-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm hover:border-cta/30 hover:text-cta">
+                            {openingFollowupForPatientId === a.patient.id ? "Opening…" : "Schedule follow-up →"}
+                          </button>
+                        )}
+                        {a.patient && (
+                          <Link href={`/doctor/patients/${a.patient.id}`}
+                            className="inline-flex items-center gap-1 rounded-xl border border-cream-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm hover:border-cta/30 hover:text-cta">
+                            View patient
+                            <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                          </Link>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Status badge */}
+                    <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_STYLES[a.status] ?? "bg-gray-100 text-gray-600"}`}>
+                      {STATUS_LABELS[a.status] ?? a.status}
+                    </span>
                   </div>
                 </div>
-                <span
-                  className={`rounded-full px-2 py-0.5 text-xs ${
-                    a.status === "scheduled"
-                      ? "bg-green-100 text-green-800"
-                      : a.status === "card_on_file"
-                        ? "bg-amber-100 text-amber-800"
-                        : a.status === "paid"
-                          ? "bg-blue-100 text-blue-800"
-                          : a.status === "completed"
-                            ? "bg-purple-100 text-purple-800"
-                            : a.status === "pending_confirmation"
-                              ? "bg-amber-100 text-amber-800"
-                              : a.status === "cancelled"
-                              ? "bg-gray-100 text-gray-600"
-                              : "bg-gray-100 text-gray-600"
-                  }`}
-                >
-                  {a.status === "card_on_file" ? "Card on file" : a.status === "paid" ? "Paid" : a.status}
-                </span>
               </li>
               ))}
             </ul>
 
-            <div className="flex flex-wrap items-center justify-end gap-2">
-              <button
-                type="button"
-                onClick={goPrev}
-                disabled={loading || prevStack.length === 0}
-                className="rounded-lg border border-cream-200 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-cream-50 disabled:opacity-50"
-              >
-                Previous
-              </button>
-              <button
-                type="button"
-                onClick={goNext}
-                disabled={loading || !hasMore || !nextCursor}
-                className="rounded-lg border border-cream-200 bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-cream-50 disabled:opacity-50"
-              >
-                Next
-              </button>
+            {/* Pagination */}
+            <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-cream-200 bg-white px-5 py-3.5 shadow-sm">
+              <p className="text-sm text-gray-500">
+                Showing {appointments.length} appointment{appointments.length !== 1 ? "s" : ""}
+              </p>
+              <div className="flex items-center gap-2">
+                <button type="button" onClick={goPrev} disabled={loading || prevStack.length === 0}
+                  className="rounded-xl border border-cream-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 shadow-sm hover:bg-cream-50 disabled:opacity-40 disabled:pointer-events-none">
+                  Previous
+                </button>
+                <button type="button" onClick={goNext} disabled={loading || !hasMore || !nextCursor}
+                  className="rounded-xl border border-cream-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 shadow-sm hover:bg-cream-50 disabled:opacity-40 disabled:pointer-events-none">
+                  Next
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -873,5 +822,6 @@ export default function DoctorAppointmentsList() {
         }}
       />
     </main>
+    </div>
   );
 }
