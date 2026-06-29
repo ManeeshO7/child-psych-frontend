@@ -24,7 +24,7 @@ export default function Disclaimers() {
     <section className="relative overflow-hidden border-t border-cream-200/70 py-24 sm:py-28">
       <div className="absolute inset-0 z-0">
         <Image
-          src="/7.jpeg"
+          src="/disclaimers-bg.png"
           alt=""
           fill
           className="object-cover object-center"

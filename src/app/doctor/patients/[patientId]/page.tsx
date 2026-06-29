@@ -306,122 +306,124 @@ export default function PatientOverviewPage() {
   }
 
   return (
+    <div className="min-h-screen bg-cream-50/60">
     <main className="mx-auto w-full max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
-      <p className="mb-6">
-        <Link href="/doctor/patients" className="text-sm text-cta hover:underline">
-          ← Back to patients
-        </Link>
-      </p>
+      <Link href="/doctor/patients" className="inline-flex items-center gap-1 text-sm text-cta hover:underline mb-6">
+        ← Back to patients
+      </Link>
 
-      <h1 className="section-heading">Patient Overview</h1>
-
-      {/* Combined Patient Information & Profile */}
-      <div className="mt-6 card">
-        <h2 className="text-lg font-semibold text-navy mb-4">Patient Information</h2>
-        <div className="space-y-3 text-sm">
-          <p><span className="font-medium text-gray-700">Name:</span> {overview.patientName}</p>
-          <p><span className="font-medium text-gray-700">Email:</span> {overview.patientEmail}</p>
-          {overview.patientPhone != null && overview.patientPhone !== "" && (
-            <p><span className="font-medium text-gray-700">Phone:</span> {formatPhone(overview.patientPhone)}</p>
-          )}
-          {(overview.address != null && overview.address !== "") || (overview.patientProfile?.address != null && overview.patientProfile?.address !== "") ? (
-            <p><span className="font-medium text-gray-700">Address:</span> {overview.address || overview.patientProfile?.address || "—"}</p>
-          ) : null}
-          {overview.patientProfile?.sex && (
-            <p><span className="font-medium text-gray-700">Sex:</span> {overview.patientProfile.sex.replace(/_/g, " ")}</p>
-          )}
-          {overview.patientProfile?.dateOfBirth && (
-            <p><span className="font-medium text-gray-700">Date of birth:</span> {overview.patientProfile.dateOfBirth}</p>
-          )}
-          {overview.patientProfile?.ssn && (
-            <p><span className="font-medium text-gray-700">SSN:</span> {overview.patientProfile.ssn.replace(/\D/g, "").length === 9
-              ? `${overview.patientProfile.ssn.replace(/\D/g, "").slice(0, 3)}-${overview.patientProfile.ssn.replace(/\D/g, "").slice(3, 5)}-${overview.patientProfile.ssn.replace(/\D/g, "").slice(5)}`
-              : overview.patientProfile.ssn}
-            </p>
-          )}
-          {(overview.patientProfile?.preferredPharmacyName || overview.patientProfile?.preferredPharmacyPhone || overview.patientProfile?.preferredPharmacyAddress) && (
-            <div className="border-t border-gray-200 pt-3 mt-3">
-              <p className="font-medium text-gray-700 mb-2">Preferred pharmacy</p>
-              <div className="pl-0 space-y-1 text-navy">
-                {overview.patientProfile.preferredPharmacyName && (
-                  <p><span className="font-medium text-gray-700">Name:</span> {overview.patientProfile.preferredPharmacyName}</p>
-                )}
-                {overview.patientProfile.preferredPharmacyPhone && (
-                  <p><span className="font-medium text-gray-700">Phone:</span> {formatPhone(overview.patientProfile.preferredPharmacyPhone)}</p>
-                )}
-                {overview.patientProfile.preferredPharmacyAddress && (
-                  <p><span className="font-medium text-gray-700">Address:</span> {overview.patientProfile.preferredPharmacyAddress}</p>
-                )}
-              </div>
-            </div>
-          )}
-          {(overview.patientProfile?.guardian1Name || overview.patientProfile?.guardian1Relationship || overview.patientProfile?.guardian1Phone) && (
-            <div className="border-t border-gray-200 pt-3 mt-3">
-              <p className="font-medium text-gray-700 mb-2">Guardian 1</p>
-              <div className="pl-0 space-y-1 text-navy">
-                {overview.patientProfile.guardian1Name && (
-                  <p><span className="font-medium text-gray-700">Name:</span> {overview.patientProfile.guardian1Name}</p>
-                )}
-                {overview.patientProfile.guardian1Relationship && (
-                  <p><span className="font-medium text-gray-700">Relationship:</span> {overview.patientProfile.guardian1Relationship}</p>
-                )}
-                {overview.patientProfile.guardian1Phone && (
-                  <p><span className="font-medium text-gray-700">Phone:</span> {formatPhone(overview.patientProfile.guardian1Phone)}</p>
-                )}
-              </div>
-            </div>
-          )}
-          {(overview.patientProfile?.guardian2Name || overview.patientProfile?.guardian2Relationship || overview.patientProfile?.guardian2Phone) && (
-            <div className="border-t border-gray-200 pt-3 mt-3">
-              <p className="font-medium text-gray-700 mb-2">Guardian 2</p>
-              <div className="pl-0 space-y-1 text-navy">
-                {overview.patientProfile.guardian2Name && (
-                  <p><span className="font-medium text-gray-700">Name:</span> {overview.patientProfile.guardian2Name}</p>
-                )}
-                {overview.patientProfile.guardian2Relationship && (
-                  <p><span className="font-medium text-gray-700">Relationship:</span> {overview.patientProfile.guardian2Relationship}</p>
-                )}
-                {overview.patientProfile.guardian2Phone && (
-                  <p><span className="font-medium text-gray-700">Phone:</span> {formatPhone(overview.patientProfile.guardian2Phone)}</p>
-                )}
-              </div>
-            </div>
+      {/* Patient header */}
+      <div className="mb-8 flex flex-wrap items-center gap-5">
+        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-cta/10 text-2xl font-bold text-cta">
+          {(overview.patientName || "?")[0].toUpperCase()}
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold text-navy">{overview.patientName}</h1>
+          <p className="mt-0.5 text-sm text-gray-500">{overview.patientEmail}</p>
+          {overview.patientPhone && (
+            <p className="text-sm text-gray-500">{formatPhone(overview.patientPhone)}</p>
           )}
         </div>
+      </div>
+
+      {/* Patient Information Card */}
+      <div className="mt-2 rounded-2xl border border-cream-200 bg-white p-6 shadow-sm">
+        <div className="mb-5 flex items-center gap-2.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-cta/10">
+            <svg className="h-4 w-4 text-cta" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          </div>
+          <h2 className="text-base font-semibold text-navy">Patient Information</h2>
+        </div>
+
+        <div className="grid grid-cols-1 gap-x-8 gap-y-3 text-sm sm:grid-cols-2">
+          {[
+            { label: "Name", value: overview.patientName },
+            { label: "Email", value: overview.patientEmail },
+            overview.patientPhone ? { label: "Phone", value: formatPhone(overview.patientPhone) } : null,
+            (overview.address || overview.patientProfile?.address) ? { label: "Address", value: overview.address || overview.patientProfile?.address } : null,
+            overview.patientProfile?.sex ? { label: "Sex", value: overview.patientProfile.sex.replace(/_/g, " ") } : null,
+            overview.patientProfile?.dateOfBirth ? { label: "Date of birth", value: overview.patientProfile.dateOfBirth } : null,
+            overview.patientProfile?.ssn ? {
+              label: "SSN",
+              value: overview.patientProfile.ssn.replace(/\D/g, "").length === 9
+                ? `${overview.patientProfile.ssn.replace(/\D/g, "").slice(0,3)}-${overview.patientProfile.ssn.replace(/\D/g, "").slice(3,5)}-${overview.patientProfile.ssn.replace(/\D/g, "").slice(5)}`
+                : overview.patientProfile.ssn
+            } : null,
+          ].filter(Boolean).map((field) => (
+            <div key={field!.label} className="flex flex-col gap-0.5">
+              <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">{field!.label}</span>
+              <span className="text-sm font-medium text-navy">{field!.value || "—"}</span>
+            </div>
+          ))}
+        </div>
+
+        {(overview.patientProfile?.preferredPharmacyName || overview.patientProfile?.preferredPharmacyPhone || overview.patientProfile?.preferredPharmacyAddress) && (
+          <div className="mt-5 rounded-xl border border-cream-200 bg-cream-50/60 p-4">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-400">Preferred Pharmacy</p>
+            <div className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
+              {overview.patientProfile.preferredPharmacyName && (
+                <div><span className="text-xs text-gray-400">Name</span><p className="font-medium text-navy">{overview.patientProfile.preferredPharmacyName}</p></div>
+              )}
+              {overview.patientProfile.preferredPharmacyPhone && (
+                <div><span className="text-xs text-gray-400">Phone</span><p className="font-medium text-navy">{formatPhone(overview.patientProfile.preferredPharmacyPhone)}</p></div>
+              )}
+              {overview.patientProfile.preferredPharmacyAddress && (
+                <div className="sm:col-span-2"><span className="text-xs text-gray-400">Address</span><p className="font-medium text-navy">{overview.patientProfile.preferredPharmacyAddress}</p></div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {[
+          { label: "Guardian 1", name: overview.patientProfile?.guardian1Name, rel: overview.patientProfile?.guardian1Relationship, phone: overview.patientProfile?.guardian1Phone },
+          { label: "Guardian 2", name: overview.patientProfile?.guardian2Name, rel: overview.patientProfile?.guardian2Relationship, phone: overview.patientProfile?.guardian2Phone },
+        ].filter((g) => g.name || g.rel || g.phone).map((g) => (
+          <div key={g.label} className="mt-3 rounded-xl border border-cream-200 bg-cream-50/60 p-4">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-400">{g.label}</p>
+            <div className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-3">
+              {g.name && <div><span className="text-xs text-gray-400">Name</span><p className="font-medium text-navy">{g.name}</p></div>}
+              {g.rel && <div><span className="text-xs text-gray-400">Relationship</span><p className="font-medium text-navy">{g.rel}</p></div>}
+              {g.phone && <div><span className="text-xs text-gray-400">Phone</span><p className="font-medium text-navy">{formatPhone(g.phone)}</p></div>}
+            </div>
+          </div>
+        ))}
+
         {!overview.patientProfile && (
-          <p className="text-sm text-gray-600 mt-3">Profile incomplete or not yet submitted.</p>
+          <p className="mt-4 text-sm text-gray-400 italic">Profile incomplete or not yet submitted.</p>
         )}
       </div>
 
-      {/* Patient uploaded documents (previous medical records) */}
-      <div className="mt-6 card">
-        <h2 className="text-lg font-semibold text-navy mb-2">Patient documents</h2>
-        <p className="text-sm text-gray-600 mb-4">Documents uploaded by the patient (e.g. previous medical records).</p>
+      {/* Patient Documents */}
+      <div className="mt-5 rounded-2xl border border-cream-200 bg-white p-6 shadow-sm">
+        <div className="mb-4 flex items-center gap-2.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-violet-50">
+            <svg className="h-4 w-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <div>
+            <h2 className="text-base font-semibold text-navy">Patient Documents</h2>
+            <p className="text-xs text-gray-400">Previously uploaded medical records</p>
+          </div>
+        </div>
         {overview.patientDocuments && overview.patientDocuments.length > 0 ? (
           <ul className="space-y-2">
             {overview.patientDocuments.map((doc) => (
-              <li key={doc.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-3">
+              <li key={doc.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-cream-200 bg-cream-50/60 px-4 py-3">
                 <div>
                   <p className="font-medium text-navy">{doc.displayName || doc.fileName}</p>
-                  <p className="text-xs text-gray-500">{doc.fileName}</p>
+                  <p className="text-xs text-gray-400">{doc.fileName}</p>
                 </div>
                 {doc.downloadUrl && (
                   <div className="flex items-center gap-2">
-                    <a
-                      href={doc.downloadUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex rounded-lg border border-cta bg-white px-3 py-1.5 text-sm font-medium text-cta hover:bg-cta/10"
-                    >
+                    <a href={doc.downloadUrl} target="_blank" rel="noopener noreferrer"
+                      className="inline-flex rounded-lg border border-cta bg-white px-3 py-1.5 text-xs font-medium text-cta hover:bg-cta/10 transition">
                       View
                     </a>
-                    <a
-                      href={doc.downloadUrl}
-                      download={doc.fileName}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex rounded-lg bg-cta px-3 py-1.5 text-sm font-medium text-white hover:bg-cta/90"
-                    >
+                    <a href={doc.downloadUrl} download={doc.fileName} target="_blank" rel="noopener noreferrer"
+                      className="inline-flex rounded-lg bg-cta px-3 py-1.5 text-xs font-medium text-white hover:opacity-90 transition">
                       Download
                     </a>
                   </div>
@@ -430,7 +432,9 @@ export default function PatientOverviewPage() {
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-gray-600">No documents uploaded yet.</p>
+          <div className="rounded-xl border border-dashed border-cream-300 py-8 text-center">
+            <p className="text-sm text-gray-400">No documents uploaded yet.</p>
+          </div>
         )}
       </div>
 
@@ -2077,5 +2081,6 @@ export default function PatientOverviewPage() {
         }}
       />
     </main>
+    </div>
   );
 }

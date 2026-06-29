@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { questionnaireToQandA } from "@/lib/questionnaireLabels";
+import { questionnaireToQandA, QUESTIONNAIRE_LABELS } from "@/lib/questionnaireLabels";
 import { formatPhone } from "@/lib/formatPhone";
 
 const RED_FLAG_KEYS = [
@@ -14,6 +14,10 @@ const RED_FLAG_KEYS = [
   "legalCustodyCourt",
   "childProtectiveServices",
 ] as const;
+
+const RED_FLAG_LABEL_SET = new Set(
+  RED_FLAG_KEYS.map((k) => QUESTIONNAIRE_LABELS[k]).filter(Boolean)
+);
 
 function getRecommendationStatus(
   questionnaireData: Record<string, unknown> | null | undefined
@@ -192,6 +196,12 @@ export default function DoctorRequestsList() {
   ];
 
   function renderRequestCard(req: PatientRequest, showActions: boolean, statusBadge?: "accepted" | "rejected") {
+    const triggeredFlags = req.questionnaireData
+      ? RED_FLAG_KEYS
+          .filter((k) => String(req.questionnaireData![k] ?? "").toLowerCase() === "yes")
+          .map((k) => QUESTIONNAIRE_LABELS[k] || k)
+      : [];
+
     return (
       <li key={req.id} className="card">
         <div className="flex flex-wrap justify-between gap-4">
@@ -280,6 +290,25 @@ export default function DoctorRequestsList() {
           ) : null}
           </div>
         </div>
+        {triggeredFlags.length > 0 && (
+          <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+            <div className="flex items-center gap-2 mb-2">
+              <svg className="h-4 w-4 shrink-0 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+              </svg>
+              <p className="text-xs font-semibold uppercase tracking-wide text-amber-700">Rejection flag{triggeredFlags.length > 1 ? "s" : ""} — answered Yes</p>
+            </div>
+            <ul className="space-y-1">
+              {triggeredFlags.map((label, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-amber-800">
+                  <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500 mt-1.5" />
+                  {label}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         {(req.consentAt || req.questionnaireData) && (
           <div className="mt-4 border-t border-cream-200 pt-4">
             <button
@@ -306,13 +335,31 @@ export default function DoctorRequestsList() {
                 {req.questionnaireData && Object.keys(req.questionnaireData).length > 0 ? (
                   <>
                     <div className="mt-2 max-h-80 overflow-auto rounded bg-white p-3 text-sm">
-                      <dl className="space-y-3">
-                        {questionnaireToQandA(req.questionnaireData).map(({ question, answer }, i) => (
-                          <div key={i}>
-                            <dt className="font-medium text-cta">{question}</dt>
-                            <dd className="mt-0.5 text-navy">{answer}</dd>
-                          </div>
-                        ))}
+                      <dl className="space-y-2">
+                        {questionnaireToQandA(req.questionnaireData).map(({ question, answer }, i) => {
+                          const isFlag = RED_FLAG_LABEL_SET.has(question) && answer.toLowerCase() === "yes";
+                          return (
+                            <div
+                              key={i}
+                              className={isFlag
+                                ? "rounded-lg border border-amber-200 bg-amber-50 px-3 py-2"
+                                : "px-1 py-1"
+                              }
+                            >
+                              <dt className={`font-medium flex items-center gap-1.5 ${isFlag ? "text-amber-700" : "text-cta"}`}>
+                                {isFlag && (
+                                  <svg className="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                                  </svg>
+                                )}
+                                {question}
+                              </dt>
+                              <dd className={`mt-0.5 font-semibold ${isFlag ? "text-amber-800 uppercase tracking-wide" : "text-navy"}`}>
+                                {answer}
+                              </dd>
+                            </div>
+                          );
+                        })}
                       </dl>
                     </div>
                     <div className="mt-3 flex justify-end">
@@ -338,24 +385,29 @@ export default function DoctorRequestsList() {
   }
 
   return (
+    <div className="min-h-screen bg-cream-50/60">
     <main className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-      <p className="mb-6">
-        <Link href="/doctor" className="text-sm text-cta hover:underline">
-          ← Back to dashboard
-        </Link>
-      </p>
-      <h1 className="section-heading">Patient Requests</h1>
-      <p className="mt-2 text-gray-600">
-        Review new patient access requests. Approve to create their account and send login credentials; reject to decline.
-      </p>
+      <Link href="/doctor" className="inline-flex items-center gap-1 text-sm text-cta hover:underline mb-6">
+        ← Back to dashboard
+      </Link>
 
-      <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <label htmlFor="requests-search" className="sr-only">
-          Search by patient name
-        </label>
-        <div className="relative max-w-xs">
+      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-50">
+            <svg className="h-5 w-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-navy">Patient Requests</h1>
+            <p className="text-sm text-gray-500">Approve to create accounts; reject to decline.</p>
+          </div>
+        </div>
+
+        <label htmlFor="requests-search" className="sr-only">Search by patient name</label>
+        <div className="relative w-full max-w-sm">
           <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" aria-hidden>
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
             </svg>
           </span>
@@ -368,14 +420,22 @@ export default function DoctorRequestsList() {
               setPageByTab({ pending: 1, accepted: 1, rejected: 1 });
             }}
             placeholder="Search by patient name…"
-            className="w-full rounded-lg border border-cream-200 bg-white py-2 pl-10 pr-3 text-sm text-navy placeholder-gray-500 focus:border-cta focus:ring-cta"
+            className="w-full rounded-xl border border-cream-200 bg-white py-2.5 pl-9 pr-3 text-sm text-navy placeholder-gray-400 shadow-sm focus:border-cta focus:outline-none focus:ring-2 focus:ring-cta/20"
             aria-label="Search by patient name"
           />
         </div>
       </div>
 
       {loading ? (
-        <p className="mt-10 text-gray-500">Loading…</p>
+        <div className="flex items-center justify-center py-32">
+          <div className="flex flex-col items-center gap-3">
+            <svg className="h-7 w-7 animate-spin text-cta" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+            </svg>
+            <p className="text-sm text-gray-500">Loading requests…</p>
+          </div>
+        </div>
       ) : (
         <>
           <div className="mt-10 rounded-xl border border-cream-200 bg-white p-2 shadow-sm">
@@ -537,5 +597,6 @@ export default function DoctorRequestsList() {
         </>
       )}
     </main>
+    </div>
   );
 }

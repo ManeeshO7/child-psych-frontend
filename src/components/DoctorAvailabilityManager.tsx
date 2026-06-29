@@ -13,9 +13,6 @@ type Block = {
   allowedDurationsMinutes?: number[] | null;
 };
 
-// Practice timezone (California) used for storing availability and generating slots
-const PRACTICE_TZ = "America/Los_Angeles";
-
 // How many days ahead doctors can configure and patients can see availability.
 const AVAILABILITY_DAYS_AHEAD = 90;  // 3 months
 // How many past days to show in the calendar (grayed out, not clickable).
@@ -83,7 +80,6 @@ export default function DoctorAvailabilityManager() {
   const [selectedDuration, setSelectedDuration] = useState<30 | 45 | 75>(30);
   const [selectedDateForSlots, setSelectedDateForSlots] = useState<string>(NEXT_DAYS[0]);
   const [candidateSlots, setCandidateSlots] = useState<{ startTime: string; endTime: string }[]>([]);
-  const [offeredStartTimes, setOfferedStartTimes] = useState<string[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [slotsSaving, setSlotsSaving] = useState(false);
   const [slotsSaveMessage, setSlotsSaveMessage] = useState<"saved" | "error" | null>(null);
@@ -113,7 +109,6 @@ export default function DoctorAvailabilityManager() {
       const candidateList = candRes.ok ? (await candRes.json()).slots || [] : [];
       setCandidateSlots(candidateList);
       const offered: string[] = offRes.ok ? (await offRes.json()).startTimes || [] : [];
-      setOfferedStartTimes(offered);
       // If doctor hasn't saved offered slots for this date/duration yet, pre-select all candidate slots
       // so all availability is shown to patients unless they manually uncheck and save.
       const initialSelected = offered.length > 0 ? offered : candidateList.map((s: { startTime: string }) => s.startTime);
@@ -177,7 +172,6 @@ export default function DoctorAvailabilityManager() {
         return;
       }
       const data = await res.json();
-      setOfferedStartTimes(data.startTimes || []);
       setSelectedStartTimes(data.startTimes || []);
       setSlotsSaveMessage("saved");
       if (saveMessageTimeoutRef.current) clearTimeout(saveMessageTimeoutRef.current);
@@ -402,643 +396,541 @@ export default function DoctorAvailabilityManager() {
     months.length === 0 ? 0 : Math.min(Math.max(currentMonthIndex, 0), months.length - 1);
   const currentMonth = months.length > 0 ? months[safeMonthIndex] : null;
 
-  return (
-    <main className="mx-auto max-w-2xl px-4 py-10 sm:px-6 lg:px-8">
-      <div className="mb-6 flex items-center gap-4">
-        <Link href="/doctor" className="text-sm text-cta hover:underline">
-          ← Dashboard
-        </Link>
+  const calendarGrid = (
+    month: CalendarMonth,
+    selectedIso: string,
+    onSelect: (iso: string) => void,
+    monthIndex: number,
+    setMonthIndex: (fn: (i: number) => number) => void,
+  ) => (
+    <>
+      <div className="flex items-center justify-between mb-4">
+        <button
+          type="button"
+          onClick={() => setMonthIndex((i) => Math.max(i - 1, 0))}
+          disabled={monthIndex === 0}
+          className="flex h-8 w-8 items-center justify-center rounded-full border border-cream-200 text-gray-500 transition hover:bg-cream-100 disabled:cursor-not-allowed disabled:opacity-30"
+          aria-label="Previous month"
+        >‹</button>
+        <span className="text-sm font-semibold tracking-wide text-gray-700">{month.label}</span>
+        <button
+          type="button"
+          onClick={() => setMonthIndex((i) => Math.min(i + 1, Math.max(months.length - 1, 0)))}
+          disabled={monthIndex >= Math.max(months.length - 1, 0)}
+          className="flex h-8 w-8 items-center justify-center rounded-full border border-cream-200 text-gray-500 transition hover:bg-cream-100 disabled:cursor-not-allowed disabled:opacity-30"
+          aria-label="Next month"
+        >›</button>
       </div>
-      <h1 className="section-heading">Manage availability</h1>
-      <p className="mt-2 text-gray-600">
-        Choose an appointment length (30, 45, or 75 min), pick a date, then select which slots to offer. Only those slots are visible to patients for that appointment type. Set &quot;When I&apos;m available&quot; first so you have slots to offer.
-      </p>
-      <p className="mt-1 text-sm font-medium text-gray-700">
-        All times are in Pacific Time (PST).
-      </p>
+      <div className="grid grid-cols-7 gap-0.5">
+        {["Su","Mo","Tu","We","Th","Fr","Sa"].map((d, idx) => (
+          <div key={`${d}-${idx}`} className="flex h-8 items-center justify-center text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+            {d}
+          </div>
+        ))}
+        {(() => {
+          const cells: (CalendarDay | null)[] = [];
+          if (month.days.length > 0) {
+            for (let i = 0; i < month.days[0].dow; i++) cells.push(null);
+            for (const d of month.days) cells.push(d);
+            while (cells.length % 7 !== 0) cells.push(null);
+          }
+          return cells.map((cell, idx) => {
+            if (!cell) return <div key={`pad-${idx}`} className="h-9" />;
+            const iso = cell.iso;
+            const isPast = iso < TODAY_ISO;
+            const isSelected = iso === selectedIso;
+            const isToday = iso === TODAY_ISO;
+            const hasBlocks = datesWithBlocks.has(iso);
+            if (isPast) {
+              return (
+                <span key={iso} className="flex h-9 items-center justify-center text-xs text-gray-300 cursor-not-allowed" aria-hidden>
+                  {cell.dom}
+                </span>
+              );
+            }
+            return (
+              <button
+                key={iso}
+                type="button"
+                onClick={() => onSelect(iso)}
+                className={[
+                  "relative flex h-9 w-full items-center justify-center rounded-lg text-xs font-medium transition",
+                  isSelected
+                    ? "bg-cta text-white shadow-md"
+                    : hasBlocks
+                      ? "bg-cta/10 text-cta hover:bg-cta/20"
+                      : "text-gray-600 hover:bg-cream-100",
+                  isToday && !isSelected ? "ring-2 ring-cta/40 ring-offset-1" : "",
+                ].filter(Boolean).join(" ")}
+              >
+                {cell.dom}
+                {hasBlocks && !isSelected && (
+                  <span className="absolute bottom-1 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full bg-cta/60" />
+                )}
+              </button>
+            );
+          });
+        })()}
+      </div>
+    </>
+  );
 
-      {calendarConnected === false && (
-        <div className="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4">
-          <p className="text-sm font-medium text-amber-800">Connect Google Calendar for meeting links</p>
-          <p className="mt-1 text-sm text-amber-700">
-            When patients book a slot, a unique Google Meet link is created and emailed to them. Connect your Google account once to enable this.
-          </p>
-          <a
-            href="/api/auth/google"
-            className="mt-3 inline-block rounded bg-cta px-3 py-1.5 text-sm font-medium text-white hover:opacity-90"
-          >
-            Connect Google Calendar
-          </a>
+  const blockCard = (b: Block, showDate = false) => (
+    <div
+      key={b.id}
+      className="group flex items-start justify-between gap-4 rounded-xl border border-cream-200 bg-white px-5 py-4 shadow-sm transition hover:shadow-md"
+    >
+      <div className="flex flex-col gap-1.5">
+        {showDate && (
+          <span className="text-xs font-semibold uppercase tracking-wide text-cta">{formatDate(b.date)}</span>
+        )}
+        <span className="text-base font-semibold text-navy">
+          {formatTimeAmPm(b.date, b.startTime)} – {formatTimeAmPm(b.date, b.endTime)}
+        </span>
+        <div className="flex flex-wrap items-center gap-2 pt-0.5">
+          <span className="text-xs text-gray-400">Allow:</span>
+          {DURATION_OPTIONS.map((dur) => {
+            const allowed = getAllowedForBlock(b);
+            const checked = allowed.includes(dur);
+            return (
+              <label key={dur} className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium transition ${
+                checked ? "border-cta/40 bg-cta/10 text-cta" : "border-cream-200 text-gray-400 hover:border-cream-300"
+              }`}>
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={() => {
+                    const next = checked
+                      ? allowed.filter((x) => x !== dur)
+                      : [...allowed, dur].sort((a, b) => a - b);
+                    setAllowedForBlock(b.id, next.length ? next : [...DURATION_OPTIONS]);
+                  }}
+                  className="sr-only"
+                />
+                {dur} min
+              </label>
+            );
+          })}
         </div>
-      )}
-      {calendarConnected === true && (
-        <p className="mt-4 text-sm text-green-700">Google Calendar connected — each booking gets a new Meet link.</p>
-      )}
+      </div>
+      <button
+        type="button"
+        onClick={() => removeBlock(b.id)}
+        className="mt-0.5 shrink-0 rounded-lg border border-red-100 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 opacity-0 transition group-hover:opacity-100 hover:bg-red-100"
+      >
+        Remove
+      </button>
+    </div>
+  );
 
-      {loading ? (
-        <p className="mt-8 text-gray-500">Loading…</p>
-      ) : (
-        <>
-          {/* Main tabs: Offer slots | When I'm available */}
-          <div className="mt-8 rounded-xl border border-cream-200 bg-white p-1.5 shadow-sm">
-            <div className="flex gap-1">
+  return (
+    <main className="min-h-screen bg-cream-50/60">
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+
+        {/* Page header */}
+        <div className="mb-8 flex items-start justify-between gap-4">
+          <div>
+            <Link href="/doctor" className="inline-flex items-center gap-1 text-sm text-cta hover:underline mb-3">
+              ← Back to Dashboard
+            </Link>
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-cta/10">
+                <svg className="h-5 w-5 text-cta" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-navy">Manage Availability</h1>
+                <p className="text-sm text-gray-500">All times shown in Pacific Time (PST)</p>
+              </div>
+            </div>
+          </div>
+
+          {calendarConnected === true && (
+            <div className="flex items-center gap-2 rounded-full border border-green-200 bg-green-50 px-3 py-1.5 text-xs font-medium text-green-700">
+              <span className="h-2 w-2 rounded-full bg-green-500" />
+              Google Calendar connected
+            </div>
+          )}
+        </div>
+
+        {calendarConnected === false && (
+          <div className="mb-6 flex items-start gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-5">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-100">
+              <svg className="h-4 w-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-amber-800">Connect Google Calendar for Meet links</p>
+              <p className="mt-0.5 text-sm text-amber-700">Each patient booking will automatically get a unique Google Meet link.</p>
+              <a href="/api/auth/google" className="mt-3 inline-flex items-center gap-2 rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 transition">
+                Connect Google Calendar
+              </a>
+            </div>
+          </div>
+        )}
+
+        {loading ? (
+          <div className="flex items-center justify-center py-24">
+            <div className="flex flex-col items-center gap-3">
+              <svg className="h-7 w-7 animate-spin text-cta" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+              </svg>
+              <p className="text-sm text-gray-500">Loading availability…</p>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Main tabs */}
+            <div className="mb-6 inline-flex rounded-xl border border-cream-200 bg-white p-1 shadow-sm">
               {[
-                { id: "offer" as const, label: "Offer slots" },
-                { id: "blocks" as const, label: `When I'm available (${blocks.length})` },
+                { id: "offer" as const, label: "Offer Slots" },
+                { id: "blocks" as const, label: `My Availability (${blocks.length})` },
               ].map((tab) => (
                 <button
                   key={tab.id}
                   type="button"
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition ${
-                    activeTab === tab.id
-                      ? "bg-cta text-white"
-                      : "bg-transparent text-gray-600 hover:bg-cream-100"
+                  className={`rounded-lg px-6 py-2.5 text-sm font-semibold transition ${
+                    activeTab === tab.id ? "bg-cta text-white shadow-sm" : "text-gray-500 hover:text-gray-700"
                   }`}
                 >
                   {tab.label}
                 </button>
               ))}
             </div>
-          </div>
 
-          {activeTab === "offer" ? (
-            /* --- Offer slots: duration → date → pick slots --- */
-            <div className="mt-6 space-y-6">
-              {/* Duration selector (like screenshot 2) */}
-              <div className="rounded-lg border border-cream-200 bg-white p-4">
-                <h2 className="text-sm font-semibold text-gray-700">Appointment length</h2>
-                <p className="mt-1 text-xs text-gray-500">Choose which duration you want to offer slots for.</p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {([30, 45, 75] as const).map((d) => (
-                    <button
-                      key={d}
-                      type="button"
-                      onClick={() => setSelectedDuration(d)}
-                      className={`rounded-lg border px-4 py-2 text-sm font-medium transition ${
-                        selectedDuration === d
-                          ? "border-cta bg-cta text-white"
-                          : "border-cream-200 bg-white text-gray-700 hover:bg-cream-100"
-                      }`}
-                    >
-                      {d} min
-                    </button>
-                  ))}
+            {activeTab === "offer" ? (
+              <div className="space-y-5">
+
+                {/* Step 1: Duration */}
+                <div className="rounded-2xl border border-cream-200 bg-white p-6 shadow-sm">
+                  <div className="flex items-center gap-3 mb-4">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-cta text-xs font-bold text-white">1</span>
+                    <div>
+                      <h2 className="text-sm font-semibold text-gray-800">Appointment length</h2>
+                      <p className="text-xs text-gray-500">Choose which duration you want to offer slots for</p>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-3">
+                    {([30, 45, 75] as const).map((d) => (
+                      <button
+                        key={d}
+                        type="button"
+                        onClick={() => setSelectedDuration(d)}
+                        className={`rounded-xl border-2 px-6 py-3 text-sm font-semibold transition ${
+                          selectedDuration === d
+                            ? "border-cta bg-cta text-white shadow-md"
+                            : "border-cream-200 bg-white text-gray-600 hover:border-cta/40 hover:bg-cream-50"
+                        }`}
+                      >
+                        {d} min
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Step 2: Date */}
+                <div className="rounded-2xl border border-cream-200 bg-white p-6 shadow-sm">
+                  <div className="flex items-center gap-3 mb-4">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-cta text-xs font-bold text-white">2</span>
+                    <div>
+                      <h2 className="text-sm font-semibold text-gray-800">Select a date</h2>
+                      <p className="text-xs text-gray-500">Highlighted dates have availability blocks. Pick a day to manage its {selectedDuration}-min slots.</p>
+                    </div>
+                  </div>
+                  {(() => {
+                    const offerMonth = months[offeredSlotsMonthIndex] ?? null;
+                    return offerMonth && calendarGrid(
+                      offerMonth,
+                      selectedDateForSlots,
+                      setSelectedDateForSlots,
+                      offeredSlotsMonthIndex,
+                      setOfferedSlotsMonthIndex,
+                    );
+                  })()}
+                </div>
+
+                {/* Step 3: Slots */}
+                <div className="rounded-2xl border border-cream-200 bg-white p-6 shadow-sm">
+                  <div className="flex items-center gap-3 mb-4">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-cta text-xs font-bold text-white">3</span>
+                    <div>
+                      <h2 className="text-sm font-semibold text-gray-800">
+                        {selectedDuration}-min slots · {formatDate(selectedDateForSlots)}
+                      </h2>
+                      <p className="text-xs text-gray-500">Toggle which slots patients can book for this duration</p>
+                    </div>
+                  </div>
+
+                  {candidateSlots.length > 0 && !slotsLoading && (
+                    <div className="mb-4 flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedStartTimes(candidateSlots.map((s) => s.startTime))}
+                        className="rounded-lg border border-cream-300 bg-cream-50 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-cream-100 transition"
+                      >
+                        Select all ({candidateSlots.length})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedStartTimes([])}
+                        className="rounded-lg border border-cream-300 bg-cream-50 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-cream-100 transition"
+                      >
+                        Deselect all
+                      </button>
+                      {selectedStartTimes.length > 0 && (
+                        <span className="text-xs text-cta font-medium">
+                          {selectedStartTimes.length} of {candidateSlots.length} selected
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {slotsLoading ? (
+                    <div className="flex items-center gap-2 py-6 text-sm text-gray-500">
+                      <svg className="h-4 w-4 animate-spin text-cta" viewBox="0 0 24 24" fill="none">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                      </svg>
+                      Loading slots…
+                    </div>
+                  ) : candidateSlots.length === 0 ? (
+                    <div className="rounded-xl border border-amber-200 bg-amber-50 p-5">
+                      <p className="text-sm font-semibold text-amber-900">No slots to offer on this day</p>
+                      <p className="mt-1 text-sm text-amber-700">
+                        {datesWithBlocks.has(normalizeDate(selectedDateForSlots))
+                          ? `You have blocks on this day but none allow ${selectedDuration}-min appointments. Check "My Availability" to update the block settings.`
+                          : "Add an availability block for this day first (e.g. 9:00–12:00), then return here to choose which times to offer."}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveTab("blocks");
+                          setAddDate(selectedDateForSlots.includes("T") ? selectedDateForSlots.slice(0, 10) : selectedDateForSlots);
+                        }}
+                        className="mt-3 inline-flex items-center gap-2 rounded-lg bg-cta px-4 py-2 text-sm font-medium text-white hover:opacity-90 transition"
+                      >
+                        Add block for {formatDate(selectedDateForSlots)} →
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
+                      {candidateSlots.map((slot) => {
+                        const offered = selectedStartTimes.includes(slot.startTime);
+                        return (
+                          <label
+                            key={slot.startTime}
+                            className={`flex cursor-pointer flex-col items-center gap-1 rounded-xl border-2 px-3 py-3 text-center transition ${
+                              offered
+                                ? "border-cta bg-cta/8 text-cta shadow-sm"
+                                : "border-cream-200 bg-white text-gray-600 hover:border-cream-300 hover:bg-cream-50"
+                            }`}
+                          >
+                            <input type="checkbox" checked={offered} onChange={() => toggleSlotOffered(slot.startTime)} className="sr-only" />
+                            <span className="text-sm font-semibold">{formatTimeAmPm(selectedDateForSlots, slot.startTime)}</span>
+                            <span className="text-[11px] text-gray-400">→ {formatTimeAmPm(selectedDateForSlots, slot.endTime)}</span>
+                            {offered && (
+                              <span className="mt-0.5 text-[10px] font-semibold uppercase tracking-wide text-cta">✓ Offered</span>
+                            )}
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {candidateSlots.length > 0 && (
+                    <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-cream-100 pt-5">
+                      <button
+                        type="button"
+                        onClick={saveOfferedSlots}
+                        disabled={slotsSaving}
+                        className="btn-primary disabled:opacity-60"
+                      >
+                        {slotsSaving ? (
+                          <span className="flex items-center gap-2">
+                            <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                            </svg>
+                            Saving…
+                          </span>
+                        ) : "Save slots"}
+                      </button>
+                      {slotsSaveMessage === "saved" && (
+                        <span className="flex items-center gap-1.5 text-sm font-medium text-green-700">
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                          Saved!
+                        </span>
+                      )}
+                      {slotsSaveMessage === "error" && (
+                        <span className="text-sm font-medium text-red-600">Save failed. Try again.</span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
-
-              {/* Calendar: select date */}
-              <div className="rounded-lg border border-cream-200 bg-white p-4">
-                <h2 className="text-sm font-semibold text-gray-700">Select a date</h2>
-                <p className="mt-1 text-xs text-gray-500">Pick a day to choose which {selectedDuration}-min slots to offer.</p>
-                {(() => {
-                  const offerMonth = months[offeredSlotsMonthIndex] ?? null;
-                  return offerMonth && (
-                  <>
-                    <div className="mt-4 flex items-center justify-between">
-                      <button
-                        type="button"
-                        onClick={() => setOfferedSlotsMonthIndex((i) => Math.max(i - 1, 0))}
-                        disabled={offeredSlotsMonthIndex === 0}
-                        className="rounded-full border border-cream-200 px-2 py-1 text-xs text-gray-600 disabled:opacity-40"
-                        aria-label="Previous month"
-                      >
-                        ‹
-                      </button>
-                      <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                        {offerMonth.label}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setOfferedSlotsMonthIndex((i) =>
-                            Math.min(i + 1, Math.max(months.length - 1, 0))
-                          )
-                        }
-                        disabled={offeredSlotsMonthIndex >= Math.max(months.length - 1, 0)}
-                        className="rounded-full border border-cream-200 px-2 py-1 text-xs text-gray-600 disabled:opacity-40"
-                        aria-label="Next month"
-                      >
-                        ›
-                      </button>
-                    </div>
-                    <div className="mt-2 grid grid-cols-7 gap-1 text-xs">
-                      {["S", "M", "T", "W", "T", "F", "S"].map((d, idx) => (
-                        <div key={`${d}-${idx}`} className="flex h-8 w-full min-w-0 items-center justify-center text-gray-500 font-medium">
-                          {d}
-                        </div>
-                      ))}
-                      {(() => {
-                        const cells: (CalendarDay | null)[] = [];
-                        if (offerMonth.days.length > 0) {
-                          const firstDow = offerMonth.days[0].dow;
-                          for (let i = 0; i < firstDow; i++) cells.push(null);
-                          for (const d of offerMonth.days) cells.push(d);
-                          while (cells.length % 7 !== 0) cells.push(null);
-                        }
-                        return cells.map((cell, idx) => {
-                          if (!cell) return <div key={`pad-${idx}`} className="h-8 min-w-0" />;
-                          const iso = cell.iso;
-                          const isPast = iso < TODAY_ISO;
-                          const isSelected = iso === selectedDateForSlots;
-                          const isToday = iso === TODAY_ISO;
-                          const hasBlocks = datesWithBlocks.has(iso);
-                          if (isPast) {
-                            return (
-                              <span
-                                key={iso}
-                                title="Past date – not selectable"
-                                className="flex h-8 w-full min-w-0 cursor-not-allowed items-center justify-center rounded-full border border-cream-100 bg-gray-50/80 text-xs font-medium text-gray-400"
-                                aria-hidden
-                              >
-                                {cell.dom}
-                              </span>
-                            );
-                          }
-                          return (
-                            <button
-                              key={iso}
-                              type="button"
-                              onClick={() => setSelectedDateForSlots(iso)}
-                              title={hasBlocks ? `${iso}: has availability` : `${iso}: add a block in When I'm available`}
-                              className={[
-                                "flex h-8 w-full min-w-0 items-center justify-center rounded-full border text-xs font-medium transition",
-                                isSelected
-                                  ? "border-cta bg-cta text-white"
-                                  : hasBlocks
-                                    ? "border-cta/40 bg-cta/10 text-cta hover:bg-cta/20"
-                                    : "border-cream-200 text-gray-500 hover:bg-cream-100",
-                                isToday && !isSelected ? "ring-1 ring-cta/40" : "",
-                              ]
-                                .filter(Boolean)
-                                .join(" ")}
-                            >
-                              {cell.dom}
-                            </button>
-                          );
-                        });
-                      })()}
-                    </div>
-                  </>
-                  );
-                })()}
-              </div>
-
-              {/* Slots for selected date: offer checkboxes */}
-              <div className="rounded-lg border border-cream-200 bg-white p-4">
-                <h2 className="text-sm font-semibold text-gray-700">
-                  {selectedDuration} min slots for {formatDate(selectedDateForSlots)}
-                </h2>
-                <p className="mt-1 text-xs text-gray-500">
-                  Check the slots you want to offer to patients. Only these will be bookable for {selectedDuration}-min appointments.
-                </p>
-                {candidateSlots.length > 0 && !slotsLoading && (
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setSelectedStartTimes(candidateSlots.map((s) => s.startTime))}
-                      className="rounded border border-cream-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-cream-50"
-                    >
-                      Select all ({candidateSlots.length} slots)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setSelectedStartTimes([])}
-                      className="rounded border border-cream-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-cream-50"
-                    >
-                      Deselect all
-                    </button>
-                  </div>
-                )}
-                {selectedStartTimes.length > 0 && !slotsLoading && (
-                  <p className="mt-2 text-xs font-medium text-cta">
-                    Offered for this day: {selectedStartTimes.map((t) => formatTimeAmPm(selectedDateForSlots, t)).join(", ")}
-                  </p>
-                )}
-                {slotsLoading ? (
-                  <p className="mt-4 text-sm text-gray-500">Loading slots…</p>
-                ) : candidateSlots.length === 0 ? (
-                  <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4">
-                    <p className="text-sm font-medium text-amber-900">
-                      No slots to offer on this day.
-                    </p>
-                    <p className="mt-1 text-sm text-amber-800">
-                      {datesWithBlocks.has(normalizeDate(selectedDateForSlots))
-                        ? <>You have availability blocks on this day, but none allow this duration, or times are already booked. In &quot;When I&apos;m available&quot; ensure the block allows {selectedDuration} min for that day.</>
-                        : "Add an availability block for this day first (e.g. 9:00–12:00), then return here to choose which times to offer."}
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setActiveTab("blocks");
-                        setAddDate(selectedDateForSlots.includes("T") ? selectedDateForSlots.slice(0, 10) : selectedDateForSlots);
-                      }}
-                      className="mt-3 rounded bg-cta px-3 py-1.5 text-sm font-medium text-white hover:opacity-90"
-                    >
-                      When I&apos;m available → add block for {formatDate(selectedDateForSlots)}
-                    </button>
-                  </div>
-                ) : (
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {candidateSlots.map((slot) => {
-                      const offered = selectedStartTimes.includes(slot.startTime);
-                      return (
-                        <label
-                          key={slot.startTime}
-                          className={`inline-flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm transition ${
-                            offered
-                              ? "border-cta bg-cta/10 text-cta"
-                              : "border-cream-200 bg-white text-gray-700 hover:bg-cream-50"
-                          }`}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={offered}
-                            onChange={() => toggleSlotOffered(slot.startTime)}
-                            className="rounded border-cream-300"
-                          />
-                          <span>
-                            {formatTimeAmPm(selectedDateForSlots, slot.startTime)} –{" "}
-                            {formatTimeAmPm(selectedDateForSlots, slot.endTime)}
-                          </span>
-                        </label>
-                      );
-                    })}
-                  </div>
-                )}
-                {candidateSlots.length > 0 && (
-                  <div className="mt-4 flex flex-wrap items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={saveOfferedSlots}
-                      disabled={slotsSaving}
-                      className="btn-primary"
-                    >
-                      {slotsSaving ? "Saving…" : "Save slots"}
-                    </button>
-                    {slotsSaveMessage === "saved" && (
-                      <span className="text-sm font-medium text-green-700">Saved!</span>
-                    )}
-                    {slotsSaveMessage === "error" && (
-                      <span className="text-sm font-medium text-red-700">Save failed.</span>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          ) : (
-            /* --- When I'm available: blocks --- */
-            <>
-              <div className="mt-6 rounded-xl border border-cream-200 bg-white p-1.5">
-                <div className="flex gap-1">
+            ) : (
+              /* My Availability tab */
+              <>
+                <div className="mb-5 inline-flex rounded-xl border border-cream-200 bg-white p-1 shadow-sm">
                   {[
-                    { id: "day" as const, label: "Day view" },
-                    { id: "all" as const, label: `All blocks (${blocks.length})` },
+                    { id: "day" as const, label: "Day View" },
+                    { id: "all" as const, label: `All Blocks (${blocks.length})` },
                   ].map((tab) => (
                     <button
                       key={tab.id}
                       type="button"
                       onClick={() => setBlocksTabView(tab.id)}
-                      className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition ${
-                        blocksTabView === tab.id
-                          ? "bg-cta text-white"
-                          : "bg-transparent text-gray-600 hover:bg-cream-100"
+                      className={`rounded-lg px-5 py-2 text-sm font-semibold transition ${
+                        blocksTabView === tab.id ? "bg-cta text-white shadow-sm" : "text-gray-500 hover:text-gray-700"
                       }`}
                     >
                       {tab.label}
                     </button>
                   ))}
                 </div>
-              </div>
 
-              {blocksTabView === "day" ? (
-              <>
-              <div className="mt-6 grid gap-6 md:grid-cols-[minmax(0,260px)_minmax(0,1fr)]">
-                {/* Calendar (3-month window) */}
-                <div className="rounded-lg border border-cream-200 bg-white p-4">
-                  <h2 className="text-sm font-semibold text-gray-700">Select a day</h2>
-                  <p className="mt-1 text-xs text-gray-500">
-                    Days with availability are highlighted. Click a date to edit its blocks.
-                  </p>
-                  {currentMonth && (
-                    <>
-                      {/* Month header with navigation */}
-                      <div className="mt-4 flex items-center justify-between">
-                        <button
-                          type="button"
-                          onClick={() => setCurrentMonthIndex((i) => Math.max(i - 1, 0))}
-                          disabled={safeMonthIndex === 0}
-                          className="rounded-full border border-cream-200 px-2 py-1 text-xs text-gray-600 disabled:cursor-not-allowed disabled:opacity-40"
-                          aria-label="Previous month"
-                        >
-                          ‹
-                        </button>
-                        <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                          {currentMonth.label}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setCurrentMonthIndex((i) => Math.min(i + 1, Math.max(months.length - 1, 0)))
-                          }
-                          disabled={safeMonthIndex === Math.max(months.length - 1, 0)}
-                          className="rounded-full border border-cream-200 px-2 py-1 text-xs text-gray-600 disabled:cursor-not-allowed disabled:opacity-40"
-                          aria-label="Next month"
-                        >
-                          ›
-                        </button>
-                      </div>
+                {blocksTabView === "day" ? (
+                  <div className="grid gap-5 lg:grid-cols-[320px_1fr]">
 
-                      {/* Day-of-week header */}
-                      <div className="mt-2 grid grid-cols-7 gap-1 text-xs font-medium text-gray-500">
-                        {dayLabels.map((d, idx) => (
-                          <div key={`${d}-${idx}`} className="flex h-8 min-w-0 w-full items-center justify-center">
-                            {d}
+                    {/* Calendar */}
+                    <div className="rounded-2xl border border-cream-200 bg-white p-6 shadow-sm">
+                      <h2 className="mb-1 text-sm font-semibold text-gray-800">Select a day</h2>
+                      <p className="mb-4 text-xs text-gray-500">Highlighted dates have availability blocks.</p>
+                      {currentMonth && calendarGrid(
+                        currentMonth,
+                        selectedDate,
+                        setAddDate,
+                        safeMonthIndex,
+                        setCurrentMonthIndex,
+                      )}
+                    </div>
+
+                    {/* Right panel */}
+                    <div className="space-y-5">
+                      {/* Add block */}
+                      <div className="rounded-2xl border border-cream-200 bg-white p-6 shadow-sm">
+                        <h2 className="text-sm font-semibold text-gray-800">Add block · {formatDate(selectedDate)}</h2>
+                        <p className="mt-0.5 text-xs text-gray-500">Set a time range when you're available for appointments.</p>
+                        <div className="mt-4 flex flex-wrap items-end gap-3">
+                          <div>
+                            <label className="block text-xs font-medium text-gray-500 mb-1">From (PST)</label>
+                            <input
+                              type="time"
+                              value={addStart}
+                              onChange={(e) => setAddStart(e.target.value)}
+                              className="rounded-xl border border-cream-200 bg-cream-50 px-3 py-2.5 text-sm text-navy focus:border-cta focus:outline-none focus:ring-2 focus:ring-cta/20"
+                            />
                           </div>
-                        ))}
+                          <div>
+                            <label className="block text-xs font-medium text-gray-500 mb-1">To (PST)</label>
+                            <input
+                              type="time"
+                              value={addEnd}
+                              onChange={(e) => setAddEnd(e.target.value)}
+                              className="rounded-xl border border-cream-200 bg-cream-50 px-3 py-2.5 text-sm text-navy focus:border-cta focus:outline-none focus:ring-2 focus:ring-cta/20"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={addBlock}
+                            className="rounded-xl bg-cta px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:opacity-90 transition"
+                          >
+                            + Add block
+                          </button>
+                        </div>
                       </div>
 
-                      {/* Days grid */}
-                      <div className="mt-1 grid grid-cols-7 gap-1 text-xs">
-                        {(() => {
-                          const cells: (CalendarDay | null)[] = [];
-                          if (currentMonth.days.length > 0) {
-                            const firstDow = currentMonth.days[0].dow;
-                            for (let i = 0; i < firstDow; i++) {
-                              cells.push(null);
-                            }
-                            for (const d of currentMonth.days) {
-                              cells.push(d);
-                            }
-                            while (cells.length % 7 !== 0) {
-                              cells.push(null);
-                            }
-                          }
-                          return cells.map((cell, idx) => {
-                            if (!cell) {
-                              return <div key={idx} className="h-8 min-w-0" />;
-                            }
-                            const iso = cell.iso;
-                            const isPast = iso < TODAY_ISO;
-                            const isSelected = iso === selectedDate;
-                            const hasBlocks = datesWithBlocks.has(iso);
-                            const isToday = iso === TODAY_ISO;
-                            if (isPast) {
-                              return (
-                                <span
-                                  key={iso}
-                                  title="Past date – not selectable"
-                                  className="flex h-8 w-full min-w-0 cursor-not-allowed items-center justify-center rounded-full border border-cream-100 bg-gray-50/80 text-xs font-medium text-gray-400"
-                                  aria-hidden
-                                >
-                                  {cell.dom}
-                                </span>
-                              );
-                            }
-                            return (
-                              <button
-                                key={iso}
-                                type="button"
-                                onClick={() => setAddDate(iso)}
-                                className={[
-                                  "flex h-8 w-full min-w-0 items-center justify-center rounded-full border text-xs font-medium transition",
-                                  isSelected
-                                    ? "border-cta bg-cta text-white shadow-sm"
-                                    : hasBlocks
-                                      ? "border-cta/40 bg-cta/10 text-cta"
-                                      : "border-transparent text-gray-700 hover:border-cream-300 hover:bg-cream-100",
-                                  isToday && !isSelected ? "ring-1 ring-cta/40" : "",
-                                ]
-                                  .filter(Boolean)
-                                  .join(" ")}
-                              >
-                                {cell.dom}
-                              </button>
-                            );
-                          });
-                        })()}
+                      {/* Blocks for selected day */}
+                      <div className="rounded-2xl border border-cream-200 bg-white p-6 shadow-sm">
+                        <h2 className="text-sm font-semibold text-gray-800">Blocks for {formatDate(selectedDate)}</h2>
+                        <p className="mt-0.5 text-xs text-gray-500">Times in Pacific Time (PST)</p>
+                        {blocksForSelected.length === 0 ? (
+                          <div className="mt-4 rounded-xl border border-dashed border-cream-300 bg-cream-50 p-6 text-center">
+                            <p className="text-sm text-gray-400">No blocks for this day yet.</p>
+                            <p className="mt-1 text-xs text-gray-400">Use the form above to add one.</p>
+                          </div>
+                        ) : (
+                          <div className="mt-4 space-y-3">
+                            {blocksForSelected.map((b) => blockCard(b))}
+                          </div>
+                        )}
                       </div>
-                    </>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="rounded-2xl border border-cream-200 bg-white p-6 shadow-sm">
+                    <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <h2 className="text-sm font-semibold text-gray-800">All availability blocks</h2>
+                        <p className="mt-0.5 text-xs text-gray-500">Next {AVAILABILITY_DAYS_AHEAD} days · Pacific Time</p>
+                      </div>
+                      <label className="flex items-center gap-2 text-xs text-gray-600">
+                        Filter:
+                        <select
+                          value={allBlocksFilterDate}
+                          onChange={(e) => setAllBlocksFilterDate(e.target.value === "all" ? "all" : normalizeDate(e.target.value))}
+                          className="rounded-lg border border-cream-200 bg-cream-50 px-3 py-1.5 text-xs focus:border-cta focus:outline-none"
+                        >
+                          <option value="all">All dates</option>
+                          {uniqueBlockDates.map((d) => (
+                            <option key={d} value={d}>{formatDate(d)}</option>
+                          ))}
+                        </select>
+                      </label>
+                    </div>
+
+                    {(allBlocksFilterDate === "all" ? allBlocksSorted : allBlocksSorted.filter((b) => normalizeDate(b.date) === allBlocksFilterDate)).length === 0 ? (
+                      <div className="rounded-xl border border-dashed border-cream-300 bg-cream-50 p-8 text-center">
+                        <p className="text-sm text-gray-400">No availability blocks saved yet.</p>
+                        <p className="mt-1 text-xs text-gray-400">Switch to Day view to add blocks.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {(allBlocksFilterDate === "all" ? allBlocksSorted : allBlocksSorted.filter((b) => normalizeDate(b.date) === allBlocksFilterDate))
+                          .map((b) => blockCard(b, true))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Save bar */}
+                <div className="mt-6 flex flex-wrap items-center gap-3 rounded-2xl border border-cream-200 bg-white px-6 py-4 shadow-sm">
+                  <button
+                    type="button"
+                    onClick={save}
+                    disabled={saving}
+                    className="btn-primary disabled:opacity-60"
+                  >
+                    {saving ? (
+                      <span className="flex items-center gap-2">
+                        <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                        </svg>
+                        Saving…
+                      </span>
+                    ) : "Save availability"}
+                  </button>
+                  <Link href="/doctor" className="btn-secondary">Cancel</Link>
+                  {saveMessage === "saved" && (
+                    <span className="flex items-center gap-1.5 text-sm font-medium text-green-700">
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                      Availability saved!
+                    </span>
+                  )}
+                  {saveMessage === "error" && (
+                    <span className="text-sm font-medium text-red-600">Save failed. Please try again.</span>
                   )}
                 </div>
-
-                {/* Day editor */}
-                <div className="rounded-lg border border-cream-200 bg-white p-4">
-                  <h2 className="text-sm font-semibold text-gray-700">
-                    Add block for {formatDate(selectedDate)}
-                  </h2>
-                  <p className="mt-1 text-xs text-gray-500">
-                    Choose a start and end time to add a new availability block for this day.
-                  </p>
-                  <div className="mt-3 flex flex-wrap items-end gap-3">
-              <div>
-                      <label className="block text-xs text-gray-500">From (PST)</label>
-                <input
-                  type="time"
-                  value={addStart}
-                  onChange={(e) => setAddStart(e.target.value)}
-                  className="mt-0.5 rounded border border-cream-200 px-2 py-1.5 text-sm"
-                />
-              </div>
-              <div>
-                      <label className="block text-xs text-gray-500">To (PST)</label>
-                <input
-                  type="time"
-                  value={addEnd}
-                  onChange={(e) => setAddEnd(e.target.value)}
-                  className="mt-0.5 rounded border border-cream-200 px-2 py-1.5 text-sm"
-                />
-              </div>
-              <button
-                type="button"
-                onClick={addBlock}
-                className="rounded bg-cta px-3 py-1.5 text-sm font-medium text-white hover:opacity-90"
-              >
-                Add block
-              </button>
-                  </div>
-            </div>
-          </div>
-
-          <div className="mt-6">
-                <h2 className="text-sm font-semibold text-gray-700">
-                  Blocks for {formatDate(selectedDate)}
-                </h2>
-                <p className="mt-1 text-xs text-gray-500">Times are in Pacific Time (PST).</p>
-                {blocksForSelected.length === 0 ? (
-                  <p className="mt-2 text-sm text-gray-500">
-                    No blocks for this day yet. Use the form above to add one, then click Save.
-                  </p>
-                ) : (
-                  <ul className="mt-3 space-y-3 list-none p-0">
-                    {blocksForSelected.map((b) => (
-                      <li
-                        key={b.id}
-                        className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-cream-200 bg-white shadow-sm px-4 py-3 text-sm"
-                      >
-                        <div className="flex flex-col gap-1">
-                          <span className="font-medium text-navy">
-                            {formatTimeAmPm(b.date, b.startTime)} – {formatTimeAmPm(b.date, b.endTime)}
-                          </span>
-                          <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600">
-                            <span className="text-gray-500">Allow:</span>
-                            {DURATION_OPTIONS.map((dur) => {
-                              const allowed = getAllowedForBlock(b);
-                              const checked = allowed.includes(dur);
-                              return (
-                                <label key={dur} className="inline-flex items-center gap-1 cursor-pointer">
-                                  <input
-                                    type="checkbox"
-                                    checked={checked}
-                                    onChange={() => {
-                                      const next = checked
-                                        ? allowed.filter((x) => x !== dur)
-                                        : [...allowed, dur].sort((a, b) => a - b);
-                                      setAllowedForBlock(b.id, next.length ? next : [...DURATION_OPTIONS]);
-                                    }}
-                                    className="rounded border-cream-300"
-                                  />
-                                  {dur} min
-                                </label>
-                              );
-                            })}
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => removeBlock(b.id)}
-                          className="text-red-600 hover:underline text-sm shrink-0 ml-2"
-                        >
-                          Remove
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            </>
-              ) : (
-            <div className="mt-6">
-              <h2 className="text-sm font-semibold text-gray-700">
-                All blocks (next {AVAILABILITY_DAYS_AHEAD} days)
-              </h2>
-              <p className="mt-1 text-xs text-gray-500">
-                Times are in Pacific Time (PST). Use the filter to focus on a specific day.
-              </p>
-              <p className="mt-1 text-xs text-gray-600">
-                These blocks define when you&apos;re free. The specific 30/45/75 min slots that patients can book are set in the <strong>Offer slots</strong> tab.
-              </p>
-
-              <div className="mt-3 flex flex-wrap items-center gap-3">
-                <label className="text-xs text-gray-600">
-                  Filter by date:&nbsp;
-                  <select
-                    value={allBlocksFilterDate}
-                    onChange={(e) =>
-                      setAllBlocksFilterDate(
-                        e.target.value === "all" ? "all" : normalizeDate(e.target.value),
-                      )
-                    }
-                    className="mt-0.5 rounded border border-cream-200 px-2 py-1.5 text-xs"
-                  >
-                    <option value="all">All dates</option>
-                    {uniqueBlockDates.map((d) => (
-                      <option key={d} value={d}>
-                        {formatDate(d)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-
-              {(
-                allBlocksFilterDate === "all"
-                  ? allBlocksSorted
-                  : allBlocksSorted.filter((b) => normalizeDate(b.date) === allBlocksFilterDate)
-              ).length === 0 ? (
-                <p className="mt-2 text-sm text-gray-500">
-                  No availability blocks saved yet. Use the Day view to add blocks, then click Save.
-                </p>
-            ) : (
-              <ul className="mt-3 space-y-3 list-none p-0">
-                  {(allBlocksFilterDate === "all"
-                    ? allBlocksSorted
-                    : allBlocksSorted.filter((b) => normalizeDate(b.date) === allBlocksFilterDate)
-                  ).map((b) => (
-                    <li
-                      key={b.id}
-                      className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-cream-200 bg-white shadow-sm px-4 py-3 text-sm"
-                    >
-                      <div className="flex flex-col gap-1">
-                        <span className="font-medium text-navy">
-                          {formatDate(b.date)}
-                        </span>
-                        <span className="text-gray-600">
-                          {formatTimeAmPm(b.date, b.startTime)} – {formatTimeAmPm(b.date, b.endTime)}
-                        </span>
-                        <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600">
-                          <span className="text-gray-500">Allow:</span>
-                          {DURATION_OPTIONS.map((dur) => {
-                            const allowed = getAllowedForBlock(b);
-                            const checked = allowed.includes(dur);
-                            return (
-                              <label key={dur} className="inline-flex items-center gap-1 cursor-pointer">
-                                <input
-                                  type="checkbox"
-                                  checked={checked}
-                                  onChange={() => {
-                                    const next = checked
-                                      ? allowed.filter((x) => x !== dur)
-                                      : [...allowed, dur].sort((a, b) => a - b);
-                                    setAllowedForBlock(b.id, next.length ? next : [...DURATION_OPTIONS]);
-                                  }}
-                                  className="rounded border-cream-300"
-                                />
-                                {dur} min
-                              </label>
-                            );
-                          })}
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => removeBlock(b.id)}
-                        className="text-red-600 hover:underline text-sm shrink-0 ml-2"
-                      >
-                        Remove
-                      </button>
-                    </li>
-                  ))}
-              </ul>
+              </>
             )}
-          </div>
-              )}
-            </>
-          )}
-
-          {activeTab === "blocks" && (
-          <div className="mt-8 flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              onClick={save}
-              disabled={saving}
-              className="btn-primary"
-            >
-              {saving ? "Saving…" : "Save availability"}
-            </button>
-            <Link href="/doctor" className="btn-secondary">
-              Cancel
-            </Link>
-            {saveMessage === "saved" && (
-              <span className="text-sm font-medium text-green-700">Saved!</span>
-            )}
-            {saveMessage === "error" && (
-              <span className="text-sm font-medium text-red-700">Save failed. See alert.</span>
-            )}
-          </div>
-          )}
-        </>
-      )}
+          </>
+        )}
+      </div>
     </main>
   );
 }

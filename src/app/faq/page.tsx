@@ -89,12 +89,12 @@ export default function FAQPage() {
       <Header />
       <main
         className="relative min-h-screen py-16 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: "url(/4.jpeg)" }}
+        style={{ backgroundImage: "url(/faq-bg-v2.png)" }}
       >
-        <div className="absolute inset-0 z-0 bg-white/50" aria-hidden />
+        <div className="absolute inset-0 z-0 bg-white/45" aria-hidden />
         <div className="relative z-10 mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <h1 className="section-heading text-center">FAQs</h1>
-          <p className="mt-2 text-center text-sm font-medium uppercase tracking-wider text-cta">
+          <p className="mt-2 text-center text-sm font-medium uppercase tracking-wider text-navy/70">
             Frequently Asked Questions
           </p>
           <div className="mt-12 space-y-3 [&_details]:overflow-hidden [&_details]:rounded-xl [&_details]:border [&_details]:border-cream-200/80 [&_details]:bg-white [&_details]:shadow-[0_1px_3px_rgba(0,0,0,0.04)]">

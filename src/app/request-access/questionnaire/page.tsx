@@ -206,22 +206,25 @@ function QuestionnaireContent() {
 
   if (status === "success") {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="flex flex-col bg-cream-50/60">
         <Header />
-        <main className="flex-1 flex flex-col justify-center bg-cream-50 py-16">
-          <div className="mx-auto max-w-xl px-4 sm:px-6 lg:px-8 w-full">
-            <div className="rounded-md border border-cream-200 bg-white p-8 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-              <p className="font-medium text-cta">Thank you — we received your request.</p>
-              <p className="mt-3 text-sm leading-relaxed text-cta/90">
-                We have received your pre-screening questionnaire and will review it shortly.
-              </p>
-              <p className="mt-2 text-sm leading-relaxed text-cta/90">
-                We will let you know about the decision within 1–3 working days. If approved, we will email you with next steps to complete registration.
-              </p>
-              <Link href="/" className="mt-8 inline-block btn-primary">
-                Back to Home
-              </Link>
+        <main className="flex min-h-screen flex-col items-center justify-center px-4 py-20">
+          <div className="w-full max-w-md rounded-2xl border border-green-200 bg-white p-8 shadow-sm text-center">
+            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+              <svg className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
             </div>
+            <h2 className="text-xl font-bold text-navy">Questionnaire Received</h2>
+            <p className="mt-3 text-sm leading-relaxed text-gray-600">
+              We&apos;ve received your pre-screening questionnaire and will review it shortly.
+            </p>
+            <p className="mt-2 text-sm leading-relaxed text-gray-600">
+              We&apos;ll let you know within 1–3 working days. If approved, we&apos;ll email you next steps to complete registration.
+            </p>
+            <Link href="/" className="mt-7 inline-block btn-primary px-8">
+              Back to Home
+            </Link>
           </div>
         </main>
         <Footer />
@@ -231,22 +234,25 @@ function QuestionnaireContent() {
 
   if (status === "rejected") {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="flex flex-col bg-cream-50/60">
         <Header />
-        <main className="flex-1 flex flex-col justify-center bg-cream-50 py-16">
-          <div className="mx-auto max-w-xl px-4 sm:px-6 lg:px-8 w-full">
-            <div className="card border-yellow-200 bg-yellow-50">
-              <p className="font-medium text-yellow-800">Thank you for your interest.</p>
-              <p className="mt-2 text-sm text-yellow-700">
-                {rejectionReason}
-              </p>
-              <p className="mt-4 text-sm text-yellow-700">
-                If you have questions or concerns, please contact us directly.
-              </p>
-              <Link href="/" className="mt-6 inline-block btn-primary">
-                Back to Home
-              </Link>
+        <main className="flex min-h-screen flex-col items-center justify-center px-4 py-20">
+          <div className="w-full max-w-md rounded-2xl border border-amber-200 bg-white p-8 shadow-sm text-center">
+            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-amber-100">
+              <svg className="h-8 w-8 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+              </svg>
             </div>
+            <h2 className="text-xl font-bold text-navy">Thank You for Your Interest</h2>
+            <p className="mt-3 text-sm leading-relaxed text-gray-600">
+              Based on your pre-screening questionnaire responses, our practice may not be the most appropriate setting for your child&apos;s current needs.
+            </p>
+            <p className="mt-2 text-sm leading-relaxed text-gray-500">
+              If you have questions or concerns, please contact us directly.
+            </p>
+            <Link href="/" className="mt-7 inline-block btn-primary px-8">
+              Back to Home
+            </Link>
           </div>
         </main>
         <Footer />

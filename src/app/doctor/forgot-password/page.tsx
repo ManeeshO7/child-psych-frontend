@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Footer from "@/components/Footer";
 
 export default function DoctorForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -79,7 +78,6 @@ export default function DoctorForgotPasswordPage() {
           )}
         </div>
       </main>
-      <Footer />
     </div>
   );
 }

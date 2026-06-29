@@ -10,9 +10,9 @@ const config: Config = {
     extend: {
       colors: {
         navy: "#1E293B",
-        "header-footer": "#AFC7CE",
-        cta: "#7FAFC0",
-        "cta-hover": "#6799AA",
+        "header-footer": "#BDC9B0",
+        cta: "#7A9E84",
+        "cta-hover": "#5F8A6E",
         cream: {
           50: "#f8f7f4",
           100: "#f0eeea",

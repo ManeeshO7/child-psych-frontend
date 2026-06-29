@@ -30,7 +30,7 @@ export default function Contact() {
     <section id="contact" className="relative overflow-hidden py-28 sm:py-36">
       <div className="absolute inset-0 z-0">
         <Image
-          src="/contact.png"
+          src="/contact-bg.png"
           alt=""
           fill
           className="object-cover object-center"
@@ -40,11 +40,12 @@ export default function Contact() {
         <div className="absolute inset-0 bg-white/35" aria-hidden />
       </div>
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="lg:ml-[20%]">
         <h2 className="section-heading section-heading-accent text-3xl md:text-4xl">Contact</h2>
         <p className="mt-5 text-gray-600">
           Message us directly by filling out the form below and we will respond promptly.
         </p>
-        <div className="mt-14 grid gap-12 lg:grid-cols-2">
+        <div className="mt-14 grid gap-12 lg:grid-cols-[1.5fr_1fr]">
           <form onSubmit={handleSubmit} className="card space-y-6">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700">
@@ -112,6 +113,7 @@ export default function Contact() {
           </div>
         </div>
       </div>
+        </div>
     </section>
   );
 }

@@ -42,7 +42,7 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen flex-col bg-cream-50">
       <Header />
-      <main className="flex flex-1 flex-col items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+      <main className="flex flex-1 flex-col items-center justify-center min-h-screen px-4 py-12 sm:px-6 lg:px-8">
         <div className="w-full max-w-sm">
           <h1 className="section-heading">Patient Login</h1>
           <p className="mt-2 text-gray-600">

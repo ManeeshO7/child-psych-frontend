@@ -49,7 +49,7 @@ function RequestNewLinkForm({
     return (
       <div className={boxClass}>
         <h1 className="section-heading text-xl">Request new link</h1>
-        <p className="mt-2 text-sm text-cta/90">
+        <p className="mt-2 text-sm text-gray-600">
           If an account exists with that email, we&apos;ve sent a new link to set or reset your password. It expires in 24 hours. Check your inbox (and spam folder).
         </p>
         <Link href={backHref} className="mt-6 inline-block btn-primary">
@@ -62,11 +62,11 @@ function RequestNewLinkForm({
   return (
     <form onSubmit={handleRequestLink} className={`${boxClass} space-y-6`}>
       <h1 className="section-heading text-xl">Reset Password</h1>
-      <p className="text-sm text-cta/90">
+      <p className="text-sm text-gray-600">
         Use the link from your approval or password-reset email to set your password. If your link has expired or you never received one, enter your email below and we&apos;ll send a new link.
       </p>
       <div>
-        <label htmlFor="request-email" className="block text-sm font-medium text-cta">
+        <label htmlFor="request-email" className="block text-sm font-medium text-gray-700">
           Email
         </label>
         <input
@@ -151,7 +151,7 @@ function ResetPasswordForm() {
       <div className={boxClass}>
         <h1 className="section-heading text-xl">{isSetup ? "Set up your password" : "Reset Password"}</h1>
         <p className="mt-2 font-medium text-cta">{isSetup ? "Password created" : "Password updated"}</p>
-        <p className="mt-1 text-sm leading-relaxed text-cta/90">
+        <p className="mt-1 text-sm leading-relaxed text-gray-600">
           Use your email and the password you just set to sign in.
         </p>
         <Link href={backHref} className="mt-6 inline-block btn-primary">
@@ -164,13 +164,13 @@ function ResetPasswordForm() {
   return (
     <form onSubmit={handleSubmit} className={`${boxClass} space-y-6`}>
       <h1 className="section-heading text-xl">{isSetup ? "Set up your password" : "Reset Password"}</h1>
-      <p className="text-sm text-cta/90">
+      <p className="text-sm text-gray-600">
         {isSetup
           ? "Create a password for your account. This link expires in 24 hours."
           : "Set a new password using the secure link from your email. The link expires in 24 hours."}
       </p>
       <div>
-        <label htmlFor="password" className="block text-sm font-medium text-cta">
+        <label htmlFor="password" className="block text-sm font-medium text-gray-700">
           {isSetup ? "Password" : "New Password"} *
         </label>
         <input
@@ -185,7 +185,7 @@ function ResetPasswordForm() {
         <p className="mt-1 text-xs text-gray-500">At least 8 characters</p>
       </div>
       <div>
-        <label htmlFor="confirm" className="block text-sm font-medium text-cta">
+        <label htmlFor="confirm" className="block text-sm font-medium text-gray-700">
           Confirm Password *
         </label>
         <input
@@ -210,7 +210,7 @@ export default function ResetPasswordPage() {
   return (
     <div className="flex min-h-screen flex-col bg-cream-50">
       <Header />
-      <main className="flex flex-1 items-center py-12">
+      <main className="flex flex-1 items-center py-24 sm:py-32">
         <div className="mx-auto max-w-xl px-4 sm:px-6 lg:px-8">
           <Suspense fallback={<div className="rounded-md border border-cream-200 bg-white p-8 shadow-[0_1px_3px_rgba(0,0,0,0.04)]"><p className="text-cta/70">Loading…</p></div>}>
             <ResetPasswordForm />

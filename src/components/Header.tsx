@@ -50,6 +50,25 @@ export default function Header() {
   };
 
   const isPortal = pathname?.startsWith("/patient") || pathname?.startsWith("/doctor");
+  const isHome = pathname === "/";
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    if (!isHome) return;
+    const onScroll = () => setScrolled(window.scrollY > 60);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [isHome]);
+
+  const headerBg = isHome
+    ? scrolled
+      ? "bg-header-footer/95 backdrop-blur-md border-b border-cream-300/80 shadow-sm"
+      : "bg-transparent border-b border-white/10"
+    : "bg-header-footer border-b border-cream-300/80";
+
+  const logoColor = isHome && !scrolled ? "text-navy" : "text-cta";
+  const logoSubColor = isHome && !scrolled ? "text-navy/70" : "text-gray-600";
+  const navLinkColor = isHome && !scrolled ? "!text-navy hover:!text-cta" : "";
 
   const desktopNav = (
     <>
@@ -58,7 +77,7 @@ export default function Header() {
           <Link
             key={link.href}
             href={link.href}
-            className={`nav-link text-base font-medium ${
+            className={`nav-link text-base font-medium transition-colors duration-300 ${navLinkColor} ${
               pathname === link.href ? "text-cta-hover after:w-full" : ""
             }`}
           >
@@ -68,7 +87,7 @@ export default function Header() {
         <div className="relative">
           <button
             onClick={() => setPatientCenterOpen(!patientCenterOpen)}
-            className="flex items-center gap-1 text-base font-medium text-navy transition hover:text-cta-hover"
+            className={`flex items-center gap-1 text-base font-medium transition-colors duration-300 hover:text-cta-hover ${isHome && !scrolled ? "text-navy" : "text-navy"}`}
           >
             Book Appointment
             <svg
@@ -117,7 +136,7 @@ export default function Header() {
           </>
         ) : (
           <>
-            <Link href="/#contact" className="nav-link text-base font-medium">
+            <Link href="/#contact" className={`nav-link text-base font-medium transition-colors duration-300 ${navLinkColor}`}>
               Contact Us
             </Link>
             <a
@@ -136,11 +155,11 @@ export default function Header() {
   );
 
   return (
-    <header className="site-header sticky top-0 z-50 border-b border-cream-300/80 bg-header-footer">
+    <header className={`site-header ${isHome ? "fixed" : "sticky"} top-0 z-50 w-full transition-all duration-300 ${headerBg}`}>
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:h-24 lg:gap-6 lg:px-8">
         <Link href="/" className="flex shrink-0 flex-col items-start">
-          <span className="text-xl font-semibold tracking-tight text-cta sm:text-2xl">TP</span>
-          <span className="text-xs font-medium text-gray-600 sm:text-sm">TelePsych</span>
+          <span className={`text-xl font-semibold tracking-tight sm:text-2xl transition-colors duration-300 ${logoColor}`}>TP</span>
+          <span className={`text-xs font-medium sm:text-sm transition-colors duration-300 ${logoSubColor}`}>TelePsych</span>
         </Link>
 
         {desktopNav}
@@ -149,7 +168,7 @@ export default function Header() {
         <button
           type="button"
           onClick={mobileMenuOpen ? closeMobileMenu : openMobileMenu}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-navy transition hover:bg-cream-200/80 hover:text-cta lg:hidden"
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition hover:bg-cream-200/80 hover:text-cta lg:hidden ${isHome && !scrolled ? "text-navy" : "text-navy"}`}
           aria-expanded={mobileMenuOpen}
           aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
         >
