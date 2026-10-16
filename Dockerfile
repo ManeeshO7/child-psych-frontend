@@ -3,7 +3,10 @@ FROM node:20-alpine AS deps
 WORKDIR /app
 COPY package.json pnpm-lock.yaml* package-lock.json* yarn.lock* ./
 RUN corepack enable pnpm 2>/dev/null || true
-RUN if [ -f pnpm-lock.yaml ]; then pnpm install --frozen-lockfile; elif [ -f package-lock.json ]; then npm ci; else npm install; fi
+RUN if [ -f pnpm-lock.yaml ]; then \
+      pnpm install --frozen-lockfile --ignore-scripts && \
+      pnpm rebuild sharp unrs-resolver 2>/dev/null || true; \
+    elif [ -f package-lock.json ]; then npm ci; else npm install; fi
 
 FROM node:20-alpine AS builder
 WORKDIR /app
