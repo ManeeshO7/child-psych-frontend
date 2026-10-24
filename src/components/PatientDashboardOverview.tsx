@@ -138,6 +138,7 @@ export default function PatientDashboardOverview() {
       guardian2Phone?: string | null;
     } | null;
     user?: { firstName?: string; lastName?: string; phone?: string | null; email?: string };
+    intakeConfirmed?: boolean;
   } | null>(null);
   const [hasAssignedForms, setHasAssignedForms] = useState<boolean>(false);
   const [appointments, setAppointments] = useState<DashboardAppointment[]>([]);
@@ -153,6 +154,7 @@ export default function PatientDashboardOverview() {
   const [sessionLastActivityAtMs, setSessionLastActivityAtMs] = useState<number | null>(null);
   const [clockNow, setClockNow] = useState<number>(Date.now());
   const [loading, setLoading] = useState(true);
+  const [billingLoading, setBillingLoading] = useState(true);
   const [changeTimeAppointment, setChangeTimeAppointment] = useState<DashboardAppointment | null>(null);
   const [cancelTarget, setCancelTarget] = useState<{ id: string; label: string } | null>(null);
   const [profileComplete, setProfileComplete] = useState<boolean | null>(null);
@@ -252,17 +254,16 @@ export default function PatientDashboardOverview() {
 
   useEffect(() => {
     let cancelled = false;
-    async function load() {
+
+    // Fast critical path: only what the main dashboard view needs to render.
+    async function loadCritical() {
       try {
-        const [appRes, meRes, formsRes, pendingRes, profileRes, cardRes, historyRes, sessionRes] = await Promise.all([
+        const [appRes, meRes, formsRes, pendingRes, profileRes] = await Promise.all([
           fetch("/api/appointments/", { credentials: "include" }),
           fetch("/api/auth/me", { credentials: "include" }),
           fetch("/api/patient-forms/my-forms", { credentials: "include" }),
           fetch("/api/patient-forms/check-pending", { credentials: "include" }),
           fetch("/api/patient-profile/", { credentials: "include" }),
-          fetch("/api/payments/payment-method", { credentials: "include" }),
-          fetch("/api/payments/history?limit=5", { credentials: "include" }),
-          fetch("/api/auth/session", { credentials: "include" }),
         ]);
         if (appRes.status === 401 || meRes.status === 401) {
           router.push("/login");
@@ -291,6 +292,22 @@ export default function PatientDashboardOverview() {
           setFullProfile(profileData);
           setProfileComplete(profileData?.isComplete ?? null);
         }
+      } catch {
+        // ignore
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    // Slower, secondary data (hits Stripe): loads in after the page is already visible.
+    async function loadBilling() {
+      try {
+        const [cardRes, historyRes, sessionRes] = await Promise.all([
+          fetch("/api/payments/payment-method", { credentials: "include" }),
+          fetch("/api/payments/history?limit=5", { credentials: "include" }),
+          fetch("/api/auth/session", { credentials: "include" }),
+        ]);
+        if (cancelled) return;
         if (cardRes.ok) {
           const cardData = await cardRes.json().catch(() => null);
           setCardSummary(cardData && typeof cardData === "object" ? cardData as CardSummary : null);
@@ -312,10 +329,12 @@ export default function PatientDashboardOverview() {
       } catch {
         // ignore
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) setBillingLoading(false);
       }
     }
-    load();
+
+    loadCritical();
+    loadBilling();
     return () => {
       cancelled = true;
     };
@@ -329,8 +348,29 @@ export default function PatientDashboardOverview() {
   if (loading) {
     return (
       <main className="min-h-screen bg-cream-50/60 px-4 py-10 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-6xl">
-          <p className="text-gray-500">Loading…</p>
+        <div className="mx-auto max-w-6xl animate-pulse">
+          {/* Header banner skeleton */}
+          <div className="rounded-2xl bg-cream-200/70 p-6 sm:p-8">
+            <div className="flex items-center gap-4">
+              <div className="h-14 w-14 rounded-full bg-cream-300/80" />
+              <div className="space-y-2">
+                <div className="h-5 w-40 rounded bg-cream-300/80" />
+                <div className="h-3.5 w-28 rounded bg-cream-300/60" />
+              </div>
+            </div>
+          </div>
+
+          {/* Card grid skeleton */}
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="rounded-2xl border border-cream-200 bg-white p-5">
+                <div className="h-4 w-24 rounded bg-cream-200" />
+                <div className="mt-3 h-3.5 w-32 rounded bg-cream-100" />
+                <div className="mt-2 h-3.5 w-20 rounded bg-cream-100" />
+              </div>
+            ))}
+          </div>
+
         </div>
       </main>
     );
@@ -506,10 +546,33 @@ export default function PatientDashboardOverview() {
             <div className="min-w-0 flex-1">
               <p className="font-semibold text-amber-900">Complete your profile to book an appointment</p>
               <p className="mt-1 text-sm text-amber-800">
-                We need your name, date of birth, SSN, contact info, and preferred pharmacy before your orientation consult.
+                We need your name, date of birth, SSN, and contact info before your orientation consult.
               </p>
               <Link href="/patient/profile" className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-amber-700 px-4 py-2 text-sm font-medium text-white hover:bg-amber-800">
                 Complete profile
+                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                </svg>
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* ── Preferred pharmacy needed (now that clinical intake is confirmed) ── */}
+        {profileComplete !== false && fullProfile?.intakeConfirmed === true && !fullProfile?.profile?.preferredPharmacyName && (
+          <div className="mt-5 flex items-start gap-4 rounded-2xl border border-indigo-200 bg-indigo-50 p-5 shadow-sm">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-200 text-indigo-800">
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72m-13.5 8.65h3.75a.75.75 0 00.75-.75V13.5a.75.75 0 00-.75-.75H6.75a.75.75 0 00-.75.75v3.75c0 .415.336.75.75.75z" />
+              </svg>
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="font-semibold text-indigo-900">Add your preferred pharmacy</p>
+              <p className="mt-1 text-sm text-indigo-800">
+                Now that your clinical intake is scheduled, please add your preferred pharmacy so your doctor can send prescriptions if needed.
+              </p>
+              <Link href="/patient/profile" className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-800">
+                Add pharmacy
                 <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
                 </svg>
@@ -683,23 +746,32 @@ export default function PatientDashboardOverview() {
                 </div>
               </div>
               <div className="mt-4 flex-1 space-y-2">
-                {cardSummary?.hasCard ? (
-                  <div className="flex items-center gap-2">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-md bg-cta/10 text-cta">
-                      <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5m-19.5 3h19.5" />
-                      </svg>
-                    </span>
-                    <p className="text-sm font-medium text-navy">
-                      {(cardSummary.brand || "Card").toString().toUpperCase()} •••• {cardSummary.last4 || "—"}
-                    </p>
+                {billingLoading ? (
+                  <div className="animate-pulse space-y-2">
+                    <div className="h-4 w-36 rounded bg-cream-200" />
+                    <div className="h-3.5 w-28 rounded bg-cream-100" />
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-500">No card on file.</p>
+                  <>
+                    {cardSummary?.hasCard ? (
+                      <div className="flex items-center gap-2">
+                        <span className="flex h-7 w-7 items-center justify-center rounded-md bg-cta/10 text-cta">
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5m-19.5 3h19.5" />
+                          </svg>
+                        </span>
+                        <p className="text-sm font-medium text-navy">
+                          {(cardSummary.brand || "Card").toString().toUpperCase()} •••• {cardSummary.last4 || "—"}
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500">No card on file.</p>
+                    )}
+                    <p className="text-sm text-gray-500">
+                      {paymentHistory.length > 0 ? `${paymentHistory.length} recent payment${paymentHistory.length === 1 ? "" : "s"}` : "No payment history yet."}
+                    </p>
+                  </>
                 )}
-                <p className="text-sm text-gray-500">
-                  {paymentHistory.length > 0 ? `${paymentHistory.length} recent payment${paymentHistory.length === 1 ? "" : "s"}` : "No payment history yet."}
-                </p>
               </div>
               <div className="mt-4 flex flex-wrap gap-3">
                 <Link href="/patient/billing" className="text-sm font-medium text-cta hover:underline">View invoices →</Link>

@@ -84,14 +84,14 @@ export function CaliforniaAddressAutocomplete({
   // Load Maps JavaScript API with loading=async, then importLibrary('places') for Place Autocomplete (New)
   useEffect(() => {
     if (!apiKey) {
-      setLoadError("Google Maps API key is not configured.");
       return;
     }
 
     const handlePlacesReady = () => setScriptLoaded(true);
     const handlePlacesError = (e: Event) => {
       const ce = e as CustomEvent<string>;
-      setLoadError(ce.detail ?? "Failed to load Places library.");
+      console.error("Address autocomplete failed to load:", ce.detail);
+      setLoadError("Address search is temporarily unavailable. You can type your address manually.");
     };
 
     window.addEventListener(PLACES_READY_EVENT, handlePlacesReady);
@@ -128,10 +128,12 @@ export function CaliforniaAddressAutocomplete({
       script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&loading=async&callback=initCaliforniaAddressAutocomplete`;
       script.async = true;
       script.defer = true;
-      script.onerror = () =>
-        setLoadError(
+      script.onerror = () => {
+        console.error(
           "Failed to load Google Maps script. Check API key, Maps JavaScript API, Places API (New), and HTTP referrer restrictions."
         );
+        setLoadError("Address search is temporarily unavailable. You can type your address manually.");
+      };
       document.head.appendChild(script);
     }
 
@@ -169,9 +171,8 @@ export function CaliforniaAddressAutocomplete({
     }) => PlaceAutocompleteElementInstance) | undefined;
 
     if (!PlaceAutocompleteElement) {
-      setLoadError(
-        "PlaceAutocompleteElement not found. Ensure Places API (New) is enabled in Google Cloud Console."
-      );
+      console.error("PlaceAutocompleteElement not found. Ensure Places API (New) is enabled in Google Cloud Console.");
+      setLoadError("Address search is temporarily unavailable. You can type your address manually.");
       return;
     }
 
@@ -268,22 +269,34 @@ export function CaliforniaAddressAutocomplete({
       gmp-place-autocomplete {
         width: 100% !important;
         min-width: 0 !important;
-        min-height: 2.75rem !important;
+        height: 2.75rem !important;
+        max-height: 2.75rem !important;
         display: block !important;
-        border: 1px solid #d1d5db !important;
-        border-radius: 0.5rem !important;
+        border: 1px solid #e5e7eb !important;
+        border-radius: 0.75rem !important;
         box-sizing: border-box !important;
+        overflow: visible !important;
+        position: relative !important;
+        background-color: #ffffff !important;
+        color-scheme: light !important;
+      }
+      gmp-place-autocomplete:focus-within {
+        border-color: #7a9e84 !important;
+        box-shadow: 0 0 0 1px #7a9e84 !important;
       }
       gmp-place-autocomplete::part(input) {
         width: 100% !important;
         min-width: 0 !important;
-        min-height: 2.5rem !important;
+        height: 2.5rem !important;
+        max-height: 2.5rem !important;
         overflow: visible !important;
         padding: 0.5rem 0.75rem !important;
         font-size: 0.875rem !important;
         border: none !important;
         border-radius: inherit !important;
         box-sizing: border-box !important;
+        background-color: #ffffff !important;
+        color: #1e293b !important;
       }
     `;
     document.head.appendChild(style);
@@ -317,9 +330,6 @@ export function CaliforniaAddressAutocomplete({
     return (
       <div className="space-y-1">
         {fallbackInput}
-        <p className="text-xs text-amber-700">
-          Add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to .env to enable autocomplete.
-        </p>
         {restrictToCalifornia && (
           <p className="text-xs italic text-cta">
             Only California addresses are accepted. Visits must occur from California.
@@ -362,22 +372,18 @@ export function CaliforniaAddressAutocomplete({
               }
             }
           }}
-          className="mt-1 min-h-[2.75rem] w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-cta shadow-sm focus:border-cta focus:outline-none focus:ring-1 focus:ring-cta"
+          className="mt-1 min-h-[2.75rem] w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-navy shadow-sm focus:border-cta focus:outline-none focus:ring-1 focus:ring-cta"
           aria-label="California address (select all and press Delete or Backspace to clear)"
           title="Select the address and press Delete or Backspace to clear"
         />
       ) : null}
       <div
         ref={containerRef}
-        className="mt-1 flex w-full min-w-0 min-h-[2.75rem] items-center overflow-visible rounded-lg border border-gray-300 bg-white focus-within:border-cta focus-within:ring-1 focus-within:ring-cta [&_*]:outline-none [&_input]:min-h-[2.5rem] [&_input]:min-w-0 [&_input]:w-full [&_input]:flex-1 [&_input]:border-0 [&_input]:bg-transparent [&_input]:py-2 [&_input]:px-3 [&_input]:text-sm [&_input]:leading-normal [&_input]:outline-none [&_input]:ring-0 [&_input]:focus:outline-none [&_input]:focus:ring-0 [&_input]:placeholder:text-gray-400 [&_gmp-place-autocomplete]:w-full"
+        className="mt-1 flex w-full min-w-0 h-[2.75rem] items-center overflow-visible [&_*]:outline-none [&_input]:min-h-[2.5rem] [&_input]:min-w-0 [&_input]:w-full [&_input]:flex-1 [&_input]:border-0 [&_input]:bg-transparent [&_input]:py-2 [&_input]:px-3 [&_input]:text-sm [&_input]:leading-normal [&_input]:outline-none [&_input]:ring-0 [&_input]:focus:outline-none [&_input]:focus:ring-0 [&_input]:placeholder:text-gray-400 [&_gmp-place-autocomplete]:w-full"
         style={{ boxSizing: "border-box", display: value ? "none" : undefined }}
       />
       <input type="hidden" id={id} value={value} readOnly aria-hidden="true" tabIndex={-1} />
-      {loadError && (
-        <p className="text-xs text-amber-700">
-          {loadError} Check API key restrictions allow your domain (e.g. localhost).
-        </p>
-      )}
+      {loadError && <p className="text-xs text-amber-700">{loadError}</p>}
       {restrictToCalifornia && (
         <p className="text-xs italic text-cta">
           Only California addresses are accepted. Visits must occur from California.

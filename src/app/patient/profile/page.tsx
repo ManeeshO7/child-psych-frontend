@@ -16,7 +16,10 @@ type PatientDocument = {
 
 type ProfileData = {
   profile: {
+    preferredName?: string | null;
     sex?: string | null;
+    race?: string | null;
+    preferredLanguage?: string | null;
     dateOfBirth?: string | null;
     ssn?: string | null;
     address?: string | null;
@@ -26,11 +29,14 @@ type ProfileData = {
     guardian1Name?: string | null;
     guardian1Relationship?: string | null;
     guardian1Phone?: string | null;
+    guardian1Email?: string | null;
     guardian2Name?: string | null;
     guardian2Relationship?: string | null;
     guardian2Phone?: string | null;
+    guardian2Email?: string | null;
   } | null;
   isComplete: boolean;
+  intakeConfirmed?: boolean;
   lastUpdatedAt?: string | null;
   user: {
     firstName?: string;
@@ -40,7 +46,7 @@ type ProfileData = {
   };
 };
 
-const REQUIRED_PROFILE_FIELDS = [
+const BASE_REQUIRED_PROFILE_FIELDS = [
   { key: "firstName", label: "First name" },
   { key: "lastName", label: "Last name" },
   { key: "phone", label: "Phone" },
@@ -48,13 +54,24 @@ const REQUIRED_PROFILE_FIELDS = [
   { key: "sex", label: "Gender" },
   { key: "dateOfBirth", label: "Date of birth" },
   { key: "ssn", label: "SSN" },
-  { key: "preferredPharmacyName", label: "Preferred pharmacy" },
-  { key: "preferredPharmacyAddress", label: "Preferred pharmacy address" },
   { key: "guardian1Name", label: "Parent 1 name" },
   { key: "guardian1Relationship", label: "Parent 1 relationship" },
   { key: "guardian1Phone", label: "Parent 1 phone" },
   { key: "guardian1Address", label: "Parent 1 address" },
 ] as const;
+
+const PHARMACY_REQUIRED_PROFILE_FIELDS = [
+  { key: "preferredPharmacyName", label: "Preferred pharmacy" },
+  { key: "preferredPharmacyAddress", label: "Preferred pharmacy address" },
+] as const;
+
+// Preferred pharmacy is only collected (and required) once the patient has a
+// confirmed clinical intake appointment.
+function getRequiredProfileFields(intakeConfirmed: boolean) {
+  return intakeConfirmed
+    ? [...BASE_REQUIRED_PROFILE_FIELDS, ...PHARMACY_REQUIRED_PROFILE_FIELDS]
+    : BASE_REQUIRED_PROFILE_FIELDS;
+}
 
 function formatSsn(digits: string): string {
   const d = (digits || "").replace(/\D/g, "").slice(0, 9);
@@ -78,11 +95,15 @@ export default function PatientProfilePage() {
   const [fieldErrors, setFieldErrors] = useState<Set<string>>(new Set());
   const [data, setData] = useState<ProfileData | null>(null);
   const [canBookOrientation, setCanBookOrientation] = useState(false);
+  const [intakeConfirmed, setIntakeConfirmed] = useState(false);
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
+    preferredName: "",
     phone: "",
     sex: "",
+    race: "",
+    preferredLanguage: "",
     dateOfBirth: "",
     ssn: "",
     address: "",
@@ -92,10 +113,12 @@ export default function PatientProfilePage() {
     guardian1Name: "",
     guardian1Relationship: "",
     guardian1Phone: "",
+    guardian1Email: "",
     guardian1Address: "",
     guardian2Name: "",
     guardian2Relationship: "",
     guardian2Phone: "",
+    guardian2Email: "",
     guardian2Address: "",
   });
 
@@ -211,11 +234,15 @@ export default function PatientProfilePage() {
       if (!res.ok) throw new Error("Failed to load profile");
       const d = await res.json();
       setData(d);
+      setIntakeConfirmed(Boolean(d.intakeConfirmed));
       setForm({
         firstName: d.user?.firstName ?? "",
         lastName: d.user?.lastName ?? "",
+        preferredName: d.profile?.preferredName ?? "",
         phone: (d.user?.phone ?? "").replace(/\D/g, "").slice(-10),
         sex: d.profile?.sex ?? "",
+        race: d.profile?.race ?? "",
+        preferredLanguage: d.profile?.preferredLanguage ?? "",
         dateOfBirth: d.profile?.dateOfBirth ?? "",
         ssn: (d.profile?.ssn ?? "").replace(/\D/g, "").slice(0, 9),
         address: d.profile?.address ?? "",
@@ -225,10 +252,12 @@ export default function PatientProfilePage() {
         guardian1Name: d.profile?.guardian1Name ?? "",
         guardian1Relationship: d.profile?.guardian1Relationship ?? "",
         guardian1Phone: (d.profile?.guardian1Phone ?? "").replace(/\D/g, "").slice(-10),
+        guardian1Email: d.profile?.guardian1Email ?? "",
         guardian1Address: d.profile?.guardian1Address ?? "",
         guardian2Name: d.profile?.guardian2Name ?? "",
         guardian2Relationship: d.profile?.guardian2Relationship ?? "",
         guardian2Phone: (d.profile?.guardian2Phone ?? "").replace(/\D/g, "").slice(-10),
+        guardian2Email: d.profile?.guardian2Email ?? "",
         guardian2Address: d.profile?.guardian2Address ?? "",
       });
 
@@ -266,8 +295,10 @@ export default function PatientProfilePage() {
     if (!form.sex.trim()) errors.add("sex");
     if (!form.dateOfBirth.trim()) errors.add("dateOfBirth");
     if (ssnDigits.length !== 9) errors.add("ssn");
-    if (!form.preferredPharmacyName.trim()) errors.add("preferredPharmacyName");
-    if (!form.preferredPharmacyAddress.trim()) errors.add("preferredPharmacyAddress");
+    if (intakeConfirmed) {
+      if (!form.preferredPharmacyName.trim()) errors.add("preferredPharmacyName");
+      if (!form.preferredPharmacyAddress.trim()) errors.add("preferredPharmacyAddress");
+    }
     if (!form.guardian1Name.trim()) errors.add("guardian1Name");
     if (!form.guardian1Relationship.trim()) errors.add("guardian1Relationship");
     if ((form.guardian1Phone ?? "").replace(/\D/g, "").length < 10) errors.add("guardian1Phone");
@@ -290,21 +321,26 @@ export default function PatientProfilePage() {
         body: JSON.stringify({
           firstName: form.firstName.trim() || undefined,
           lastName: form.lastName.trim() || undefined,
+          preferredName: form.preferredName.trim() || undefined,
           phone: form.phone.trim() ? `1${form.phone.trim()}` : undefined,
           sex: form.sex.trim() || undefined,
+          race: form.race.trim() || undefined,
+          preferredLanguage: form.preferredLanguage.trim() || undefined,
           dateOfBirth: form.dateOfBirth.trim() || undefined,
           ssn: (form.ssn ?? "").replace(/\D/g, "").slice(0, 9) || undefined,
           address: form.address.trim() || undefined,
-          preferredPharmacyName: form.preferredPharmacyName.trim() || undefined,
-          preferredPharmacyPhone: form.preferredPharmacyPhone.trim() || undefined,
-          preferredPharmacyAddress: form.preferredPharmacyAddress.trim() || undefined,
+          preferredPharmacyName: intakeConfirmed ? form.preferredPharmacyName.trim() || undefined : undefined,
+          preferredPharmacyPhone: intakeConfirmed ? form.preferredPharmacyPhone.trim() || undefined : undefined,
+          preferredPharmacyAddress: intakeConfirmed ? form.preferredPharmacyAddress.trim() || undefined : undefined,
           guardian1Name: form.guardian1Name.trim() || undefined,
           guardian1Relationship: form.guardian1Relationship.trim() || undefined,
           guardian1Phone: form.guardian1Phone.trim() ? `1${form.guardian1Phone.trim()}` : undefined,
+          guardian1Email: form.guardian1Email.trim() || undefined,
           guardian1Address: form.guardian1Address.trim() || undefined,
           guardian2Name: form.guardian2Name.trim() || undefined,
           guardian2Relationship: form.guardian2Relationship.trim() || undefined,
           guardian2Phone: form.guardian2Phone.trim() ? `1${form.guardian2Phone.trim()}` : undefined,
+          guardian2Email: form.guardian2Email.trim() || undefined,
           guardian2Address: form.guardian2Address.trim() || undefined,
         }),
       });
@@ -342,16 +378,25 @@ export default function PatientProfilePage() {
     );
   }
 
-  const completedRequiredCount = REQUIRED_PROFILE_FIELDS.filter((field) => {
+  const requiredProfileFields = getRequiredProfileFields(intakeConfirmed);
+  const completedRequiredCount = requiredProfileFields.filter((field) => {
     const value = form[field.key];
     if (field.key === "ssn") return (value || "").replace(/\D/g, "").length === 9;
     if (field.key === "phone") return (value || "").replace(/\D/g, "").length >= 10;
     return Boolean((value || "").trim());
   }).length;
-  const totalRequiredCount = REQUIRED_PROFILE_FIELDS.length;
+  const totalRequiredCount = requiredProfileFields.length;
   const remainingRequiredCount = totalRequiredCount - completedRequiredCount;
   const completionPercent = Math.round((completedRequiredCount / totalRequiredCount) * 100);
   const remainingLabel = remainingRequiredCount === 1 ? "field" : "fields";
+  const missingFieldLabels = requiredProfileFields
+    .filter((field) => {
+      const value = form[field.key];
+      if (field.key === "ssn") return (value || "").replace(/\D/g, "").length !== 9;
+      if (field.key === "phone") return (value || "").replace(/\D/g, "").length < 10;
+      return !(value || "").trim();
+    })
+    .map((field) => field.label);
   const lastUpdatedLabel = data?.lastUpdatedAt
     ? new Date(data.lastUpdatedAt).toLocaleString("en-US", { dateStyle: "long", timeStyle: "short" })
     : null;
@@ -430,7 +475,7 @@ export default function PatientProfilePage() {
             <div>
               <p className="font-semibold text-amber-900">Required information missing</p>
               <p className="mt-0.5 text-sm text-amber-800">
-                Please fill in: Name, Contact info, Address, Gender, Date of Birth, SSN, Preferred Pharmacy, and Parent 1 details.
+                Please fill in: {missingFieldLabels.join(", ")}.
               </p>
               <p className="mt-1 text-xs text-amber-700">Once complete, you can book your orientation consultation.</p>
             </div>
@@ -475,7 +520,7 @@ export default function PatientProfilePage() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6.75a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.25a7.5 7.5 0 0115 0" />
                   </svg>
                 </span>
-                <h2 className="font-semibold text-navy">Patient name &amp; contact</h2>
+                <h2 className="font-semibold text-navy">Patient Information</h2>
               </div>
             </div>
             <div className="p-6">
@@ -489,6 +534,23 @@ export default function PatientProfilePage() {
                   <label className={labelClass}>Last name *</label>
                   <input type="text" value={form.lastName} onChange={(e) => { setForm((f) => ({ ...f, lastName: e.target.value })); setFieldErrors((s) => { const n = new Set(s); n.delete("lastName"); return n; }); }} required className={inp("lastName")} />
                   {fieldErrors.has("lastName") && <p className="mt-1 text-xs text-red-500">Last name is required.</p>}
+                </div>
+              </div>
+              <div className="mt-5 grid gap-5 sm:grid-cols-2">
+                <div>
+                  <label className={labelClass}>Preferred name <span className="font-normal text-gray-400">(optional)</span></label>
+                  <input
+                    type="text"
+                    value={form.preferredName}
+                    onChange={(e) => setForm((f) => ({ ...f, preferredName: e.target.value }))}
+                    placeholder="What would you like to be called?"
+                    className={inp("_optional")}
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>Date of birth *</label>
+                  <input type="date" value={form.dateOfBirth} onChange={(e) => { setForm((f) => ({ ...f, dateOfBirth: e.target.value })); if (e.target.value) setFieldErrors((s) => { const n = new Set(s); n.delete("dateOfBirth"); return n; }); }} required className={inp("dateOfBirth")} />
+                  {fieldErrors.has("dateOfBirth") && <p className="mt-1 text-xs text-red-500">Date of birth is required.</p>}
                 </div>
               </div>
               <div className="mt-5">
@@ -549,10 +611,28 @@ export default function PatientProfilePage() {
                   {fieldErrors.has("sex") && <p className="mt-1 text-xs text-red-500">Gender is required.</p>}
                 </div>
                 <div>
-                  <label className={labelClass}>Date of birth *</label>
-                  <input type="date" value={form.dateOfBirth} onChange={(e) => { setForm((f) => ({ ...f, dateOfBirth: e.target.value })); if (e.target.value) setFieldErrors((s) => { const n = new Set(s); n.delete("dateOfBirth"); return n; }); }} required className={inp("dateOfBirth")} />
-                  {fieldErrors.has("dateOfBirth") && <p className="mt-1 text-xs text-red-500">Date of birth is required.</p>}
+                  <label className={labelClass}>Race <span className="font-normal text-gray-400">(optional)</span></label>
+                  <select value={form.race} onChange={(e) => setForm((f) => ({ ...f, race: e.target.value }))} className={inp("_optional")}>
+                    <option value="">Select</option>
+                    <option value="american_indian_alaska_native">American Indian or Alaska Native</option>
+                    <option value="asian">Asian</option>
+                    <option value="black_african_american">Black or African American</option>
+                    <option value="native_hawaiian_pacific_islander">Native Hawaiian or Other Pacific Islander</option>
+                    <option value="white">White</option>
+                    <option value="two_or_more">Two or more races</option>
+                    <option value="prefer_not_to_say">Prefer not to say</option>
+                  </select>
                 </div>
+              </div>
+              <div className="mt-5">
+                <label className={labelClass}>Preferred language <span className="font-normal text-gray-400">(optional)</span></label>
+                <input
+                  type="text"
+                  value={form.preferredLanguage}
+                  onChange={(e) => setForm((f) => ({ ...f, preferredLanguage: e.target.value }))}
+                  placeholder="e.g. English, Spanish, Mandarin"
+                  className={inp("_optional")}
+                />
               </div>
               <div className="mt-5">
                 <div className="flex items-center justify-between">
@@ -583,53 +663,55 @@ export default function PatientProfilePage() {
             </div>
           </div>
 
-          {/* ── Preferred pharmacy ── */}
-          <div className="rounded-2xl border-2 border-gray-300 bg-white shadow-sm">
-            <div className="rounded-t-2xl border-b-2 border-gray-300 bg-gray-50 px-6 py-4">
-              <div className="flex items-center gap-3">
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-500">
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72m-13.5 8.65h3.75a.75.75 0 00.75-.75V13.5a.75.75 0 00-.75-.75H6.75a.75.75 0 00-.75.75v3.75c0 .415.336.75.75.75z" />
-                  </svg>
-                </span>
-                <h2 className="font-semibold text-navy">Preferred pharmacy *</h2>
-              </div>
-            </div>
-            <div className="p-6 space-y-5">
-              <div>
-                <label className={labelClass}>Pharmacy name *</label>
-                <input type="text" value={form.preferredPharmacyName} onChange={(e) => { setForm((f) => ({ ...f, preferredPharmacyName: e.target.value })); if (e.target.value.trim()) setFieldErrors((s) => { const n = new Set(s); n.delete("preferredPharmacyName"); return n; }); }} required placeholder="e.g. CVS, Walgreens" className={inp("preferredPharmacyName")} />
-                {fieldErrors.has("preferredPharmacyName") && <p className="mt-1 text-xs text-red-500">Pharmacy name is required.</p>}
-              </div>
-              <div>
-                <label className={labelClass}>Pharmacy phone</label>
-                <div className="mt-1 flex overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm focus-within:border-cta focus-within:ring-1 focus-within:ring-cta">
-                  <span className="flex items-center border-r border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-500">+1</span>
-                  <input
-                    type="tel"
-                    inputMode="numeric"
-                    maxLength={10}
-                    value={form.preferredPharmacyPhone}
-                    onChange={(e) => { const digits = e.target.value.replace(/\D/g, "").slice(0, 10); setForm((f) => ({ ...f, preferredPharmacyPhone: digits })); }}
-                    placeholder="2175551234"
-                    className="w-full border-0 bg-transparent px-3.5 py-2.5 text-sm text-navy placeholder:text-gray-400 focus:ring-0"
-                  />
+          {/* ── Preferred pharmacy — only shown once a clinical intake is confirmed ── */}
+          {intakeConfirmed && (
+            <div className="rounded-2xl border-2 border-gray-300 bg-white shadow-sm">
+              <div className="rounded-t-2xl border-b-2 border-gray-300 bg-gray-50 px-6 py-4">
+                <div className="flex items-center gap-3">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-500">
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72m-13.5 8.65h3.75a.75.75 0 00.75-.75V13.5a.75.75 0 00-.75-.75H6.75a.75.75 0 00-.75.75v3.75c0 .415.336.75.75.75z" />
+                    </svg>
+                  </span>
+                  <h2 className="font-semibold text-navy">Preferred pharmacy *</h2>
                 </div>
               </div>
-              <div>
-                <label className={labelClass}>Pharmacy address *</label>
-                <CaliforniaAddressAutocomplete
-                  id="profile-pharmacy-address"
-                  value={form.preferredPharmacyAddress}
-                  onChange={(address) => { setForm((f) => ({ ...f, preferredPharmacyAddress: address })); if (address.trim()) setFieldErrors((s) => { const n = new Set(s); n.delete("preferredPharmacyAddress"); return n; }); }}
-                  placeholder="Start typing pharmacy California address…"
-                  required
-                  className={inp("preferredPharmacyAddress")}
-                />
-                {fieldErrors.has("preferredPharmacyAddress") && <p className="mt-1 text-xs text-red-500">Pharmacy address is required.</p>}
+              <div className="p-6 space-y-5">
+                <div>
+                  <label className={labelClass}>Pharmacy name *</label>
+                  <input type="text" value={form.preferredPharmacyName} onChange={(e) => { setForm((f) => ({ ...f, preferredPharmacyName: e.target.value })); if (e.target.value.trim()) setFieldErrors((s) => { const n = new Set(s); n.delete("preferredPharmacyName"); return n; }); }} required placeholder="e.g. CVS, Walgreens" className={inp("preferredPharmacyName")} />
+                  {fieldErrors.has("preferredPharmacyName") && <p className="mt-1 text-xs text-red-500">Pharmacy name is required.</p>}
+                </div>
+                <div>
+                  <label className={labelClass}>Pharmacy phone</label>
+                  <div className="mt-1 flex overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm focus-within:border-cta focus-within:ring-1 focus-within:ring-cta">
+                    <span className="flex items-center border-r border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-500">+1</span>
+                    <input
+                      type="tel"
+                      inputMode="numeric"
+                      maxLength={10}
+                      value={form.preferredPharmacyPhone}
+                      onChange={(e) => { const digits = e.target.value.replace(/\D/g, "").slice(0, 10); setForm((f) => ({ ...f, preferredPharmacyPhone: digits })); }}
+                      placeholder="2175551234"
+                      className="w-full border-0 bg-transparent px-3.5 py-2.5 text-sm text-navy placeholder:text-gray-400 focus:ring-0"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className={labelClass}>Pharmacy address *</label>
+                  <CaliforniaAddressAutocomplete
+                    id="profile-pharmacy-address"
+                    value={form.preferredPharmacyAddress}
+                    onChange={(address) => { setForm((f) => ({ ...f, preferredPharmacyAddress: address })); if (address.trim()) setFieldErrors((s) => { const n = new Set(s); n.delete("preferredPharmacyAddress"); return n; }); }}
+                    placeholder="Start typing pharmacy California address…"
+                    required
+                    className={inp("preferredPharmacyAddress")}
+                  />
+                  {fieldErrors.has("preferredPharmacyAddress") && <p className="mt-1 text-xs text-red-500">Pharmacy address is required.</p>}
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* ── Parent / Guardian details ── */}
           <div className="rounded-2xl border-2 border-gray-300 bg-white shadow-sm">
@@ -683,6 +765,10 @@ export default function PatientProfilePage() {
                     {fieldErrors.has("guardian1Phone") && <p className="mt-1 text-xs text-red-500">Valid 10-digit phone is required.</p>}
                   </div>
                   <div>
+                    <label className={labelClass}>Email <span className="font-normal text-gray-400">(optional)</span></label>
+                    <input type="email" value={form.guardian1Email} onChange={(e) => setForm((f) => ({ ...f, guardian1Email: e.target.value }))} placeholder="parent@example.com" className={inp("_optional")} />
+                  </div>
+                  <div>
                     <label className={labelClass}>Address *</label>
                     <CaliforniaAddressAutocomplete id="profile-guardian1-address" value={form.guardian1Address} onChange={(address) => { setForm((f) => ({ ...f, guardian1Address: address })); if (address.trim()) setFieldErrors((s) => { const n = new Set(s); n.delete("guardian1Address"); return n; }); }} placeholder="Start typing address…" restrictToCalifornia={false} required className={inp("guardian1Address")} />
                     {fieldErrors.has("guardian1Address") && <p className="mt-1 text-xs text-red-500">Parent 1 address is required.</p>}
@@ -694,7 +780,7 @@ export default function PatientProfilePage() {
               <div className="pt-6">
                 <div className="flex items-center gap-2 mb-4">
                   <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 text-xs font-bold text-gray-600">2</span>
-                  <h3 className="text-sm font-semibold text-navy">Parent 2 <span className="font-normal text-gray-400">(optional)</span></h3>
+                  <h3 className="text-sm font-semibold text-navy">Parent 2</h3>
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
@@ -719,6 +805,10 @@ export default function PatientProfilePage() {
                         className="w-full border-0 bg-transparent px-3.5 py-2.5 text-sm text-navy placeholder:text-gray-400 focus:ring-0"
                       />
                     </div>
+                  </div>
+                  <div>
+                    <label className={labelClass}>Email</label>
+                    <input type="email" value={form.guardian2Email} onChange={(e) => setForm((f) => ({ ...f, guardian2Email: e.target.value }))} placeholder="parent@example.com" className={inp("_optional")} />
                   </div>
                   <div>
                     <label className={labelClass}>Address</label>

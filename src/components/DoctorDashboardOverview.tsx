@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { getCalendarStatus, invalidateCalendarStatusCache } from "@/lib/calendarStatus";
 
 type PatientRequest = {
   id: string;
@@ -86,10 +87,13 @@ export default function DoctorDashboardOverview() {
     let cancelled = false;
     async function load() {
       try {
-        const [reqRes, appRes, calRes, patientsRes] = await Promise.all([
+        if (searchParams.get("calendar") === "connected" || searchParams.get("calendar") === "error") {
+          invalidateCalendarStatusCache();
+        }
+        const [reqRes, appRes, connected, patientsRes] = await Promise.all([
           fetch("/api/patient-requests/", { credentials: "include" }),
           fetch("/api/appointments/", { credentials: "include" }),
-          fetch("/api/auth/calendar-status", { credentials: "include" }),
+          getCalendarStatus(),
           fetch("/api/patient-forms/patients", { credentials: "include" }),
         ]);
         if (reqRes.status === 401 || appRes.status === 401) {
@@ -121,12 +125,7 @@ export default function DoctorDashboardOverview() {
               ? patientsData.patients.length
               : 0;
         setPatientCount(count);
-        if (calRes.ok) {
-          const cal = await calRes.json();
-          setCalendarConnected(cal.connected === true);
-        } else {
-          setCalendarConnected(false);
-        }
+        setCalendarConnected(connected);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -367,7 +366,7 @@ export default function DoctorDashboardOverview() {
         </section>
 
         {/* Quick actions */}
-        <div className="mt-6">
+        <div className="mt-6 space-y-3">
           <Link
             href="/doctor/availability"
             className="group flex items-center justify-between rounded-2xl border border-cream-200 bg-white px-6 py-5 shadow-sm transition hover:border-cta/30 hover:shadow-md"
@@ -381,6 +380,26 @@ export default function DoctorDashboardOverview() {
               <div>
                 <p className="text-sm font-semibold text-gray-800 group-hover:text-cta transition-colors">Manage Availability</p>
                 <p className="text-xs text-gray-500">Set your available time blocks so patients can book appointments.</p>
+              </div>
+            </div>
+            <svg className="h-4 w-4 text-gray-300 transition-colors group-hover:text-cta" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
+
+          <Link
+            href="/doctor/forms"
+            className="group flex items-center justify-between rounded-2xl border border-cream-200 bg-white px-6 py-5 shadow-sm transition hover:border-cta/30 hover:shadow-md"
+          >
+            <div className="flex items-center gap-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-violet-600">
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-800 group-hover:text-cta transition-colors">Manage Forms</p>
+                <p className="text-xs text-gray-500">Edit, activate, or add new forms patients can be assigned.</p>
               </div>
             </div>
             <svg className="h-4 w-4 text-gray-300 transition-colors group-hover:text-cta" fill="none" stroke="currentColor" viewBox="0 0 24 24">
