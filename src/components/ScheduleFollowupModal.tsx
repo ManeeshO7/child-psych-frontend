@@ -206,16 +206,16 @@ export default function ScheduleFollowupModal({
 
   const modalContent = (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="schedule-followup-title">
-      <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-lg bg-white shadow-xl overscroll-contain">
-        <div className="border-b border-gray-200 px-6 py-4">
-          <h2 id="schedule-followup-title" className="text-xl font-semibold text-navy">Schedule follow-up</h2>
-          <p className="mt-1 text-sm text-gray-600">
+      <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-lg bg-white shadow-xl overscroll-contain dark:bg-neutral-800">
+        <div className="border-b border-gray-200 px-6 py-4 dark:border-neutral-700">
+          <h2 id="schedule-followup-title" className="text-xl font-semibold text-navy dark:text-cream-100">Schedule follow-up</h2>
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
             Schedule a follow-up for {patientName || "patient"}. They will be asked to add their card and confirm.
           </p>
         </div>
         <div className="px-6 py-4 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Follow-up type</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Follow-up type</label>
             <select
               value={type}
               onChange={(e) => {
@@ -223,7 +223,7 @@ export default function ScheduleFollowupModal({
                 setSelectedDate(null);
                 setSelectedSlot(null);
               }}
-              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm dark:bg-neutral-900 dark:border-neutral-600 dark:text-cream-100"
             >
               {effectiveTypes.includes("followup_med_30") && (
                 <option value="followup_med_30">30 min – Med management</option>
@@ -239,51 +239,51 @@ export default function ScheduleFollowupModal({
               type="checkbox"
               checked={requireFormsBeforeConfirm}
               onChange={(e) => setRequireFormsBeforeConfirm(e.target.checked)}
-              className="mt-1 h-4 w-4 rounded border-gray-300 text-cta focus:ring-cta"
+              className="mt-1 h-4 w-4 rounded border-gray-300 text-cta focus:ring-cta dark:border-neutral-600"
             />
-            <span className="text-sm text-gray-700">
+            <span className="text-sm text-gray-700 dark:text-gray-300">
               Require assigned forms to be completed before the patient can confirm this appointment
             </span>
           </label>
 
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             Times are shown in Pacific Time (America/Los_Angeles).
           </p>
 
           {slotsLoading ? (
-            <p className="text-gray-500">Loading available slots…</p>
+            <p className="text-gray-500 dark:text-gray-400">Loading available slots…</p>
           ) : sortedDates.length === 0 ? (
-            <div className="rounded-lg border border-cream-200 bg-cream-50 p-4 text-center">
-              <p className="text-gray-600">No available {durationMinutes}-min slots in the next 3 months.</p>
-              <p className="mt-1 text-sm text-gray-500">Add availability and offer {durationMinutes}-min slots in your calendar.</p>
+            <div className="rounded-lg border border-cream-200 bg-cream-50 p-4 text-center dark:border-neutral-700 dark:bg-neutral-900">
+              <p className="text-gray-600 dark:text-gray-300">No available {durationMinutes}-min slots in the next 3 months.</p>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Add availability and offer {durationMinutes}-min slots in your calendar.</p>
             </div>
           ) : (
             <>
-              <div className="rounded-xl border border-cream-200 bg-white p-4 shadow-sm">
-                <h3 className="text-sm font-semibold text-navy">1. Pick a date</h3>
+              <div className="rounded-xl border border-cream-200 bg-white p-4 shadow-sm dark:border-neutral-700 dark:bg-neutral-800">
+                <h3 className="text-sm font-semibold text-navy dark:text-cream-100">1. Pick a date</h3>
                 <div className="mt-3 flex items-center justify-between">
                   <button
                     type="button"
                     onClick={() => setCurrentMonthIndex((i) => Math.max(0, i - 1))}
                     disabled={currentMonthIndex === 0}
-                    className="rounded-lg border border-gray-200 bg-white p-2 text-gray-600 hover:bg-gray-50 disabled:opacity-40"
+                    className="rounded-lg border border-gray-200 bg-white p-2 text-gray-600 hover:bg-gray-50 disabled:opacity-40 dark:border-neutral-700 dark:bg-neutral-800 dark:text-gray-300 dark:hover:bg-neutral-700"
                     aria-label="Previous month"
                   >
                     ‹
                   </button>
-                  <span className="text-sm font-medium text-navy">{currentMonth?.label ?? ""}</span>
+                  <span className="text-sm font-medium text-navy dark:text-cream-100">{currentMonth?.label ?? ""}</span>
                   <button
                     type="button"
                     onClick={() => setCurrentMonthIndex((i) => Math.min(months.length - 1, i + 1))}
                     disabled={currentMonthIndex >= months.length - 1}
-                    className="rounded-lg border border-gray-200 bg-white p-2 text-gray-600 hover:bg-gray-50 disabled:opacity-40"
+                    className="rounded-lg border border-gray-200 bg-white p-2 text-gray-600 hover:bg-gray-50 disabled:opacity-40 dark:border-neutral-700 dark:bg-neutral-800 dark:text-gray-300 dark:hover:bg-neutral-700"
                     aria-label="Next month"
                   >
                     ›
                   </button>
                 </div>
                 <div className="mt-3">
-                  <div className="grid grid-cols-7 gap-1 text-center text-xs text-gray-500">
+                  <div className="grid grid-cols-7 gap-1 text-center text-xs text-gray-500 dark:text-gray-400">
                     {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
                       <div key={d}>{d}</div>
                     ))}
@@ -306,10 +306,10 @@ export default function ScheduleFollowupModal({
                           disabled={!hasSlots}
                           className={`aspect-square rounded-lg text-sm font-medium transition ${
                             !hasSlots
-                              ? "cursor-default text-gray-300"
+                              ? "cursor-default text-gray-300 dark:text-gray-600"
                               : isSelected
                                 ? "bg-cta text-white"
-                                : "bg-cream-50 text-cta hover:bg-cream-100"
+                                : "bg-cream-50 text-cta hover:bg-cream-100 dark:bg-neutral-700 dark:hover:bg-neutral-600"
                           }`}
                         >
                           {day}
@@ -321,9 +321,9 @@ export default function ScheduleFollowupModal({
               </div>
 
               {selectedDate && (
-                <div className="rounded-xl border border-cream-200 bg-white p-4 shadow-sm">
-                  <h3 className="text-sm font-semibold text-navy">2. Select a time slot</h3>
-                  <p className="mt-1 text-sm text-gray-600">
+                <div className="rounded-xl border border-cream-200 bg-white p-4 shadow-sm dark:border-neutral-700 dark:bg-neutral-800">
+                  <h3 className="text-sm font-semibold text-navy dark:text-cream-100">2. Select a time slot</h3>
+                  <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
                     {formatSlotDate(slotsForSelected[0]?.start ?? selectedDate)} · {typeLabel}
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2">
@@ -338,7 +338,7 @@ export default function ScheduleFollowupModal({
                           className={`rounded-lg border px-4 py-2 text-sm font-medium transition disabled:opacity-50 ${
                             isSelected
                               ? "border-cta bg-cta text-white"
-                              : "border-cream-200 bg-white text-cta hover:border-cta/50 hover:bg-cream-50"
+                              : "border-cream-200 bg-white text-cta hover:border-cta/50 hover:bg-cream-50 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700"
                           }`}
                         >
                           {formatSlotTime(slot.start)}
@@ -351,13 +351,13 @@ export default function ScheduleFollowupModal({
             </>
           )}
         </div>
-        {error && <div className="px-6 pb-2 text-sm text-red-600">{error}</div>}
-        <div className="border-t border-gray-200 px-6 py-4 flex justify-end gap-3">
+        {error && <div className="px-6 pb-2 text-sm text-red-600 dark:text-red-400">{error}</div>}
+        <div className="border-t border-gray-200 px-6 py-4 flex justify-end gap-3 dark:border-neutral-700">
           <button
             type="button"
             onClick={onClose}
             disabled={submitting}
-            className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+            className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-neutral-600 dark:bg-neutral-800 dark:text-gray-300 dark:hover:bg-neutral-700"
           >
             Cancel
           </button>

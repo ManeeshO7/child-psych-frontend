@@ -109,12 +109,12 @@ export default function DoctorLoginPage() {
       </div>
 
       {/* ── Right panel: form ── */}
-      <div className="flex flex-1 flex-col bg-[#f7f3ed]">
+      <div className="flex flex-1 flex-col bg-[#f7f3ed] dark:bg-neutral-900">
         {/* Mobile logo */}
         <div className="flex items-center justify-between px-6 pt-6 lg:hidden">
           <Link href="/" className="flex flex-col">
             <span className="text-xl font-bold text-cta">TP</span>
-            <span className="text-xs font-medium text-gray-500">TelePsych</span>
+            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">TelePsych</span>
           </Link>
         </div>
 
@@ -130,8 +130,8 @@ export default function DoctorLoginPage() {
                 <span className="h-1.5 w-1.5 rounded-full bg-cta animate-pulse" />
                 Secure Access
               </span>
-              <h1 className="mt-4 text-3xl font-bold text-navy">Welcome back</h1>
-              <p className="mt-1.5 text-sm text-gray-500">Sign in to your doctor portal</p>
+              <h1 className="mt-4 text-3xl font-bold text-navy dark:text-cream-100">Welcome back</h1>
+              <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400">Sign in to your doctor portal</p>
             </motion.div>
 
             {/* Form card */}
@@ -141,11 +141,11 @@ export default function DoctorLoginPage() {
               variants={fadeUp}
               initial="hidden"
               animate="show"
-              className="rounded-2xl bg-white p-8 shadow-[0_4px_32px_rgba(0,0,0,0.07)] ring-1 ring-black/[0.04]"
+              className="rounded-2xl bg-white p-8 shadow-[0_4px_32px_rgba(0,0,0,0.07)] ring-1 ring-black/[0.04] dark:bg-neutral-800"
             >
               {/* Email */}
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Email address
                 </label>
                 <input
@@ -155,14 +155,14 @@ export default function DoctorLoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   placeholder="doctor@telepsych.com"
-                  className="mt-2 block w-full rounded-xl border border-cream-200/80 bg-cream-50/50 px-4 py-3 text-navy placeholder:text-gray-300 shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition focus:border-cta focus:bg-white focus:outline-none focus:ring-2 focus:ring-cta/30"
+                  className="mt-2 block w-full rounded-xl border border-cream-200/80 bg-cream-50/50 px-4 py-3 text-navy placeholder:text-gray-300 shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition focus:border-cta focus:bg-white focus:outline-none focus:ring-2 focus:ring-cta/30 dark:border-neutral-600 dark:bg-neutral-900 dark:text-cream-100 dark:placeholder:text-gray-500 dark:focus:bg-neutral-900"
                 />
               </div>
 
               {/* Password */}
               <div className="mt-5">
                 <div className="flex items-center justify-between">
-                  <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Password
                   </label>
                   <Link href="/doctor/forgot-password" className="text-xs font-medium text-cta hover:underline">
@@ -177,12 +177,12 @@ export default function DoctorLoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     placeholder="••••••••"
-                    className="block w-full rounded-xl border border-cream-200/80 bg-cream-50/50 px-4 py-3 pr-12 text-navy placeholder:text-gray-300 shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition focus:border-cta focus:bg-white focus:outline-none focus:ring-2 focus:ring-cta/30"
+                    className="block w-full rounded-xl border border-cream-200/80 bg-cream-50/50 px-4 py-3 pr-12 text-navy placeholder:text-gray-300 shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition focus:border-cta focus:bg-white focus:outline-none focus:ring-2 focus:ring-cta/30 dark:border-neutral-600 dark:bg-neutral-900 dark:text-cream-100 dark:placeholder:text-gray-500 dark:focus:bg-neutral-900"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword((p) => !p)}
-                    className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 hover:text-cta transition-colors"
+                    className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 hover:text-cta transition-colors dark:text-gray-500"
                     aria-label={showPassword ? "Hide password" : "Show password"}
                   >
                     {showPassword
@@ -197,7 +197,7 @@ export default function DoctorLoginPage() {
                 <motion.p
                   initial={{ opacity: 0, y: -6 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="mt-4 rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-600 ring-1 ring-red-100"
+                  className="mt-4 rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-600 ring-1 ring-red-100 dark:bg-red-950/40 dark:text-red-300 dark:ring-red-800"
                 >
                   {error}
                 </motion.p>
@@ -224,7 +224,7 @@ export default function DoctorLoginPage() {
             </motion.form>
 
             {/* Footer links */}
-            <motion.div custom={2} variants={fadeUp} initial="hidden" animate="show" className="mt-6 text-center text-sm text-gray-500">
+            <motion.div custom={2} variants={fadeUp} initial="hidden" animate="show" className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
               Not a doctor?{" "}
               <Link href="/login" className="font-medium text-cta hover:underline">
                 Patient login

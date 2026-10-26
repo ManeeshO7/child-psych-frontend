@@ -9,7 +9,7 @@ export default function FaqAccordion({ items = [] }: { items?: FaqItem[] }) {
   const list = Array.isArray(items) ? items : [];
 
   return (
-    <div className="mt-6 space-y-0 rounded-xl border border-gray-200 bg-white/80 text-base shadow-sm">
+    <div className="mt-6 space-y-0 rounded-xl border border-gray-200 bg-white/80 text-base shadow-sm dark:border-neutral-700 dark:bg-neutral-800/80">
       {list.map((item, i) => {
         if (!item || typeof item.question !== "string") return null;
         const isOpen = openIndex === i;
@@ -17,7 +17,7 @@ export default function FaqAccordion({ items = [] }: { items?: FaqItem[] }) {
         return (
           <div
             key={i}
-            className="border-b border-gray-200 last:border-b-0"
+            className="border-b border-gray-200 last:border-b-0 dark:border-neutral-700"
           >
             <button
               type="button"
@@ -25,7 +25,7 @@ export default function FaqAccordion({ items = [] }: { items?: FaqItem[] }) {
               aria-controls={id}
               id={`faq-question-${i}`}
               onClick={() => setOpenIndex(isOpen ? null : i)}
-              className="flex w-full items-center justify-between gap-4 py-4 pl-5 pr-4 text-left font-semibold text-navy transition hover:bg-cream-100/80"
+              className="flex w-full items-center justify-between gap-4 py-4 pl-5 pr-4 text-left font-semibold text-navy transition hover:bg-cream-100/80 dark:text-cream-100 dark:hover:bg-neutral-700/80"
             >
               <span>{item.question}</span>
               <span
@@ -45,7 +45,7 @@ export default function FaqAccordion({ items = [] }: { items?: FaqItem[] }) {
               style={{ gridTemplateRows: isOpen ? "1fr" : "0fr" }}
             >
               <div className="overflow-hidden">
-                <p className="border-t border-gray-100 px-5 pb-4 pt-0 text-gray-700">{item.answer}</p>
+                <p className="border-t border-gray-100 px-5 pb-4 pt-0 text-gray-700 dark:border-neutral-700 dark:text-gray-300">{item.answer}</p>
               </div>
             </div>
           </div>

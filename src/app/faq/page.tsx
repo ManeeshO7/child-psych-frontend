@@ -91,20 +91,20 @@ export default function FAQPage() {
         className="relative min-h-screen py-16 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: "url(/faq-bg-v2.png)" }}
       >
-        <div className="absolute inset-0 z-0 bg-white/45" aria-hidden />
+        <div className="absolute inset-0 z-0 bg-white/45 dark:bg-neutral-900/75" aria-hidden />
         <div className="relative z-10 mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <h1 className="section-heading text-center">FAQs</h1>
-          <p className="mt-2 text-center text-sm font-medium uppercase tracking-wider text-navy/70">
+          <p className="mt-2 text-center text-sm font-medium uppercase tracking-wider text-navy/70 dark:text-cream-100/70">
             Frequently Asked Questions
           </p>
-          <div className="mt-12 space-y-3 [&_details]:overflow-hidden [&_details]:rounded-xl [&_details]:border [&_details]:border-cream-200/80 [&_details]:bg-white [&_details]:shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+          <div className="mt-12 space-y-3 [&_details]:overflow-hidden [&_details]:rounded-xl [&_details]:border [&_details]:border-cream-200/80 [&_details]:bg-white [&_details]:shadow-[0_1px_3px_rgba(0,0,0,0.04)] [&_details]:dark:border-neutral-700 [&_details]:dark:bg-neutral-800">
             {faqs.map((faq, index) => (
               <details key={faq.q} className="group">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-left transition-colors hover:bg-cream-50/50 [&::-webkit-details-marker]:hidden">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-left transition-colors hover:bg-cream-50/50 [&::-webkit-details-marker]:hidden dark:hover:bg-neutral-700/50">
                   <span className="font-semibold text-cta">{faq.q}</span>
                   <span className="inline-flex w-6 shrink-0 items-center justify-center text-lg font-bold text-cta after:content-['+'] group-open:after:content-['−']" />
                 </summary>
-                <div className="border-t border-cream-200/80 bg-cream-50/30">
+                <div className="border-t border-cream-200/80 bg-cream-50/30 dark:border-neutral-700 dark:bg-neutral-900/40">
                   <p className="whitespace-pre-line px-5 py-4 text-sm leading-relaxed text-cta">
                     {renderedAnswers[index]}
                   </p>

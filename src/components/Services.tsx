@@ -67,7 +67,7 @@ function IntroCard({ onWave }: { onWave: () => void }) {
   return (
     <motion.div
       variants={cardVariant}
-      className="relative col-span-2 flex min-h-[260px] flex-col overflow-hidden rounded-2xl bg-[#8FA88A] p-6 text-navy shadow-[0_4px_20px_rgba(0,0,0,0.08)] sm:col-span-1 sm:min-h-[420px] sm:p-8"
+      className="relative col-span-2 flex min-h-[260px] flex-col overflow-hidden rounded-2xl bg-[#8FA88A] p-6 text-navy shadow-[0_4px_20px_rgba(0,0,0,0.08)] sm:col-span-1 sm:min-h-[420px] sm:p-8 dark:text-neutral-900"
     >
       {/* Animated blob accent */}
       <motion.div
@@ -114,7 +114,7 @@ function ServiceCard({ service, wave, index }: { service: Service; wave: number;
       <motion.div
         variants={cardVariant}
         whileHover={{ y: -6, transition: { duration: 0.25, ease: "easeOut" } }}
-        className="flex h-full min-h-[340px] flex-col overflow-hidden rounded-2xl bg-cream-200 shadow-[0_2px_12px_rgba(0,0,0,0.06)] sm:min-h-[480px]"
+        className="flex h-full min-h-[340px] flex-col overflow-hidden rounded-2xl bg-cream-200 shadow-[0_2px_12px_rgba(0,0,0,0.06)] sm:min-h-[480px] dark:bg-neutral-800"
       >
         <button
           type="button"
@@ -131,7 +131,7 @@ function ServiceCard({ service, wave, index }: { service: Service; wave: number;
             >
               {/* Front */}
               <div className="absolute inset-0 overflow-hidden rounded-2xl [backface-visibility:hidden]">
-                <div className="relative h-full w-full bg-gray-100">
+                <div className="relative h-full w-full bg-gray-100 dark:bg-neutral-700">
                   <Image
                     src={service.image}
                     alt={service.alt}
@@ -158,11 +158,11 @@ function ServiceCard({ service, wave, index }: { service: Service; wave: number;
               </div>
 
               {/* Back */}
-              <div className="absolute inset-0 flex flex-col overflow-hidden rounded-2xl bg-cream-200 p-6 text-gray-700 [backface-visibility:hidden] [transform:rotateY(180deg)]">
+              <div className="absolute inset-0 flex flex-col overflow-hidden rounded-2xl bg-cream-200 p-6 text-gray-700 [backface-visibility:hidden] [transform:rotateY(180deg)] dark:bg-neutral-800 dark:text-gray-300">
                 <h3 className="text-xl font-semibold text-cta sm:text-2xl">{service.title}</h3>
                 <div className="mt-3 flex-1 overflow-auto pr-2 [-webkit-overflow-scrolling:touch]">
-                  <p className="text-base leading-relaxed text-gray-600">{service.description[0]}</p>
-                  <p className="mt-3 text-base leading-relaxed text-gray-600">{service.description[1]}</p>
+                  <p className="text-base leading-relaxed text-gray-600 dark:text-gray-300">{service.description[0]}</p>
+                  <p className="mt-3 text-base leading-relaxed text-gray-600 dark:text-gray-300">{service.description[1]}</p>
                 </div>
               </div>
             </div>
@@ -180,7 +180,7 @@ export default function Services() {
     <section id="services" className="relative overflow-hidden py-28 sm:py-36">
       <div className="absolute inset-0 z-0">
         <Image src="/services-bg.png" alt="" fill loading="lazy" className="object-cover object-center" sizes="100vw" />
-        <div className="absolute inset-0 bg-white/40" aria-hidden />
+        <div className="absolute inset-0 bg-white/40 dark:bg-neutral-900/70" aria-hidden />
       </div>
 
       <div className="relative z-10 mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8">

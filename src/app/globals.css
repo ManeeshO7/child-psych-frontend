@@ -21,7 +21,7 @@ html {
 }
 
 body {
-  @apply bg-cream-100 text-navy antialiased;
+  @apply bg-cream-100 text-navy antialiased dark:bg-neutral-900 dark:text-cream-100;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -40,17 +40,17 @@ body {
     @apply inline-flex items-center justify-center rounded-lg px-4 py-2.5 text-sm font-medium text-gray-600 transition-colors duration-200 hover:text-cta focus:outline-none focus:ring-2 focus:ring-cta/60 focus:ring-offset-2;
   }
   .section-heading {
-    @apply text-2xl font-semibold tracking-[-0.02em] text-navy md:text-3xl;
+    @apply text-2xl font-semibold tracking-[-0.02em] text-navy md:text-3xl dark:text-cream-100;
   }
   .section-heading-accent {
     @apply relative inline-block after:absolute after:bottom-[-6px] after:left-0 after:h-0.5 after:w-12 after:rounded-full after:bg-cta/60 after:content-[''];
   }
   /* Option B: white cards that stand out on light page */
   .card {
-    @apply rounded-2xl bg-white p-6 shadow-[0_8px_24px_rgba(0,0,0,0.04)] transition-shadow duration-300 hover:shadow-[0_8px_28px_rgba(0,0,0,0.08)];
+    @apply rounded-2xl bg-white p-6 shadow-[0_8px_24px_rgba(0,0,0,0.04)] transition-shadow duration-300 hover:shadow-[0_8px_28px_rgba(0,0,0,0.08)] dark:bg-neutral-800 dark:shadow-[0_8px_24px_rgba(0,0,0,0.3)];
   }
   .nav-link {
-    @apply relative text-navy after:absolute after:bottom-[-2px] after:left-0 after:h-0.5 after:w-0 after:bg-cta-hover after:transition-all after:duration-200 hover:text-cta-hover hover:after:w-full;
+    @apply relative text-navy after:absolute after:bottom-[-2px] after:left-0 after:h-0.5 after:w-0 after:bg-cta-hover after:transition-all after:duration-200 hover:text-cta-hover hover:after:w-full dark:text-cream-100;
   }
   /* Header nav: darker hover so links are visible on muted blue background */
   .site-header .nav-link::after {

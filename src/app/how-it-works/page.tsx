@@ -93,7 +93,7 @@ export default function HowItWorksPage() {
   return (
     <>
       <Header />
-      <main className="bg-gradient-to-br from-[#f5f0e8] via-[#eef4ec] to-[#e2ede4]">
+      <main className="bg-gradient-to-br from-[#f5f0e8] via-[#eef4ec] to-[#e2ede4] dark:from-neutral-900 dark:via-neutral-900 dark:to-neutral-800">
 
         {/* ── Hero ── */}
         <section className="relative min-h-[460px] w-full overflow-hidden py-28 sm:py-36">
@@ -108,10 +108,10 @@ export default function HowItWorksPage() {
               <span className="h-1.5 w-1.5 rounded-full bg-cta animate-pulse" />
               Your Journey to Care
             </motion.span>
-            <motion.h1 variants={fadeUp} className="mt-5 section-heading text-4xl text-navy sm:text-5xl md:text-6xl">
+            <motion.h1 variants={fadeUp} className="mt-5 section-heading text-4xl text-navy sm:text-5xl md:text-6xl dark:text-cream-100">
               How TelePsych Works
             </motion.h1>
-            <motion.p variants={fadeUp} className="mt-5 text-lg leading-relaxed text-gray-700 sm:text-xl">
+            <motion.p variants={fadeUp} className="mt-5 text-lg leading-relaxed text-gray-700 sm:text-xl dark:text-gray-300">
               Getting started is simple. Request access to our secure patient portal, complete your profile, and book your first appointment — all online.
             </motion.p>
             <motion.p variants={fadeUp} className="mt-3 text-base font-semibold text-cta">
@@ -124,7 +124,7 @@ export default function HowItWorksPage() {
                 </Link>
               </motion.div>
               <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
-                <Link href="#journey" className="inline-flex items-center rounded-xl border-2 border-cta/40 bg-white/60 px-8 py-3.5 text-base font-semibold text-cta backdrop-blur-sm transition hover:bg-white/80">
+                <Link href="#journey" className="inline-flex items-center rounded-xl border-2 border-cta/40 bg-white/60 px-8 py-3.5 text-base font-semibold text-cta backdrop-blur-sm transition hover:bg-white/80 dark:bg-neutral-800/60 dark:hover:bg-neutral-800/80">
                   See how it works
                 </Link>
               </motion.div>
@@ -133,7 +133,7 @@ export default function HowItWorksPage() {
         </section>
 
         {/* ── Care journey ── */}
-        <section id="journey" className="bg-[#d6e8d8] py-20 sm:py-28">
+        <section id="journey" className="bg-[#d6e8d8] py-20 sm:py-28 dark:bg-neutral-800">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <motion.div variants={stagger} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} className="flex flex-col items-start">
               <motion.span variants={fadeLeft} className="inline-flex items-center gap-2 rounded-full bg-cta/10 px-3.5 py-1 text-xs font-semibold uppercase tracking-widest text-cta ring-1 ring-cta/20">
@@ -142,7 +142,7 @@ export default function HowItWorksPage() {
               <motion.h2 variants={fadeLeft} className="mt-4 section-heading section-heading-accent text-2xl sm:text-3xl">
                 Your care journey
               </motion.h2>
-              <motion.p variants={fadeUp} className="mt-3 max-w-2xl text-base text-gray-600">
+              <motion.p variants={fadeUp} className="mt-3 max-w-2xl text-base text-gray-600 dark:text-gray-300">
                 From your first message to your first visit — here's exactly what to expect.
               </motion.p>
             </motion.div>
@@ -165,7 +165,7 @@ export default function HowItWorksPage() {
                     viewport={{ once: true }}
                     transition={{ delay: 0.1 + i * 0.15, duration: 0.7, ease }}
                     whileHover={{ y: -10, boxShadow: "0 16px 40px rgba(0,0,0,0.11)", transition: { duration: 0.22 } }}
-                    className="group relative flex flex-col overflow-hidden rounded-2xl bg-white p-6 shadow-[0_2px_16px_rgba(0,0,0,0.06)] ring-1 ring-black/[0.04]"
+                    className="group relative flex flex-col overflow-hidden rounded-2xl bg-white p-6 shadow-[0_2px_16px_rgba(0,0,0,0.06)] ring-1 ring-black/[0.04] dark:bg-neutral-900"
                   >
                     {/* Gradient fill on hover */}
                     <motion.div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-cta/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -187,8 +187,8 @@ export default function HowItWorksPage() {
                       <Icon className="h-5 w-5" strokeWidth={1.6} />
                     </motion.div>
 
-                    <h3 className="relative z-10 font-semibold text-navy">{title}</h3>
-                    <p className="relative z-10 mt-2 text-sm leading-relaxed text-gray-600">{body}</p>
+                    <h3 className="relative z-10 font-semibold text-navy dark:text-cream-100">{title}</h3>
+                    <p className="relative z-10 mt-2 text-sm leading-relaxed text-gray-600 dark:text-gray-300">{body}</p>
 
                     <motion.div
                       className="absolute bottom-0 left-0 right-0 h-[3px] rounded-b-2xl bg-gradient-to-r from-cta to-cta/40"
@@ -205,7 +205,7 @@ export default function HowItWorksPage() {
         </section>
 
         {/* ── Appointment types ── */}
-        <section className="bg-[#eef4ec] py-20 sm:py-28">
+        <section className="bg-[#eef4ec] py-20 sm:py-28 dark:bg-neutral-900">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <motion.div variants={stagger} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} className="flex flex-col items-start">
               <motion.span variants={fadeLeft} className="inline-flex items-center gap-2 rounded-full bg-cta/10 px-3.5 py-1 text-xs font-semibold uppercase tracking-widest text-cta ring-1 ring-cta/20">
@@ -214,7 +214,7 @@ export default function HowItWorksPage() {
               <motion.h2 variants={fadeLeft} className="mt-4 section-heading section-heading-accent text-2xl sm:text-3xl">
                 Appointment types
               </motion.h2>
-              <motion.p variants={fadeUp} className="mt-3 max-w-2xl text-base text-gray-600">
+              <motion.p variants={fadeUp} className="mt-3 max-w-2xl text-base text-gray-600 dark:text-gray-300">
                 Each appointment is designed for a specific stage of your care.
               </motion.p>
             </motion.div>
@@ -228,7 +228,7 @@ export default function HowItWorksPage() {
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.14, duration: 0.7, ease }}
                   whileHover={{ y: -10, transition: { duration: 0.22 } }}
-                  className={`group relative overflow-hidden rounded-2xl border p-8 shadow-[0_4px_24px_rgba(0,0,0,0.05)] transition-shadow hover:shadow-[0_10px_40px_rgba(0,0,0,0.10)] ${apt.featured ? "border-cta/30 bg-white ring-2 ring-cta/20" : "border-cream-300 bg-white"}`}
+                  className={`group relative overflow-hidden rounded-2xl border p-8 shadow-[0_4px_24px_rgba(0,0,0,0.05)] transition-shadow hover:shadow-[0_10px_40px_rgba(0,0,0,0.10)] ${apt.featured ? "border-cta/30 bg-white ring-2 ring-cta/20 dark:bg-neutral-800" : "border-cream-300 bg-white dark:border-neutral-700 dark:bg-neutral-800"}`}
                 >
                   {apt.featured && (
                     <span className="absolute right-4 top-4 rounded-full bg-cta px-3 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
@@ -246,7 +246,7 @@ export default function HowItWorksPage() {
                     {apt.icon}
                   </motion.span>
 
-                  <h3 className="relative z-10 mt-5 text-lg font-semibold text-navy">{apt.title}</h3>
+                  <h3 className="relative z-10 mt-5 text-lg font-semibold text-navy dark:text-cream-100">{apt.title}</h3>
 
                   <motion.span
                     className="relative z-10 mt-3 inline-block rounded-lg border border-cta/30 bg-cta/10 px-4 py-1.5 text-sm font-bold text-cta"
@@ -267,8 +267,8 @@ export default function HowItWorksPage() {
                     style={{ originX: 0 }}
                   />
 
-                  <p className="relative z-10 mt-4 text-sm leading-relaxed text-gray-700">{apt.desc}</p>
-                  <ul className="relative z-10 mt-4 space-y-1.5 text-sm text-gray-600">
+                  <p className="relative z-10 mt-4 text-sm leading-relaxed text-gray-700 dark:text-gray-300">{apt.desc}</p>
+                  <ul className="relative z-10 mt-4 space-y-1.5 text-sm text-gray-600 dark:text-gray-300">
                     {apt.bullets.map((b, bi) => (
                       <motion.li
                         key={b}
@@ -290,7 +290,7 @@ export default function HowItWorksPage() {
         </section>
 
         {/* ── After your first appointment ── */}
-        <section className="bg-[#d6e8d8] py-20 sm:py-28">
+        <section className="bg-[#d6e8d8] py-20 sm:py-28 dark:bg-neutral-800">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <motion.div variants={stagger} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} className="flex flex-col items-start">
               <motion.span variants={fadeLeft} className="inline-flex items-center gap-2 rounded-full bg-cta/10 px-3.5 py-1 text-xs font-semibold uppercase tracking-widest text-cta ring-1 ring-cta/20">
@@ -299,7 +299,7 @@ export default function HowItWorksPage() {
               <motion.h2 variants={fadeLeft} className="mt-4 section-heading section-heading-accent text-2xl sm:text-3xl">
                 After your first appointment
               </motion.h2>
-              <motion.p variants={fadeUp} className="mt-3 max-w-2xl text-base text-gray-600">
+              <motion.p variants={fadeUp} className="mt-3 max-w-2xl text-base text-gray-600 dark:text-gray-300">
                 Following your evaluation, your doctor will discuss next steps with you.
               </motion.p>
             </motion.div>
@@ -313,7 +313,7 @@ export default function HowItWorksPage() {
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.13, duration: 0.6, ease }}
                   whileHover={{ y: -8, boxShadow: `0 12px 32px ${item.glow}`, transition: { duration: 0.22 } }}
-                  className="group relative flex flex-col rounded-2xl bg-white p-6 shadow-[0_2px_16px_rgba(0,0,0,0.05)] ring-1 ring-black/[0.04] overflow-hidden"
+                  className="group relative flex flex-col rounded-2xl bg-white p-6 shadow-[0_2px_16px_rgba(0,0,0,0.05)] ring-1 ring-black/[0.04] overflow-hidden dark:bg-neutral-900"
                 >
                   <motion.span
                     className={`flex h-12 w-12 items-center justify-center rounded-xl ${item.color}`}
@@ -325,11 +325,11 @@ export default function HowItWorksPage() {
                   >
                     {item.icon}
                   </motion.span>
-                  <h3 className="mt-4 font-semibold text-navy">{item.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-gray-600">{item.desc}</p>
+                  <h3 className="mt-4 font-semibold text-navy dark:text-cream-100">{item.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-gray-600 dark:text-gray-300">{item.desc}</p>
 
                   {/* Number badge */}
-                  <span className="absolute right-4 top-4 flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 text-xs font-bold text-gray-400">
+                  <span className="absolute right-4 top-4 flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 text-xs font-bold text-gray-400 dark:bg-neutral-700 dark:text-gray-400">
                     {i + 1}
                   </span>
                 </motion.div>
@@ -339,7 +339,7 @@ export default function HowItWorksPage() {
         </section>
 
         {/* ── Patient portal ── */}
-        <section className="relative overflow-hidden bg-[#eef4ec] py-20 sm:py-28">
+        <section className="relative overflow-hidden bg-[#eef4ec] py-20 sm:py-28 dark:bg-neutral-900">
           <div className="pointer-events-none absolute -right-20 top-0 h-64 w-64 rounded-full bg-cta/8 blur-3xl" />
           <div className="pointer-events-none absolute -left-16 bottom-0 h-48 w-48 rounded-full bg-cta/8 blur-3xl" />
 
@@ -351,7 +351,7 @@ export default function HowItWorksPage() {
               <motion.h2 variants={fadeLeft} className="mt-4 section-heading section-heading-accent text-2xl sm:text-3xl">
                 Your secure patient portal
               </motion.h2>
-              <motion.p variants={fadeUp} className="mt-3 max-w-2xl text-base text-gray-600">
+              <motion.p variants={fadeUp} className="mt-3 max-w-2xl text-base text-gray-600 dark:text-gray-300">
                 Everything you need to manage your care — in one place, accessible any time.
               </motion.p>
             </motion.div>
@@ -365,7 +365,7 @@ export default function HowItWorksPage() {
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.14, duration: 0.7, ease }}
                   whileHover={{ y: -8, transition: { duration: 0.22 } }}
-                  className="group relative overflow-hidden rounded-2xl bg-white p-7 shadow-[0_2px_16px_rgba(0,0,0,0.05)] ring-1 ring-black/[0.04]"
+                  className="group relative overflow-hidden rounded-2xl bg-white p-7 shadow-[0_2px_16px_rgba(0,0,0,0.05)] ring-1 ring-black/[0.04] dark:bg-neutral-800"
                 >
                   {/* Top accent bar */}
                   <motion.div
@@ -388,8 +388,8 @@ export default function HowItWorksPage() {
                     {f.icon}
                   </motion.span>
 
-                  <h3 className="mt-5 font-semibold text-navy">{f.title}</h3>
-                  <ul className="mt-3 space-y-2 text-sm text-gray-600">
+                  <h3 className="mt-5 font-semibold text-navy dark:text-cream-100">{f.title}</h3>
+                  <ul className="mt-3 space-y-2 text-sm text-gray-600 dark:text-gray-300">
                     {f.bullets.map((b, bi) => (
                       <motion.li
                         key={b}
@@ -411,7 +411,7 @@ export default function HowItWorksPage() {
         </section>
 
         {/* ── Secure care + FAQ ── */}
-        <section className="bg-[#d6e8d8] py-20 sm:py-28">
+        <section className="bg-[#d6e8d8] py-20 sm:py-28 dark:bg-neutral-800">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid gap-16 lg:grid-cols-2 lg:gap-24 lg:items-start">
 
@@ -423,13 +423,13 @@ export default function HowItWorksPage() {
                 <motion.h2 variants={fadeLeft} className="mt-4 section-heading section-heading-accent text-2xl sm:text-3xl">
                   Secure and private care
                 </motion.h2>
-                <motion.p variants={fadeUp} className="mt-4 text-base font-semibold text-navy">
+                <motion.p variants={fadeUp} className="mt-4 text-base font-semibold text-navy dark:text-cream-100">
                   Protecting your privacy is a top priority.
                 </motion.p>
-                <motion.p variants={fadeUp} className="mt-3 text-base leading-relaxed text-gray-700">
+                <motion.p variants={fadeUp} className="mt-3 text-base leading-relaxed text-gray-700 dark:text-gray-300">
                   Our platform uses secure, encrypted telehealth technology designed to protect your personal health information and meet healthcare security standards.
                 </motion.p>
-                <motion.p variants={fadeUp} className="mt-3 text-base leading-relaxed text-gray-700">
+                <motion.p variants={fadeUp} className="mt-3 text-base leading-relaxed text-gray-700 dark:text-gray-300">
                   All appointments take place through secure video visits, allowing families to access care safely from home.
                 </motion.p>
                 <motion.div variants={stagger} className="mt-8 flex flex-col gap-3">
@@ -442,7 +442,7 @@ export default function HowItWorksPage() {
                       key={label}
                       variants={fadeLeft}
                       whileHover={{ x: 6, transition: { duration: 0.2 } }}
-                      className="inline-flex items-center gap-3 rounded-xl border border-cta/30 bg-white/90 px-5 py-3 text-sm font-medium text-navy shadow-sm cursor-default"
+                      className="inline-flex items-center gap-3 rounded-xl border border-cta/30 bg-white/90 px-5 py-3 text-sm font-medium text-navy shadow-sm cursor-default dark:bg-neutral-900/90 dark:text-cream-100"
                     >
                       <motion.span
                         className="text-cta"
@@ -497,7 +497,7 @@ export default function HowItWorksPage() {
         </section>
 
         {/* ── CTA ── */}
-        <section className="relative overflow-hidden bg-[#eef4ec] py-24 sm:py-32">
+        <section className="relative overflow-hidden bg-[#eef4ec] py-24 sm:py-32 dark:bg-neutral-900">
           <div className="pointer-events-none absolute -top-12 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-cta/10 blur-3xl" />
 
           <motion.div
@@ -507,10 +507,10 @@ export default function HowItWorksPage() {
             <motion.span variants={fadeUp} className="inline-flex items-center gap-2 rounded-full bg-cta/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-cta ring-1 ring-cta/20">
               <span className="h-1.5 w-1.5 rounded-full bg-cta animate-pulse" /> Get Started Today
             </motion.span>
-            <motion.h2 variants={fadeUp} className="mt-5 section-heading text-3xl text-navy sm:text-4xl">
+            <motion.h2 variants={fadeUp} className="mt-5 section-heading text-3xl text-navy sm:text-4xl dark:text-cream-100">
               Ready to begin care?
             </motion.h2>
-            <motion.p variants={fadeUp} className="mt-5 text-base text-gray-700 sm:text-lg">
+            <motion.p variants={fadeUp} className="mt-5 text-base text-gray-700 sm:text-lg dark:text-gray-300">
               Getting started takes only a few minutes. Request access to the patient portal and schedule your first visit.
             </motion.p>
             <motion.div variants={fadeUp} className="mt-10 flex flex-wrap items-center justify-center gap-4">
@@ -520,7 +520,7 @@ export default function HowItWorksPage() {
                 </Link>
               </motion.div>
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
-                <Link href="/login" className="inline-flex items-center rounded-xl border-2 border-cta bg-white px-8 py-3.5 text-base font-medium text-cta transition hover:bg-cream-100">
+                <Link href="/login" className="inline-flex items-center rounded-xl border-2 border-cta bg-white px-8 py-3.5 text-base font-medium text-cta transition hover:bg-cream-100 dark:bg-neutral-800 dark:hover:bg-neutral-700">
                   Patient Login
                 </Link>
               </motion.div>

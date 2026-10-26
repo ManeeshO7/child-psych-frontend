@@ -204,7 +204,7 @@ export default function PatientBookTypePage() {
   }
 
   const backLink = (
-    <Link href="/patient/book" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-cta transition-colors">
+    <Link href="/patient/book" className="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-cta transition-colors">
       <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
       </svg>
@@ -214,10 +214,10 @@ export default function PatientBookTypePage() {
 
   if (loading && backendType) {
     return (
-      <div className="min-h-screen bg-cream-50/60">
+      <div className="min-h-screen bg-cream-50/60 dark:bg-neutral-900">
         <main className="mx-auto max-w-2xl px-4 py-10 sm:px-6 lg:px-8">
           {backLink}
-          <div className="mt-8 flex items-center gap-3 text-gray-400">
+          <div className="mt-8 flex items-center gap-3 text-gray-400 dark:text-gray-500">
             <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
@@ -231,10 +231,10 @@ export default function PatientBookTypePage() {
 
   if (!slug || !backendType) {
     return (
-      <div className="min-h-screen bg-cream-50/60">
+      <div className="min-h-screen bg-cream-50/60 dark:bg-neutral-900">
         <main className="mx-auto max-w-2xl px-4 py-10 sm:px-6 lg:px-8">
           {backLink}
-          <p className="mt-8 text-gray-600">Invalid appointment type.</p>
+          <p className="mt-8 text-gray-600 dark:text-gray-300">Invalid appointment type.</p>
           <Link href="/patient/book" className="mt-4 inline-block text-cta hover:underline">Choose appointment type</Link>
         </main>
       </div>
@@ -243,10 +243,10 @@ export default function PatientBookTypePage() {
 
   if (!loading && (!typeInfo || !isAllowed)) {
     return (
-      <div className="min-h-screen bg-cream-50/60">
+      <div className="min-h-screen bg-cream-50/60 dark:bg-neutral-900">
         <main className="mx-auto max-w-2xl px-4 py-10 sm:px-6 lg:px-8">
           {backLink}
-          <p className="mt-8 text-gray-600">This appointment type is not available for you at this time.</p>
+          <p className="mt-8 text-gray-600 dark:text-gray-300">This appointment type is not available for you at this time.</p>
           <Link href="/patient/book" className="mt-4 inline-block text-cta hover:underline">Choose another type</Link>
         </main>
       </div>
@@ -254,32 +254,32 @@ export default function PatientBookTypePage() {
   }
 
   return (
-    <div className="min-h-screen bg-cream-50/60">
+    <div className="min-h-screen bg-cream-50/60 dark:bg-neutral-900">
       <main className="mx-auto max-w-2xl px-4 py-10 sm:px-6 lg:px-8">
 
         {backLink}
 
         {/* Page heading */}
         <div className="mt-6">
-          <h1 className="text-3xl font-bold text-navy">Book: {typeInfo?.label ?? slug}</h1>
-          <p className="mt-2 text-gray-500">
+          <h1 className="text-3xl font-bold text-navy dark:text-cream-100">Book: {typeInfo?.label ?? slug}</h1>
+          <p className="mt-2 text-gray-500 dark:text-gray-400">
             Choose a date, then a time. Your confirmation and video visit link will be sent by email.
           </p>
         </div>
 
         {/* Pending forms banner */}
         {pendingForms?.hasPendingForms && (
-          <div className="mt-6 flex items-start gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-5">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-200 text-amber-700">
+          <div className="mt-6 flex items-start gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-5 dark:border-amber-800 dark:bg-amber-950/40">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-200 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300">
               <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
               </svg>
             </div>
             <div>
-              <p className="font-semibold text-amber-900">
+              <p className="font-semibold text-amber-900 dark:text-amber-200">
                 {pendingForms.pendingCount} pending form{pendingForms.pendingCount === 1 ? "" : "s"} to complete
               </p>
-              <p className="mt-0.5 text-sm text-amber-800">Please complete your assigned forms before booking a new appointment.</p>
+              <p className="mt-0.5 text-sm text-amber-800 dark:text-amber-300">Please complete your assigned forms before booking a new appointment.</p>
               <Link href="/patient/forms" className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-amber-700 px-4 py-2 text-sm font-medium text-white hover:bg-amber-800">
                 Complete forms
                 <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -293,30 +293,30 @@ export default function PatientBookTypePage() {
         {/* Visit fee + timezone info */}
         <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-start">
           {typeInfo && pricing?.pricing?.[typeInfo.type] && (
-            <div className="flex-1 flex items-start gap-3 rounded-2xl border-2 border-gray-300 bg-white p-4 shadow-sm">
+            <div className="flex-1 flex items-start gap-3 rounded-2xl border-2 border-gray-300 bg-white p-4 shadow-sm dark:border-neutral-700 dark:bg-neutral-800">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-cta/10 text-cta">
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
                 </svg>
               </div>
               <div>
-                <p className="text-sm font-semibold text-navy">Visit fee: {pricing.pricing[typeInfo.type].formatted}</p>
-                <p className="mt-0.5 text-xs text-gray-500">
+                <p className="text-sm font-semibold text-navy dark:text-cream-100">Visit fee: {pricing.pricing[typeInfo.type].formatted}</p>
+                <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
                   You will be asked to save your card on file. You will not be charged now; the practice will charge {pricing.pricing[typeInfo.type].formatted} after your visit.
                 </p>
               </div>
             </div>
           )}
-          <div className="flex items-center gap-2 rounded-2xl border-2 border-gray-300 bg-white px-4 py-3 shadow-sm sm:shrink-0">
-            <svg className="h-4 w-4 shrink-0 text-gray-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+          <div className="flex items-center gap-2 rounded-2xl border-2 border-gray-300 bg-white px-4 py-3 shadow-sm sm:shrink-0 dark:border-neutral-700 dark:bg-neutral-800">
+            <svg className="h-4 w-4 shrink-0 text-gray-400 dark:text-gray-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span className="text-xs text-gray-500">Times shown in Pacific Time</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">Times shown in Pacific Time</span>
           </div>
         </div>
 
         {slotsLoading ? (
-          <div className="mt-8 flex items-center gap-3 text-gray-400">
+          <div className="mt-8 flex items-center gap-3 text-gray-400 dark:text-gray-500">
             <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
@@ -324,23 +324,23 @@ export default function PatientBookTypePage() {
             Loading available slots…
           </div>
         ) : sortedDates.length === 0 ? (
-          <div className="mt-8 flex items-start gap-4 rounded-2xl border-2 border-gray-300 bg-white p-6 shadow-sm">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-400">
+          <div className="mt-8 flex items-start gap-4 rounded-2xl border-2 border-gray-300 bg-white p-6 shadow-sm dark:border-neutral-700 dark:bg-neutral-800">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-400 dark:bg-neutral-700 dark:text-gray-400">
               <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v3m10.5-3v3M3.75 9.75h16.5M5.25 6.75h13.5A1.5 1.5 0 0120.25 8.25v11.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5V8.25a1.5 1.5 0 011.5-1.5z" />
               </svg>
             </div>
             <div>
-              <p className="font-semibold text-navy">No availability right now</p>
-              <p className="mt-0.5 text-sm text-gray-500">No slots in the next 90 days for {typeInfo?.label}. Please check back later or contact the practice.</p>
+              <p className="font-semibold text-navy dark:text-cream-100">No availability right now</p>
+              <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">No slots in the next 90 days for {typeInfo?.label}. Please check back later or contact the practice.</p>
             </div>
           </div>
         ) : (
           <div className="mt-8 space-y-6">
 
             {/* Step 1 — Pick a date */}
-            <div className="overflow-hidden rounded-2xl border-2 border-gray-300 bg-white shadow-sm">
-              <div className="rounded-t-2xl border-b-2 border-gray-300 bg-gray-50 px-6 py-4">
+            <div className="overflow-hidden rounded-2xl border-2 border-gray-300 bg-white shadow-sm dark:border-neutral-700 dark:bg-neutral-800">
+              <div className="rounded-t-2xl border-b-2 border-gray-300 bg-gray-50 px-6 py-4 dark:border-neutral-700 dark:bg-neutral-700">
                 <div className="flex items-center gap-3">
                   <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-cta/10 text-cta">
                     <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -348,8 +348,8 @@ export default function PatientBookTypePage() {
                     </svg>
                   </span>
                   <div>
-                    <h2 className="font-semibold text-navy">1. Pick a date</h2>
-                    <p className="text-xs text-gray-500">
+                    <h2 className="font-semibold text-navy dark:text-cream-100">1. Pick a date</h2>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
                       Available dates show {typeInfo?.durationMinutes}-min slots for {typeInfo?.label}
                     </p>
                   </div>
@@ -361,19 +361,19 @@ export default function PatientBookTypePage() {
                     type="button"
                     onClick={() => setCurrentMonthIndex((i) => Math.max(0, i - 1))}
                     disabled={currentMonthIndex === 0}
-                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-40"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-40 dark:border-neutral-700 dark:bg-neutral-800 dark:text-gray-300 dark:hover:bg-neutral-700"
                     aria-label="Previous month"
                   >
                     <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
                     </svg>
                   </button>
-                  <span className="text-sm font-semibold text-navy">{currentMonth?.label ?? ""}</span>
+                  <span className="text-sm font-semibold text-navy dark:text-cream-100">{currentMonth?.label ?? ""}</span>
                   <button
                     type="button"
                     onClick={() => setCurrentMonthIndex((i) => Math.min(months.length - 1, i + 1))}
                     disabled={currentMonthIndex >= months.length - 1}
-                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-40"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-40 dark:border-neutral-700 dark:bg-neutral-800 dark:text-gray-300 dark:hover:bg-neutral-700"
                     aria-label="Next month"
                   >
                     <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -382,7 +382,7 @@ export default function PatientBookTypePage() {
                   </button>
                 </div>
                 <div className="mt-4">
-                  <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-gray-400">
+                  <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-gray-400 dark:text-gray-500">
                     {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
                       <div key={d} className="py-1">{d}</div>
                     ))}
@@ -405,7 +405,7 @@ export default function PatientBookTypePage() {
                           disabled={!hasSlots}
                           className={`aspect-square rounded-xl text-sm font-medium transition-all ${
                             !hasSlots
-                              ? "cursor-default text-gray-200"
+                              ? "cursor-default text-gray-200 dark:text-neutral-700"
                               : isSelected
                                 ? "bg-cta text-white shadow-md"
                                 : "bg-cta/8 text-cta hover:bg-cta/15 hover:shadow-sm"
@@ -422,8 +422,8 @@ export default function PatientBookTypePage() {
 
             {/* Step 2 — Select a time */}
             {selectedDate && (
-              <div ref={timeSlotSectionRef} className="overflow-hidden rounded-2xl border-2 border-gray-300 bg-white shadow-sm">
-                <div className="rounded-t-2xl border-b-2 border-gray-300 bg-gray-50 px-6 py-4">
+              <div ref={timeSlotSectionRef} className="overflow-hidden rounded-2xl border-2 border-gray-300 bg-white shadow-sm dark:border-neutral-700 dark:bg-neutral-800">
+                <div className="rounded-t-2xl border-b-2 border-gray-300 bg-gray-50 px-6 py-4 dark:border-neutral-700 dark:bg-neutral-700">
                   <div className="flex items-center gap-3">
                     <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-cta/10 text-cta">
                       <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -431,8 +431,8 @@ export default function PatientBookTypePage() {
                       </svg>
                     </span>
                     <div>
-                      <h2 className="font-semibold text-navy">2. Select a time slot</h2>
-                      <p className="text-xs text-gray-500">
+                      <h2 className="font-semibold text-navy dark:text-cream-100">2. Select a time slot</h2>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
                         {formatSlotDate(slotsForSelected[0]?.start ?? selectedDate)} · {typeInfo?.durationMinutes}-min
                       </p>
                     </div>
@@ -451,7 +451,7 @@ export default function PatientBookTypePage() {
                           className={`rounded-xl border-2 px-4 py-2 text-sm font-medium transition-all disabled:opacity-50 ${
                             isSelected
                               ? "border-cta bg-cta text-white shadow-md"
-                              : "border-gray-200 bg-white text-cta hover:border-cta/50 hover:bg-cta/5"
+                              : "border-gray-200 bg-white text-cta hover:border-cta/50 hover:bg-cta/5 dark:border-neutral-700 dark:bg-neutral-800"
                           }`}
                         >
                           {formatSlotTime(slot.start)}

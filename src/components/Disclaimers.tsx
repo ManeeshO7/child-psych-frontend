@@ -21,7 +21,7 @@ export default function Disclaimers() {
   ];
 
   return (
-    <section className="relative overflow-hidden border-t border-cream-200/70 py-24 sm:py-28">
+    <section className="relative overflow-hidden border-t border-cream-200/70 py-24 sm:py-28 dark:border-neutral-700">
       <div className="absolute inset-0 z-0">
         <Image
           src="/disclaimers-bg.png"
@@ -31,7 +31,7 @@ export default function Disclaimers() {
           sizes="100vw"
           priority={false}
         />
-        <div className="absolute inset-0 bg-white/55" aria-hidden />
+        <div className="absolute inset-0 bg-white/55 dark:bg-neutral-900/75" aria-hidden />
       </div>
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center">
@@ -44,9 +44,9 @@ export default function Disclaimers() {
         </div>
         <div className="mt-12 grid gap-8 sm:grid-cols-2">
           {items.map((item) => (
-            <div key={item.title} className="rounded-2xl bg-white/90 p-6 shadow-[0_2px_12px_rgba(0,0,0,0.08)] backdrop-blur-sm transition-shadow duration-300 hover:shadow-[0_4px_20px_rgba(0,0,0,0.1)]">
+            <div key={item.title} className="rounded-2xl bg-white/90 p-6 shadow-[0_2px_12px_rgba(0,0,0,0.08)] backdrop-blur-sm transition-shadow duration-300 hover:shadow-[0_4px_20px_rgba(0,0,0,0.1)] dark:bg-neutral-800/90">
               <h3 className="font-semibold text-cta">{item.title}</h3>
-              <p className="mt-2 text-sm text-gray-600">{item.text}</p>
+              <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">{item.text}</p>
             </div>
           ))}
         </div>

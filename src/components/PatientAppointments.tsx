@@ -208,7 +208,7 @@ export default function PatientAppointments() {
   }, [appointments]);
 
   if (loading) {
-    return <p className="text-gray-500">Loading appointments…</p>;
+    return <p className="text-gray-500 dark:text-gray-400">Loading appointments…</p>;
   }
 
   return (
@@ -221,7 +221,7 @@ export default function PatientAppointments() {
       </div>
       {upcoming.length > 0 && (
         <section>
-          <h3 className="text-sm font-medium text-gray-600">Upcoming</h3>
+          <h3 className="text-sm font-medium text-gray-600 dark:text-gray-300">Upcoming</h3>
           <ul className="mt-2 space-y-3">
             {upcoming.map((a) => {
               const formattedDateTime = formatAppointmentDateTime(a.scheduledAt);
@@ -241,10 +241,10 @@ export default function PatientAppointments() {
                   }}
                 >
                   <div>
-                    <p className="font-medium text-navy">
+                    <p className="font-medium text-navy dark:text-cream-100">
                       {formattedDateTime} {tzLabel}
                     </p>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-gray-600 dark:text-gray-300">
                       {a.durationMinutes} min · {a.type}
                       {a.doctor?.name && ` · ${a.doctor.name}`}
                     </p>
@@ -284,7 +284,7 @@ export default function PatientAppointments() {
                                 e.stopPropagation();
                                 openCancelConfirm(a);
                               }}
-                              className="text-xs font-medium text-red-600 hover:underline"
+                              className="text-xs font-medium text-red-600 dark:text-red-400 hover:underline"
                             >
                               Cancel appointment
                             </button>
@@ -326,7 +326,7 @@ export default function PatientAppointments() {
                                 e.stopPropagation();
                                 openCancelConfirm(a);
                               }}
-                              className="text-xs font-medium text-red-600 hover:underline"
+                              className="text-xs font-medium text-red-600 dark:text-red-400 hover:underline"
                             >
                               Cancel appointment
                             </button>
@@ -337,16 +337,16 @@ export default function PatientAppointments() {
                   <span
                     className={`rounded-full px-2 py-0.5 text-xs ${
                       a.status === "scheduled"
-                        ? "bg-green-100 text-green-800"
+                        ? "bg-green-100 text-green-800 dark:bg-green-900/60 dark:text-green-200"
                         : a.status === "card_on_file"
-                          ? "bg-amber-100 text-amber-800"
+                          ? "bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200"
                           : a.status === "paid"
-                            ? "bg-blue-100 text-blue-800"
+                            ? "bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200"
                             : a.status === "pending_confirmation"
-                              ? "bg-amber-100 text-amber-800"
+                              ? "bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200"
                               : a.status === "completed"
-                                ? "bg-purple-100 text-purple-800"
-                                : "bg-gray-100 text-gray-600"
+                                ? "bg-purple-100 text-purple-800 dark:bg-purple-900/60 dark:text-purple-200"
+                                : "bg-gray-100 text-gray-600 dark:bg-neutral-700 dark:text-gray-300"
                     }`}
                   >
                     {a.status === "card_on_file"
@@ -382,7 +382,7 @@ export default function PatientAppointments() {
         onConfirm={confirmCancelAppointment}
       />
       {upcoming.length === 0 && appointments.length === 0 && (
-        <p className="text-gray-500">No appointments yet. Book one when you’re ready.</p>
+        <p className="text-gray-500 dark:text-gray-400">No appointments yet. Book one when you’re ready.</p>
       )}
       {past.length > 0 && (
         <section
@@ -399,14 +399,14 @@ export default function PatientAppointments() {
             }
           }}
         >
-          <h3 className="text-sm font-medium text-gray-600">Past</h3>
+          <h3 className="text-sm font-medium text-gray-600 dark:text-gray-300">Past</h3>
           <ul className="mt-2 space-y-2">
             {past.slice(0, 10).map((a) => {
               const formattedDateTime = formatAppointmentDateTime(a.scheduledAt);
               return (
               <li
                 key={a.id}
-                className="rounded-lg border border-cream-200 bg-white p-4 text-sm"
+                className="rounded-lg border border-cream-200 bg-white p-4 text-sm dark:border-neutral-700 dark:bg-neutral-800"
                 onClickCapture={(e) => {
                   const now = Date.now();
                   const last = lastInteractionAtRef.current[a.id] ?? 0;
@@ -418,10 +418,10 @@ export default function PatientAppointments() {
                   lastInteractionAtRef.current[a.id] = now;
                 }}
               >
-                <span className="text-navy">
+                <span className="text-navy dark:text-cream-100">
                   {formattedDateTime} {tzLabel}
                 </span>
-                <span className="ml-2 text-gray-500">· {a.status}</span>
+                <span className="ml-2 text-gray-500 dark:text-gray-400">· {a.status}</span>
               </li>
             );
             })}
@@ -434,7 +434,7 @@ export default function PatientAppointments() {
             type="button"
             onClick={loadMore}
             disabled={loadingMore}
-            className="rounded-lg border border-cream-300 bg-white px-4 py-2 text-sm font-medium text-cta hover:bg-cream-50 disabled:opacity-50"
+            className="rounded-lg border border-cream-300 bg-white px-4 py-2 text-sm font-medium text-cta hover:bg-cream-50 disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700"
           >
             {loadingMore ? "Loading…" : "Load more"}
           </button>

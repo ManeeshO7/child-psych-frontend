@@ -55,10 +55,10 @@ function AnimatedStat({ value, suffix, label }: { value: number; suffix: string;
 
   return (
     <div ref={ref} className="relative text-left">
-      <p className="text-4xl font-bold tabular-nums text-navy">
+      <p className="text-4xl font-bold tabular-nums text-navy dark:text-cream-100">
         {count}{suffix}
       </p>
-      <p className="mt-1 text-sm font-medium text-gray-700">{label}</p>
+      <p className="mt-1 text-sm font-medium text-gray-700 dark:text-gray-300">{label}</p>
       <motion.div
         initial={{ width: 0 }}
         animate={inView ? { width: "100%" } : {}}
@@ -108,7 +108,7 @@ export default function About() {
           sizes="100vw"
           className="object-cover object-center"
         />
-        <div className="absolute inset-0 bg-white/50" />
+        <div className="absolute inset-0 bg-white/50 dark:bg-neutral-900/70" />
       </div>
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -134,11 +134,11 @@ export default function About() {
               About TelePsych
             </motion.h2>
 
-            <motion.p variants={fadeUp} className="mt-6 text-base leading-relaxed text-gray-800">
+            <motion.p variants={fadeUp} className="mt-6 text-base leading-relaxed text-gray-800 dark:text-gray-300">
               I provide personalized, evidence-based psychiatric care through secure telepsychiatry for children and adolescents, located in California. My practice offers a thoughtful, concierge-level approach that integrates psychiatric expertise, psychotherapy, and practical life strategies to support emotional well-being, development, and long-term resilience.
             </motion.p>
 
-            <motion.p variants={fadeUp} className="mt-4 text-base leading-relaxed text-gray-800">
+            <motion.p variants={fadeUp} className="mt-4 text-base leading-relaxed text-gray-800 dark:text-gray-300">
               All services are delivered virtually, allowing for discreet, flexible, and high-quality care while maintaining the same clinical standards as in-person psychiatry.
             </motion.p>
 
@@ -150,7 +150,7 @@ export default function About() {
             </motion.div>
 
             <motion.div variants={fadeUp} className="mt-10 flex flex-wrap gap-3">
-              <Link href="/how-it-works" className="inline-flex items-center justify-center gap-2 rounded-xl border border-cta/60 bg-white/90 px-5 py-2.5 text-sm font-medium text-cta transition-all duration-200 hover:bg-white group">
+              <Link href="/how-it-works" className="inline-flex items-center justify-center gap-2 rounded-xl border border-cta/60 bg-white/90 px-5 py-2.5 text-sm font-medium text-cta transition-all duration-200 hover:bg-white group dark:bg-neutral-800/90 dark:hover:bg-neutral-800">
                 Learn More
                 <svg className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -187,16 +187,16 @@ export default function About() {
                     viewport={{ once: true }}
                     transition={{ delay: 0.15 + i * 0.12, duration: 0.6, ease }}
                     whileHover={{ x: 6, transition: { duration: 0.2 } }}
-                    className={`group flex items-start gap-4 rounded-2xl bg-white/90 px-5 py-4 shadow-[0_2px_16px_rgba(0,0,0,0.06)] ring-1 ring-black/[0.04] transition-shadow hover:shadow-[0_4px_24px_rgba(0,0,0,0.10)]`}
+                    className={`group flex items-start gap-4 rounded-2xl bg-white/90 px-5 py-4 shadow-[0_2px_16px_rgba(0,0,0,0.06)] ring-1 ring-black/[0.04] transition-shadow hover:shadow-[0_4px_24px_rgba(0,0,0,0.10)] dark:bg-neutral-800/90`}
                   >
                     <div className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${card.iconBg} transition-transform group-hover:scale-110`}>
                       {card.icon}
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-navy">{card.title}</p>
-                      <p className="mt-0.5 text-xs leading-relaxed text-gray-700">{card.desc}</p>
+                      <p className="text-sm font-semibold text-navy dark:text-cream-100">{card.title}</p>
+                      <p className="mt-0.5 text-xs leading-relaxed text-gray-700 dark:text-gray-300">{card.desc}</p>
                     </div>
-                    <svg className="ml-auto mt-1 h-4 w-4 shrink-0 text-gray-300 transition-colors group-hover:text-cta" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="ml-auto mt-1 h-4 w-4 shrink-0 text-gray-300 transition-colors group-hover:text-cta dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </motion.div>

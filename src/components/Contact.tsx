@@ -37,18 +37,18 @@ export default function Contact() {
           sizes="100vw"
           priority={false}
         />
-        <div className="absolute inset-0 bg-white/35" aria-hidden />
+        <div className="absolute inset-0 bg-white/35 dark:bg-neutral-900/70" aria-hidden />
       </div>
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="lg:ml-[20%]">
         <h2 className="section-heading section-heading-accent text-3xl md:text-4xl">Contact</h2>
-        <p className="mt-5 text-gray-600">
+        <p className="mt-5 text-gray-600 dark:text-gray-300">
           Message us directly by filling out the form below and we will respond promptly.
         </p>
         <div className="mt-14 grid gap-12 lg:grid-cols-[1.5fr_1fr]">
           <form onSubmit={handleSubmit} className="card space-y-6">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Name
               </label>
               <input
@@ -56,11 +56,11 @@ export default function Contact() {
                 name="name"
                 type="text"
                 required
-                className="mt-1.5 block w-full rounded-xl border border-cream-200/80 bg-white px-4 py-3 text-navy shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-shadow focus:border-cta focus:outline-none focus:ring-2 focus:ring-cta/40"
+                className="mt-1.5 block w-full rounded-xl border border-cream-200/80 bg-white px-4 py-3 text-navy shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-shadow focus:border-cta focus:outline-none focus:ring-2 focus:ring-cta/40 dark:bg-neutral-900 dark:border-neutral-600 dark:text-cream-100"
               />
             </div>
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Email
               </label>
               <input
@@ -68,22 +68,22 @@ export default function Contact() {
                 name="email"
                 type="email"
                 required
-                className="mt-1.5 block w-full rounded-xl border border-cream-200/80 bg-white px-4 py-3 text-navy shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-shadow focus:border-cta focus:outline-none focus:ring-2 focus:ring-cta/40"
+                className="mt-1.5 block w-full rounded-xl border border-cream-200/80 bg-white px-4 py-3 text-navy shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-shadow focus:border-cta focus:outline-none focus:ring-2 focus:ring-cta/40 dark:bg-neutral-900 dark:border-neutral-600 dark:text-cream-100"
               />
             </div>
             <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Phone
               </label>
               <input
                 id="phone"
                 name="phone"
                 type="tel"
-                className="mt-1.5 block w-full rounded-xl border border-cream-200/80 bg-white px-4 py-3 text-navy shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-shadow focus:border-cta focus:outline-none focus:ring-2 focus:ring-cta/40"
+                className="mt-1.5 block w-full rounded-xl border border-cream-200/80 bg-white px-4 py-3 text-navy shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-shadow focus:border-cta focus:outline-none focus:ring-2 focus:ring-cta/40 dark:bg-neutral-900 dark:border-neutral-600 dark:text-cream-100"
               />
             </div>
             <div>
-              <label htmlFor="message" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="message" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Message
               </label>
               <textarea
@@ -91,13 +91,13 @@ export default function Contact() {
                 name="message"
                 rows={4}
                 required
-                className="mt-1.5 block w-full rounded-xl border border-cream-200/80 bg-white px-4 py-3 text-navy shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-shadow focus:border-cta focus:outline-none focus:ring-2 focus:ring-cta/40"
+                className="mt-1.5 block w-full rounded-xl border border-cream-200/80 bg-white px-4 py-3 text-navy shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-shadow focus:border-cta focus:outline-none focus:ring-2 focus:ring-cta/40 dark:bg-neutral-900 dark:border-neutral-600 dark:text-cream-100"
               />
             </div>
             <button type="submit" disabled={status === "sending"} className="btn-primary w-full">
               {status === "sending" ? "Sending…" : status === "sent" ? "Sent" : "Submit"}
             </button>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               Your message is confidential and HIPAA-compliant.
             </p>
             {status === "error" && (
@@ -105,8 +105,8 @@ export default function Contact() {
             )}
           </form>
           <div>
-            <p className="text-sm font-medium text-gray-700">California</p>
-            <p className="mt-1 text-gray-600">Services provided via telehealth</p>
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">California</p>
+            <p className="mt-1 text-gray-600 dark:text-gray-400">Services provided via telehealth</p>
             <a href="tel:+18587766267" className="mt-4 inline-flex items-center gap-2 btn-primary">
               Call (858) 776-6267
             </a>

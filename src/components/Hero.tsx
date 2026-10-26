@@ -60,7 +60,7 @@ export default function Hero() {
       {/* ── Layer 2: overlays ────────────────────────────── */}
       <div className="pointer-events-none absolute inset-0 z-[1]">
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/10 sm:from-black/35 sm:via-black/15 sm:to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-cream-100 via-cream-100/60 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-cream-100 via-cream-100/60 to-transparent dark:from-neutral-900 dark:via-neutral-900/60" />
       </div>
 
       {/* ── Layer 4: content ──────────────────────────────── */}
@@ -73,21 +73,21 @@ export default function Hero() {
         >
           <motion.p
             variants={item}
-            className="text-xs font-medium uppercase tracking-[0.2em] text-white/80 sm:text-navy/80 sm:text-sm md:text-base"
+            className="text-xs font-medium uppercase tracking-[0.2em] text-white/80 sm:text-navy/80 sm:text-sm md:text-base dark:sm:text-cream-100/80"
           >
             Online Psychiatric Care
           </motion.p>
 
           <motion.h1
             variants={item}
-            className="mt-2 text-3xl font-bold leading-[1.15] tracking-[-0.02em] text-white sm:text-navy sm:text-5xl sm:leading-[1.1] md:text-6xl lg:text-7xl"
+            className="mt-2 text-3xl font-bold leading-[1.15] tracking-[-0.02em] text-white sm:text-navy sm:text-5xl sm:leading-[1.1] md:text-6xl lg:text-7xl dark:sm:text-cream-100"
           >
             Personalizing Your Journey to Peak Mental Health
           </motion.h1>
 
           <motion.p
             variants={item}
-            className="mt-3 text-base leading-snug text-white/80 sm:text-navy/80 sm:text-lg md:text-xl"
+            className="mt-3 text-base leading-snug text-white/80 sm:text-navy/80 sm:text-lg md:text-xl dark:sm:text-cream-100/80"
           >
             Evidence-based psychiatric care through secure telepsychiatry for children, adolescents, and young adults in California.
           </motion.p>
@@ -98,7 +98,7 @@ export default function Hero() {
             </Link>
             <button
               onClick={() => document.getElementById("about")?.scrollIntoView({ behavior: "smooth" })}
-              className="inline-flex items-center justify-center rounded-xl border border-navy/30 bg-white/30 px-6 py-3.5 text-sm font-semibold text-navy backdrop-blur-sm transition hover:bg-white/50"
+              className="inline-flex items-center justify-center rounded-xl border border-navy/30 bg-white/30 px-6 py-3.5 text-sm font-semibold text-navy backdrop-blur-sm transition hover:bg-white/50 dark:text-cream-100"
             >
               Learn More
             </button>
@@ -108,7 +108,7 @@ export default function Hero() {
             {["Board Certified", "HIPAA Secure", "California Licensed"].map((label) => (
               <div
                 key={label}
-                className="flex items-center gap-2 rounded-full bg-white/40 px-3 py-1.5 text-xs font-medium text-navy backdrop-blur-sm ring-1 ring-navy/20"
+                className="flex items-center gap-2 rounded-full bg-white/40 px-3 py-1.5 text-xs font-medium text-navy backdrop-blur-sm ring-1 ring-navy/20 dark:text-cream-100"
               >
                 <span className="flex h-4 w-4 items-center justify-center rounded-full bg-cta text-[10px] font-bold text-white">✓</span>
                 <span>{label}</span>

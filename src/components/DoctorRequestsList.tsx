@@ -206,29 +206,29 @@ export default function DoctorRequestsList() {
       <li key={req.id} className="card">
         <div className="flex flex-wrap justify-between gap-4">
           <div className="min-w-0 flex-1">
-            <p className="font-medium text-navy">
+            <p className="font-medium text-navy dark:text-cream-100">
               {req.firstName} {req.lastName}
             </p>
-            <p className="text-sm text-gray-600">{req.email}</p>
-            <p className="text-sm text-gray-600">{formatPhone(req.phone)}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">{req.email}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">{formatPhone(req.phone)}</p>
             {req.notes && (
-              <p className="mt-2 text-sm text-gray-600">
+              <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
                 <span className="font-medium">Notes:</span> {req.notes}
               </p>
             )}
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
               Submitted {new Date(req.createdAt).toLocaleString()}
               {req.consentAt && (
                 <> · Consent {new Date(req.consentAt).toLocaleString()}</>
               )}
             </p>
             {req.autoRejected && (
-              <span className="mt-2 inline-flex shrink-0 items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800">
+              <span className="mt-2 inline-flex shrink-0 items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/60 dark:text-amber-200">
                 Auto-rejected (provider may override)
               </span>
             )}
             {statusBadge === "rejected" && req.rejectedNote && (
-              <p className="mt-2 text-sm text-red-700">
+              <p className="mt-2 text-sm text-red-700 dark:text-red-300">
                 <span className="font-medium">Rejection note:</span> {req.rejectedNote}
               </p>
             )}
@@ -241,8 +241,8 @@ export default function DoctorRequestsList() {
                 <span
                   className={`inline-flex shrink-0 items-center rounded-full px-3 py-1.5 text-sm font-medium ${
                     rec === "canBeRejected"
-                      ? "bg-amber-100 text-amber-800"
-                      : "bg-green-100 text-green-800"
+                      ? "bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200"
+                      : "bg-green-100 text-green-800 dark:bg-green-900/60 dark:text-green-200"
                   }`}
                 >
                   {rec === "canBeRejected" ? "Can be rejected" : "Can be accepted"}
@@ -266,12 +266,12 @@ export default function DoctorRequestsList() {
                   onChange={(e) =>
                     setRejectNote((prev) => ({ ...prev, [req.id]: e.target.value }))
                   }
-                  className="rounded-lg border border-cream-200 px-3 py-1.5 text-sm"
+                  className="rounded-lg border border-cream-200 px-3 py-1.5 text-sm dark:border-neutral-600 dark:bg-neutral-900 dark:text-cream-100 dark:placeholder:text-gray-500"
                 />
                 <button
                   onClick={() => reject(req.id)}
                   disabled={!!rejectingId}
-                  className="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-sm text-red-700 hover:bg-red-50"
+                  className="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-sm text-red-700 hover:bg-red-50 dark:border-red-800 dark:bg-neutral-800 dark:text-red-300 dark:hover:bg-red-950/40"
                 >
                   {rejectingId === req.id ? "Rejecting…" : "Reject"}
                 </button>
@@ -281,8 +281,8 @@ export default function DoctorRequestsList() {
             <span
               className={`inline-flex shrink-0 items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium ${
                 statusBadge === "accepted"
-                  ? "bg-green-100 text-green-800"
-                  : "bg-red-100 text-red-800"
+                  ? "bg-green-100 text-green-800 dark:bg-green-900/60 dark:text-green-200"
+                  : "bg-red-100 text-red-800 dark:bg-red-900/60 dark:text-red-200"
               }`}
             >
               {statusBadge === "accepted" ? "Accepted" : "Rejected"}
@@ -291,16 +291,16 @@ export default function DoctorRequestsList() {
           </div>
         </div>
         {triggeredFlags.length > 0 && (
-          <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+          <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-800 dark:bg-amber-950/40">
             <div className="flex items-center gap-2 mb-2">
-              <svg className="h-4 w-4 shrink-0 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
               </svg>
-              <p className="text-xs font-semibold uppercase tracking-wide text-amber-700">Rejection flag{triggeredFlags.length > 1 ? "s" : ""} — answered Yes</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300">Rejection flag{triggeredFlags.length > 1 ? "s" : ""} — answered Yes</p>
             </div>
             <ul className="space-y-1">
               {triggeredFlags.map((label, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-amber-800">
+                <li key={i} className="flex items-start gap-2 text-sm text-amber-800 dark:text-amber-200">
                   <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500 mt-1.5" />
                   {label}
                 </li>
@@ -310,7 +310,7 @@ export default function DoctorRequestsList() {
         )}
 
         {(req.consentAt || req.questionnaireData) && (
-          <div className="mt-4 border-t border-cream-200 pt-4">
+          <div className="mt-4 border-t border-cream-200 pt-4 dark:border-neutral-700">
             <button
               type="button"
               onClick={() =>
@@ -326,15 +326,15 @@ export default function DoctorRequestsList() {
               {expandedPrescreen.has(req.id) ? "Hide" : "Show"} pre-screening responses
             </button>
             {expandedPrescreen.has(req.id) && (
-              <div className="mt-3 rounded-lg bg-gray-50 p-4">
+              <div className="mt-3 rounded-lg bg-gray-50 p-4 dark:bg-neutral-700">
                 {req.consentAt && (
-                  <p className="text-xs text-gray-600">
+                  <p className="text-xs text-gray-600 dark:text-gray-300">
                     Consent given: {new Date(req.consentAt).toLocaleString()}
                   </p>
                 )}
                 {req.questionnaireData && Object.keys(req.questionnaireData).length > 0 ? (
                   <>
-                    <div className="mt-2 max-h-80 overflow-auto rounded bg-white p-3 text-sm">
+                    <div className="mt-2 max-h-80 overflow-auto rounded bg-white p-3 text-sm dark:bg-neutral-800">
                       <dl className="space-y-2">
                         {questionnaireToQandA(req.questionnaireData).map(({ question, answer }, i) => {
                           const isFlag = RED_FLAG_LABEL_SET.has(question) && answer.toLowerCase() === "yes";
@@ -342,11 +342,11 @@ export default function DoctorRequestsList() {
                             <div
                               key={i}
                               className={isFlag
-                                ? "rounded-lg border border-amber-200 bg-amber-50 px-3 py-2"
+                                ? "rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 dark:border-amber-800 dark:bg-amber-950/40"
                                 : "px-1 py-1"
                               }
                             >
-                              <dt className={`font-medium flex items-center gap-1.5 ${isFlag ? "text-amber-700" : "text-cta"}`}>
+                              <dt className={`font-medium flex items-center gap-1.5 ${isFlag ? "text-amber-700 dark:text-amber-300" : "text-cta"}`}>
                                 {isFlag && (
                                   <svg className="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
@@ -354,7 +354,7 @@ export default function DoctorRequestsList() {
                                 )}
                                 {question}
                               </dt>
-                              <dd className={`mt-0.5 font-semibold ${isFlag ? "text-amber-800 uppercase tracking-wide" : "text-navy"}`}>
+                              <dd className={`mt-0.5 font-semibold ${isFlag ? "text-amber-800 uppercase tracking-wide dark:text-amber-200" : "text-navy dark:text-cream-100"}`}>
                                 {answer}
                               </dd>
                             </div>
@@ -367,14 +367,14 @@ export default function DoctorRequestsList() {
                         type="button"
                         onClick={() => deleteQuestionnaire(req.id)}
                         disabled={!!deletingQuestionnaireId}
-                        className="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-sm text-red-700 hover:bg-red-50 disabled:opacity-50"
+                        className="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-sm text-red-700 hover:bg-red-50 disabled:opacity-50 dark:border-red-800 dark:bg-neutral-800 dark:text-red-300 dark:hover:bg-red-950/40"
                       >
                         {deletingQuestionnaireId === req.id ? "Deleting…" : "Delete questionnaire (FHIR)"}
                       </button>
                     </div>
                   </>
                 ) : (
-                  <p className="mt-2 text-sm text-gray-500">No questionnaire data yet.</p>
+                  <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">No questionnaire data yet.</p>
                 )}
               </div>
             )}
@@ -385,7 +385,7 @@ export default function DoctorRequestsList() {
   }
 
   return (
-    <div className="min-h-screen bg-cream-50/60">
+    <div className="min-h-screen bg-cream-50/60 dark:bg-neutral-900">
     <main className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
       <Link href="/doctor" className="inline-flex items-center gap-1 text-sm text-cta hover:underline mb-6">
         ← Back to dashboard
@@ -393,20 +393,20 @@ export default function DoctorRequestsList() {
 
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-50">
-            <svg className="h-5 w-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-50 dark:bg-amber-950/40">
+            <svg className="h-5 w-5 text-amber-600 dark:text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-navy">Patient Requests</h1>
-            <p className="text-sm text-gray-500">Approve to create accounts; reject to decline.</p>
+            <h1 className="text-2xl font-bold text-navy dark:text-cream-100">Patient Requests</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Approve to create accounts; reject to decline.</p>
           </div>
         </div>
 
         <label htmlFor="requests-search" className="sr-only">Search by patient name</label>
         <div className="relative w-full max-w-sm">
-          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" aria-hidden>
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" aria-hidden>
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
             </svg>
@@ -420,7 +420,7 @@ export default function DoctorRequestsList() {
               setPageByTab({ pending: 1, accepted: 1, rejected: 1 });
             }}
             placeholder="Search by patient name…"
-            className="w-full rounded-xl border border-cream-200 bg-white py-2.5 pl-9 pr-3 text-sm text-navy placeholder-gray-400 shadow-sm focus:border-cta focus:outline-none focus:ring-2 focus:ring-cta/20"
+            className="w-full rounded-xl border border-cream-200 bg-white py-2.5 pl-9 pr-3 text-sm text-navy placeholder-gray-400 shadow-sm focus:border-cta focus:outline-none focus:ring-2 focus:ring-cta/20 dark:border-neutral-600 dark:bg-neutral-900 dark:text-cream-100 dark:placeholder:text-gray-500"
             aria-label="Search by patient name"
           />
         </div>
@@ -433,12 +433,12 @@ export default function DoctorRequestsList() {
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
             </svg>
-            <p className="text-sm text-gray-500">Loading requests…</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Loading requests…</p>
           </div>
         </div>
       ) : (
         <>
-          <div className="mt-10 rounded-xl border border-cream-200 bg-white p-2 shadow-sm">
+          <div className="mt-10 rounded-xl border border-cream-200 bg-white p-2 shadow-sm dark:border-neutral-700 dark:bg-neutral-800">
             <div className="flex gap-2">
               {tabs.map((tab) => {
                 const count =
@@ -455,7 +455,7 @@ export default function DoctorRequestsList() {
                     className={`flex-1 rounded-lg px-4 py-3 text-sm font-semibold transition ${
                       activeTab === tab.id
                         ? "bg-cta text-white"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-neutral-700 dark:text-gray-300 dark:hover:bg-neutral-600"
                     }`}
                   >
                     {tab.label}
@@ -475,8 +475,8 @@ export default function DoctorRequestsList() {
                     {items.map((req) => renderRequestCard(req, true))}
                   </ul>
                   {totalPages > 1 && (
-                    <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-cream-200 bg-white px-4 py-3 shadow-sm">
-                      <p className="text-sm text-gray-600">
+                    <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-cream-200 bg-white px-4 py-3 shadow-sm dark:border-neutral-700 dark:bg-neutral-800">
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
                         Showing {start + 1}–{Math.min(start + PAGE_SIZE, total)} of {total}
                       </p>
                       <div className="flex items-center gap-2">
@@ -484,18 +484,18 @@ export default function DoctorRequestsList() {
                           type="button"
                           onClick={() => setPage("pending", page - 1)}
                           disabled={page <= 1}
-                          className="rounded-lg border border-cream-200 bg-white px-3 py-1.5 text-sm font-medium text-cta disabled:cursor-not-allowed disabled:opacity-50 hover:bg-cream-50"
+                          className="rounded-lg border border-cream-200 bg-white px-3 py-1.5 text-sm font-medium text-cta disabled:cursor-not-allowed disabled:opacity-50 hover:bg-cream-50 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700"
                         >
                           Previous
                         </button>
-                        <span className="text-sm text-gray-600">
+                        <span className="text-sm text-gray-600 dark:text-gray-300">
                           Page {page} of {totalPages}
                         </span>
                         <button
                           type="button"
                           onClick={() => setPage("pending", page + 1)}
                           disabled={page >= totalPages}
-                          className="rounded-lg border border-cream-200 bg-white px-3 py-1.5 text-sm font-medium text-cta disabled:cursor-not-allowed disabled:opacity-50 hover:bg-cream-50"
+                          className="rounded-lg border border-cream-200 bg-white px-3 py-1.5 text-sm font-medium text-cta disabled:cursor-not-allowed disabled:opacity-50 hover:bg-cream-50 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700"
                         >
                           Next
                         </button>
@@ -504,7 +504,7 @@ export default function DoctorRequestsList() {
                   )}
                 </>
               ) : (
-                <p className="rounded-xl border border-cream-200 bg-white p-8 text-center text-gray-500 shadow-sm">
+                <p className="rounded-xl border border-cream-200 bg-white p-8 text-center text-gray-500 shadow-sm dark:border-neutral-700 dark:bg-neutral-800 dark:text-gray-400">
                   No pending requests.
                 </p>
               );
@@ -517,8 +517,8 @@ export default function DoctorRequestsList() {
                     {items.map((req) => renderRequestCard(req, false, "accepted"))}
                   </ul>
                   {totalPages > 1 && (
-                    <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-cream-200 bg-white px-4 py-3 shadow-sm">
-                      <p className="text-sm text-gray-600">
+                    <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-cream-200 bg-white px-4 py-3 shadow-sm dark:border-neutral-700 dark:bg-neutral-800">
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
                         Showing {start + 1}–{Math.min(start + PAGE_SIZE, total)} of {total}
                       </p>
                       <div className="flex items-center gap-2">
@@ -526,18 +526,18 @@ export default function DoctorRequestsList() {
                           type="button"
                           onClick={() => setPage("accepted", page - 1)}
                           disabled={page <= 1}
-                          className="rounded-lg border border-cream-200 bg-white px-3 py-1.5 text-sm font-medium text-cta disabled:cursor-not-allowed disabled:opacity-50 hover:bg-cream-50"
+                          className="rounded-lg border border-cream-200 bg-white px-3 py-1.5 text-sm font-medium text-cta disabled:cursor-not-allowed disabled:opacity-50 hover:bg-cream-50 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700"
                         >
                           Previous
                         </button>
-                        <span className="text-sm text-gray-600">
+                        <span className="text-sm text-gray-600 dark:text-gray-300">
                           Page {page} of {totalPages}
                         </span>
                         <button
                           type="button"
                           onClick={() => setPage("accepted", page + 1)}
                           disabled={page >= totalPages}
-                          className="rounded-lg border border-cream-200 bg-white px-3 py-1.5 text-sm font-medium text-cta disabled:cursor-not-allowed disabled:opacity-50 hover:bg-cream-50"
+                          className="rounded-lg border border-cream-200 bg-white px-3 py-1.5 text-sm font-medium text-cta disabled:cursor-not-allowed disabled:opacity-50 hover:bg-cream-50 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700"
                         >
                           Next
                         </button>
@@ -546,7 +546,7 @@ export default function DoctorRequestsList() {
                   )}
                 </>
               ) : (
-                <p className="rounded-xl border border-cream-200 bg-white p-8 text-center text-gray-500 shadow-sm">
+                <p className="rounded-xl border border-cream-200 bg-white p-8 text-center text-gray-500 shadow-sm dark:border-neutral-700 dark:bg-neutral-800 dark:text-gray-400">
                   No accepted requests yet.
                 </p>
               );
@@ -559,8 +559,8 @@ export default function DoctorRequestsList() {
                     {items.map((req) => renderRequestCard(req, !!req.autoRejected, "rejected"))}
                   </ul>
                   {totalPages > 1 && (
-                    <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-cream-200 bg-white px-4 py-3 shadow-sm">
-                      <p className="text-sm text-gray-600">
+                    <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-cream-200 bg-white px-4 py-3 shadow-sm dark:border-neutral-700 dark:bg-neutral-800">
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
                         Showing {start + 1}–{Math.min(start + PAGE_SIZE, total)} of {total}
                       </p>
                       <div className="flex items-center gap-2">
@@ -568,18 +568,18 @@ export default function DoctorRequestsList() {
                           type="button"
                           onClick={() => setPage("rejected", page - 1)}
                           disabled={page <= 1}
-                          className="rounded-lg border border-cream-200 bg-white px-3 py-1.5 text-sm font-medium text-cta disabled:cursor-not-allowed disabled:opacity-50 hover:bg-cream-50"
+                          className="rounded-lg border border-cream-200 bg-white px-3 py-1.5 text-sm font-medium text-cta disabled:cursor-not-allowed disabled:opacity-50 hover:bg-cream-50 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700"
                         >
                           Previous
                         </button>
-                        <span className="text-sm text-gray-600">
+                        <span className="text-sm text-gray-600 dark:text-gray-300">
                           Page {page} of {totalPages}
                         </span>
                         <button
                           type="button"
                           onClick={() => setPage("rejected", page + 1)}
                           disabled={page >= totalPages}
-                          className="rounded-lg border border-cream-200 bg-white px-3 py-1.5 text-sm font-medium text-cta disabled:cursor-not-allowed disabled:opacity-50 hover:bg-cream-50"
+                          className="rounded-lg border border-cream-200 bg-white px-3 py-1.5 text-sm font-medium text-cta disabled:cursor-not-allowed disabled:opacity-50 hover:bg-cream-50 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700"
                         >
                           Next
                         </button>
@@ -588,7 +588,7 @@ export default function DoctorRequestsList() {
                   )}
                 </>
               ) : (
-                <p className="rounded-xl border border-cream-200 bg-white p-8 text-center text-gray-500 shadow-sm">
+                <p className="rounded-xl border border-cream-200 bg-white p-8 text-center text-gray-500 shadow-sm dark:border-neutral-700 dark:bg-neutral-800 dark:text-gray-400">
                   No rejected requests yet.
                 </p>
               );

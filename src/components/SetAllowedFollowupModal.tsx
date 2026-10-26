@@ -56,42 +56,42 @@ export default function SetAllowedFollowupModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-md rounded-lg bg-white shadow-xl">
-        <div className="border-b border-gray-200 px-6 py-4">
-          <h2 className="text-xl font-semibold text-navy">Set patient&apos;s follow-up type</h2>
-          <p className="mt-1 text-sm text-gray-600">
+      <div className="w-full max-w-md rounded-lg bg-white shadow-xl dark:bg-neutral-800">
+        <div className="border-b border-gray-200 px-6 py-4 dark:border-neutral-700">
+          <h2 className="text-xl font-semibold text-navy dark:text-cream-100">Set patient&apos;s follow-up type</h2>
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
             Which follow-up appointments can {patientName || "this patient"} book? (Decided during clinical intake.)
           </p>
         </div>
         <div className="px-6 py-4 space-y-3">
-          <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-200 p-4 hover:bg-gray-50">
+          <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-200 p-4 hover:bg-gray-50 dark:border-neutral-700 dark:hover:bg-neutral-700">
             <input
               type="checkbox"
               checked={allow30}
               onChange={(e) => setAllow30(e.target.checked)}
-              className="h-4 w-4 rounded border-gray-300 text-cta focus:ring-cta"
+              className="h-4 w-4 rounded border-gray-300 text-cta focus:ring-cta dark:border-neutral-600"
             />
-            <span className="font-medium">30 min – Follow-up (med management)</span>
+            <span className="font-medium dark:text-cream-100">30 min – Follow-up (med management)</span>
           </label>
-          <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-200 p-4 hover:bg-gray-50">
+          <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-200 p-4 hover:bg-gray-50 dark:border-neutral-700 dark:hover:bg-neutral-700">
             <input
               type="checkbox"
               checked={allow45}
               onChange={(e) => setAllow45(e.target.checked)}
-              className="h-4 w-4 rounded border-gray-300 text-cta focus:ring-cta"
+              className="h-4 w-4 rounded border-gray-300 text-cta focus:ring-cta dark:border-neutral-600"
             />
-            <span className="font-medium">45 min – Follow-up (med + therapy)</span>
+            <span className="font-medium dark:text-cream-100">45 min – Follow-up (med + therapy)</span>
           </label>
         </div>
         {error && (
-          <div className="px-6 pb-2 text-sm text-red-600">{error}</div>
+          <div className="px-6 pb-2 text-sm text-red-600 dark:text-red-400">{error}</div>
         )}
-        <div className="border-t border-gray-200 px-6 py-4 flex justify-end gap-3">
+        <div className="border-t border-gray-200 px-6 py-4 flex justify-end gap-3 dark:border-neutral-700">
           <button
             type="button"
             onClick={onClose}
             disabled={submitting}
-            className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+            className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-neutral-600 dark:bg-neutral-800 dark:text-gray-300 dark:hover:bg-neutral-700"
           >
             Cancel
           </button>

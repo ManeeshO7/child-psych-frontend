@@ -298,6 +298,19 @@ export function CaliforniaAddressAutocomplete({
         background-color: #ffffff !important;
         color: #1e293b !important;
       }
+      html.dark gmp-place-autocomplete {
+        border-color: #525252 !important;
+        background-color: #171717 !important;
+        color-scheme: dark !important;
+      }
+      html.dark gmp-place-autocomplete:focus-within {
+        border-color: #7a9e84 !important;
+        box-shadow: 0 0 0 1px #7a9e84 !important;
+      }
+      html.dark gmp-place-autocomplete::part(input) {
+        background-color: #171717 !important;
+        color: #f5f5f4 !important;
+      }
     `;
     document.head.appendChild(style);
     return () => {
@@ -372,7 +385,7 @@ export function CaliforniaAddressAutocomplete({
               }
             }
           }}
-          className="mt-1 min-h-[2.75rem] w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-navy shadow-sm focus:border-cta focus:outline-none focus:ring-1 focus:ring-cta"
+          className="mt-1 min-h-[2.75rem] w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-navy shadow-sm focus:border-cta focus:outline-none focus:ring-1 focus:ring-cta dark:border-neutral-700 dark:bg-neutral-900 dark:text-cream-100"
           aria-label="California address (select all and press Delete or Backspace to clear)"
           title="Select the address and press Delete or Backspace to clear"
         />

@@ -364,9 +364,9 @@ export default function PatientProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-cream-50/60">
+      <div className="min-h-screen bg-cream-50/60 dark:bg-neutral-900">
         <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3 text-gray-400">
+          <div className="flex items-center gap-3 text-gray-400 dark:text-gray-400">
             <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
@@ -401,18 +401,18 @@ export default function PatientProfilePage() {
     ? new Date(data.lastUpdatedAt).toLocaleString("en-US", { dateStyle: "long", timeStyle: "short" })
     : null;
 
-  const inputBase = "mt-1 w-full rounded-xl border bg-white px-3.5 py-2.5 text-sm text-navy shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-1";
-  const inputOk = "border-gray-200 focus:border-cta focus:ring-cta";
-  const inputErr = "border-red-400 bg-red-50 focus:border-red-500 focus:ring-red-400";
+  const inputBase = "mt-1 w-full rounded-xl border bg-white px-3.5 py-2.5 text-sm text-navy shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-1 dark:bg-neutral-900 dark:text-cream-100 dark:placeholder:text-gray-500";
+  const inputOk = "border-gray-200 focus:border-cta focus:ring-cta dark:border-neutral-600";
+  const inputErr = "border-red-400 bg-red-50 focus:border-red-500 focus:ring-red-400 dark:border-red-700 dark:bg-red-950/40 dark:focus:border-red-600 dark:focus:ring-red-700";
   const inp = (field: string) => `${inputBase} ${fieldErrors.has(field) ? inputErr : inputOk}`;
-  const labelClass = "block text-sm font-medium text-gray-700";
+  const labelClass = "block text-sm font-medium text-gray-700 dark:text-gray-300";
 
   return (
-    <div className="min-h-screen bg-cream-50/60">
+    <div className="min-h-screen bg-cream-50/60 dark:bg-neutral-900">
       <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
 
         {/* Back link */}
-        <Link href="/patient" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-cta transition-colors">
+        <Link href="/patient" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-cta transition-colors dark:text-gray-400">
           <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
           </svg>
@@ -422,23 +422,23 @@ export default function PatientProfilePage() {
         {/* Page header */}
         <div className="mt-6 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-navy">Your profile</h1>
-            <p className="mt-1.5 text-sm text-gray-500">
+            <h1 className="text-3xl font-bold text-navy dark:text-cream-100">Your profile</h1>
+            <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400">
               {data?.isComplete
                 ? "Your profile is complete. You can update your details below."
                 : "Complete your profile to book your 30-minute orientation consultation."}
             </p>
           </div>
           {lastUpdatedLabel && (
-            <p className="shrink-0 text-xs text-gray-400">Last updated: {lastUpdatedLabel}</p>
+            <p className="shrink-0 text-xs text-gray-400 dark:text-gray-400">Last updated: {lastUpdatedLabel}</p>
           )}
         </div>
 
         {/* Completion bar */}
-        <div className="mt-6 overflow-hidden rounded-2xl border-2 border-gray-300 bg-white p-5 shadow-sm">
+        <div className="mt-6 overflow-hidden rounded-2xl border-2 border-gray-300 bg-white p-5 shadow-sm dark:border-neutral-700 dark:bg-neutral-800">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-xs font-bold ${completionPercent === 100 ? "bg-green-100 text-green-700" : "bg-cta/10 text-cta"}`}>
+              <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-xs font-bold ${completionPercent === 100 ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300" : "bg-cta/10 text-cta"}`}>
                 {completionPercent === 100 ? (
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
@@ -446,16 +446,16 @@ export default function PatientProfilePage() {
                 ) : `${completionPercent}%`}
               </div>
               <div>
-                <p className="text-sm font-semibold text-navy">
+                <p className="text-sm font-semibold text-navy dark:text-cream-100">
                   {completionPercent === 100 ? "Profile complete" : `Profile ${completionPercent}% complete`}
                 </p>
                 {remainingRequiredCount > 0 && (
-                  <p className="text-xs text-gray-500">{remainingRequiredCount} required {remainingLabel} remaining</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{remainingRequiredCount} required {remainingLabel} remaining</p>
                 )}
               </div>
             </div>
           </div>
-          <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-gray-100">
+          <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-neutral-700">
             <div
               className={`h-full rounded-full transition-all duration-500 ${completionPercent === 100 ? "bg-green-500" : "bg-cta"}`}
               style={{ width: `${completionPercent}%` }}
@@ -466,41 +466,41 @@ export default function PatientProfilePage() {
 
         {/* Incomplete fields notice */}
         {!data?.isComplete && (
-          <div className="mt-4 flex items-start gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-5">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-200 text-amber-700">
+          <div className="mt-4 flex items-start gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-5 dark:border-amber-800 dark:bg-amber-950/40">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-200 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300">
               <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
               </svg>
             </div>
             <div>
-              <p className="font-semibold text-amber-900">Required information missing</p>
-              <p className="mt-0.5 text-sm text-amber-800">
+              <p className="font-semibold text-amber-900 dark:text-amber-200">Required information missing</p>
+              <p className="mt-0.5 text-sm text-amber-800 dark:text-amber-300">
                 Please fill in: {missingFieldLabels.join(", ")}.
               </p>
-              <p className="mt-1 text-xs text-amber-700">Once complete, you can book your orientation consultation.</p>
+              <p className="mt-1 text-xs text-amber-700 dark:text-amber-400">Once complete, you can book your orientation consultation.</p>
             </div>
           </div>
         )}
 
         {/* Error / success banners */}
         {error && (
-          <div className="mt-4 flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-4">
+          <div className="mt-4 flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950/40">
             <svg className="mt-0.5 h-5 w-5 shrink-0 text-red-500" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <circle cx="12" cy="12" r="9" strokeLinecap="round" strokeLinejoin="round" />
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01" />
             </svg>
-            <p className="text-sm text-red-700">{error}</p>
+            <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
           </div>
         )}
         {success && (
-          <div className="mt-4 flex items-start gap-3 rounded-2xl border border-green-200 bg-green-50 p-4">
+          <div className="mt-4 flex items-start gap-3 rounded-2xl border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-950/40">
             <svg className="mt-0.5 h-5 w-5 shrink-0 text-green-500" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <div>
-              <p className="text-sm font-semibold text-green-800">Profile saved successfully.</p>
+              <p className="text-sm font-semibold text-green-800 dark:text-green-300">Profile saved successfully.</p>
               {data?.isComplete && canBookOrientation && (
-                <p className="mt-0.5 text-sm text-green-700">
+                <p className="mt-0.5 text-sm text-green-700 dark:text-green-400">
                   You can now{" "}
                   <Link href="/patient/book" className="font-medium underline">book your orientation consultation →</Link>
                 </p>
@@ -512,15 +512,15 @@ export default function PatientProfilePage() {
         <form onSubmit={handleSubmit} noValidate className="mt-6 space-y-6">
 
           {/* ── Patient name & contact ── */}
-          <div className="rounded-2xl border-2 border-gray-300 bg-white shadow-sm">
-            <div className="rounded-t-2xl border-b-2 border-gray-300 bg-gray-50 px-6 py-4">
+          <div className="rounded-2xl border-2 border-gray-300 bg-white shadow-sm dark:border-neutral-700 dark:bg-neutral-800">
+            <div className="rounded-t-2xl border-b-2 border-gray-300 bg-gray-50 px-6 py-4 dark:border-neutral-700 dark:bg-neutral-800">
               <div className="flex items-center gap-3">
                 <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-cta/10 text-cta">
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6.75a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.25a7.5 7.5 0 0115 0" />
                   </svg>
                 </span>
-                <h2 className="font-semibold text-navy">Patient Information</h2>
+                <h2 className="font-semibold text-navy dark:text-cream-100">Patient Information</h2>
               </div>
             </div>
             <div className="p-6">
@@ -528,17 +528,17 @@ export default function PatientProfilePage() {
                 <div>
                   <label className={labelClass}>First name *</label>
                   <input type="text" value={form.firstName} onChange={(e) => { setForm((f) => ({ ...f, firstName: e.target.value })); setFieldErrors((s) => { const n = new Set(s); n.delete("firstName"); return n; }); }} required className={inp("firstName")} />
-                  {fieldErrors.has("firstName") && <p className="mt-1 text-xs text-red-500">First name is required.</p>}
+                  {fieldErrors.has("firstName") && <p className="mt-1 text-xs text-red-500 dark:text-red-400">First name is required.</p>}
                 </div>
                 <div>
                   <label className={labelClass}>Last name *</label>
                   <input type="text" value={form.lastName} onChange={(e) => { setForm((f) => ({ ...f, lastName: e.target.value })); setFieldErrors((s) => { const n = new Set(s); n.delete("lastName"); return n; }); }} required className={inp("lastName")} />
-                  {fieldErrors.has("lastName") && <p className="mt-1 text-xs text-red-500">Last name is required.</p>}
+                  {fieldErrors.has("lastName") && <p className="mt-1 text-xs text-red-500 dark:text-red-400">Last name is required.</p>}
                 </div>
               </div>
               <div className="mt-5 grid gap-5 sm:grid-cols-2">
                 <div>
-                  <label className={labelClass}>Preferred name <span className="font-normal text-gray-400">(optional)</span></label>
+                  <label className={labelClass}>Preferred name <span className="font-normal text-gray-400 dark:text-gray-400">(optional)</span></label>
                   <input
                     type="text"
                     value={form.preferredName}
@@ -550,13 +550,13 @@ export default function PatientProfilePage() {
                 <div>
                   <label className={labelClass}>Date of birth *</label>
                   <input type="date" value={form.dateOfBirth} onChange={(e) => { setForm((f) => ({ ...f, dateOfBirth: e.target.value })); if (e.target.value) setFieldErrors((s) => { const n = new Set(s); n.delete("dateOfBirth"); return n; }); }} required className={inp("dateOfBirth")} />
-                  {fieldErrors.has("dateOfBirth") && <p className="mt-1 text-xs text-red-500">Date of birth is required.</p>}
+                  {fieldErrors.has("dateOfBirth") && <p className="mt-1 text-xs text-red-500 dark:text-red-400">Date of birth is required.</p>}
                 </div>
               </div>
               <div className="mt-5">
                 <label className={labelClass}>Phone *</label>
-                <div className={`mt-1 flex overflow-hidden rounded-xl border bg-white shadow-sm focus-within:ring-1 ${fieldErrors.has("phone") ? "border-red-400 bg-red-50 focus-within:border-red-500 focus-within:ring-red-400" : "border-gray-200 focus-within:border-cta focus-within:ring-cta"}`}>
-                  <span className="flex items-center border-r border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-500">+1</span>
+                <div className={`mt-1 flex overflow-hidden rounded-xl border bg-white shadow-sm focus-within:ring-1 dark:bg-neutral-900 ${fieldErrors.has("phone") ? "border-red-400 bg-red-50 focus-within:border-red-500 focus-within:ring-red-400 dark:border-red-700 dark:bg-red-950/40 dark:focus-within:border-red-600 dark:focus-within:ring-red-700" : "border-gray-200 focus-within:border-cta focus-within:ring-cta dark:border-neutral-600"}`}>
+                  <span className="flex items-center border-r border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-500 dark:border-neutral-700 dark:bg-neutral-700 dark:text-gray-400">+1</span>
                   <input
                     type="tel"
                     inputMode="numeric"
@@ -565,10 +565,10 @@ export default function PatientProfilePage() {
                     onChange={(e) => { const digits = e.target.value.replace(/\D/g, "").slice(0, 10); setForm((f) => ({ ...f, phone: digits })); if (digits.length >= 10) setFieldErrors((s) => { const n = new Set(s); n.delete("phone"); return n; }); }}
                     required
                     placeholder="2175551234"
-                    className="w-full border-0 bg-transparent px-3.5 py-2.5 text-sm text-navy placeholder:text-gray-400 focus:ring-0"
+                    className="w-full border-0 bg-transparent px-3.5 py-2.5 text-sm text-navy placeholder:text-gray-400 focus:ring-0 dark:text-cream-100 dark:placeholder:text-gray-500"
                   />
                 </div>
-                {fieldErrors.has("phone") && <p className="mt-1 text-xs text-red-500">Valid 10-digit phone is required.</p>}
+                {fieldErrors.has("phone") && <p className="mt-1 text-xs text-red-500 dark:text-red-400">Valid 10-digit phone is required.</p>}
               </div>
               <div className="mt-5">
                 <label className={labelClass}>Address *</label>
@@ -580,21 +580,21 @@ export default function PatientProfilePage() {
                   required
                   className={inp("address")}
                 />
-                {fieldErrors.has("address") && <p className="mt-1 text-xs text-red-500">Address is required.</p>}
+                {fieldErrors.has("address") && <p className="mt-1 text-xs text-red-500 dark:text-red-400">Address is required.</p>}
               </div>
             </div>
           </div>
 
           {/* ── Demographics ── */}
-          <div className="rounded-2xl border-2 border-gray-300 bg-white shadow-sm">
-            <div className="rounded-t-2xl border-b-2 border-gray-300 bg-gray-50 px-6 py-4">
+          <div className="rounded-2xl border-2 border-gray-300 bg-white shadow-sm dark:border-neutral-700 dark:bg-neutral-800">
+            <div className="rounded-t-2xl border-b-2 border-gray-300 bg-gray-50 px-6 py-4 dark:border-neutral-700 dark:bg-neutral-800">
               <div className="flex items-center gap-3">
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-500">
+                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-500 dark:bg-blue-950/40 dark:text-blue-300">
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V19.5a2.25 2.25 0 002.25 2.25h.75" />
                   </svg>
                 </span>
-                <h2 className="font-semibold text-navy">Demographics</h2>
+                <h2 className="font-semibold text-navy dark:text-cream-100">Demographics</h2>
               </div>
             </div>
             <div className="p-6">
@@ -608,10 +608,10 @@ export default function PatientProfilePage() {
                     <option value="other">Other</option>
                     <option value="prefer_not_to_say">Prefer not to say</option>
                   </select>
-                  {fieldErrors.has("sex") && <p className="mt-1 text-xs text-red-500">Gender is required.</p>}
+                  {fieldErrors.has("sex") && <p className="mt-1 text-xs text-red-500 dark:text-red-400">Gender is required.</p>}
                 </div>
                 <div>
-                  <label className={labelClass}>Race <span className="font-normal text-gray-400">(optional)</span></label>
+                  <label className={labelClass}>Race <span className="font-normal text-gray-400 dark:text-gray-400">(optional)</span></label>
                   <select value={form.race} onChange={(e) => setForm((f) => ({ ...f, race: e.target.value }))} className={inp("_optional")}>
                     <option value="">Select</option>
                     <option value="american_indian_alaska_native">American Indian or Alaska Native</option>
@@ -625,7 +625,7 @@ export default function PatientProfilePage() {
                 </div>
               </div>
               <div className="mt-5">
-                <label className={labelClass}>Preferred language <span className="font-normal text-gray-400">(optional)</span></label>
+                <label className={labelClass}>Preferred language <span className="font-normal text-gray-400 dark:text-gray-400">(optional)</span></label>
                 <input
                   type="text"
                   value={form.preferredLanguage}
@@ -636,8 +636,8 @@ export default function PatientProfilePage() {
               </div>
               <div className="mt-5">
                 <div className="flex items-center justify-between">
-                  <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
-                    <svg className="h-3.5 w-3.5 text-gray-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <svg className="h-3.5 w-3.5 text-gray-400 dark:text-gray-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 10.5V7.875a4.5 4.5 0 119 0V10.5M6.75 10.5h10.5A1.5 1.5 0 0118.75 12v7.5a1.5 1.5 0 01-1.5 1.5H6.75a1.5 1.5 0 01-1.5-1.5V12a1.5 1.5 0 011.5-1.5z" />
                     </svg>
                     SSN (Social Security Number) *
@@ -657,35 +657,35 @@ export default function PatientProfilePage() {
                   placeholder="•••-••-1234"
                   className={inp("ssn")}
                 />
-                {fieldErrors.has("ssn") && <p className="mt-1 text-xs text-red-500">Full 9-digit SSN is required.</p>}
-                <p className="mt-1.5 text-xs text-gray-400">Used only for insurance &amp; identity verification.</p>
+                {fieldErrors.has("ssn") && <p className="mt-1 text-xs text-red-500 dark:text-red-400">Full 9-digit SSN is required.</p>}
+                <p className="mt-1.5 text-xs text-gray-400 dark:text-gray-400">Used only for insurance &amp; identity verification.</p>
               </div>
             </div>
           </div>
 
           {/* ── Preferred pharmacy — only shown once a clinical intake is confirmed ── */}
           {intakeConfirmed && (
-            <div className="rounded-2xl border-2 border-gray-300 bg-white shadow-sm">
-              <div className="rounded-t-2xl border-b-2 border-gray-300 bg-gray-50 px-6 py-4">
+            <div className="rounded-2xl border-2 border-gray-300 bg-white shadow-sm dark:border-neutral-700 dark:bg-neutral-800">
+              <div className="rounded-t-2xl border-b-2 border-gray-300 bg-gray-50 px-6 py-4 dark:border-neutral-700 dark:bg-neutral-800">
                 <div className="flex items-center gap-3">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-500">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-500 dark:bg-indigo-950/40 dark:text-indigo-300">
                     <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72m-13.5 8.65h3.75a.75.75 0 00.75-.75V13.5a.75.75 0 00-.75-.75H6.75a.75.75 0 00-.75.75v3.75c0 .415.336.75.75.75z" />
                     </svg>
                   </span>
-                  <h2 className="font-semibold text-navy">Preferred pharmacy *</h2>
+                  <h2 className="font-semibold text-navy dark:text-cream-100">Preferred pharmacy *</h2>
                 </div>
               </div>
               <div className="p-6 space-y-5">
                 <div>
                   <label className={labelClass}>Pharmacy name *</label>
                   <input type="text" value={form.preferredPharmacyName} onChange={(e) => { setForm((f) => ({ ...f, preferredPharmacyName: e.target.value })); if (e.target.value.trim()) setFieldErrors((s) => { const n = new Set(s); n.delete("preferredPharmacyName"); return n; }); }} required placeholder="e.g. CVS, Walgreens" className={inp("preferredPharmacyName")} />
-                  {fieldErrors.has("preferredPharmacyName") && <p className="mt-1 text-xs text-red-500">Pharmacy name is required.</p>}
+                  {fieldErrors.has("preferredPharmacyName") && <p className="mt-1 text-xs text-red-500 dark:text-red-400">Pharmacy name is required.</p>}
                 </div>
                 <div>
                   <label className={labelClass}>Pharmacy phone</label>
-                  <div className="mt-1 flex overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm focus-within:border-cta focus-within:ring-1 focus-within:ring-cta">
-                    <span className="flex items-center border-r border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-500">+1</span>
+                  <div className="mt-1 flex overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm focus-within:border-cta focus-within:ring-1 focus-within:ring-cta dark:border-neutral-600 dark:bg-neutral-900">
+                    <span className="flex items-center border-r border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-500 dark:border-neutral-700 dark:bg-neutral-700 dark:text-gray-400">+1</span>
                     <input
                       type="tel"
                       inputMode="numeric"
@@ -693,7 +693,7 @@ export default function PatientProfilePage() {
                       value={form.preferredPharmacyPhone}
                       onChange={(e) => { const digits = e.target.value.replace(/\D/g, "").slice(0, 10); setForm((f) => ({ ...f, preferredPharmacyPhone: digits })); }}
                       placeholder="2175551234"
-                      className="w-full border-0 bg-transparent px-3.5 py-2.5 text-sm text-navy placeholder:text-gray-400 focus:ring-0"
+                      className="w-full border-0 bg-transparent px-3.5 py-2.5 text-sm text-navy placeholder:text-gray-400 focus:ring-0 dark:text-cream-100 dark:placeholder:text-gray-500"
                     />
                   </div>
                 </div>
@@ -707,50 +707,50 @@ export default function PatientProfilePage() {
                     required
                     className={inp("preferredPharmacyAddress")}
                   />
-                  {fieldErrors.has("preferredPharmacyAddress") && <p className="mt-1 text-xs text-red-500">Pharmacy address is required.</p>}
+                  {fieldErrors.has("preferredPharmacyAddress") && <p className="mt-1 text-xs text-red-500 dark:text-red-400">Pharmacy address is required.</p>}
                 </div>
               </div>
             </div>
           )}
 
           {/* ── Parent / Guardian details ── */}
-          <div className="rounded-2xl border-2 border-gray-300 bg-white shadow-sm">
-            <div className="rounded-t-2xl border-b-2 border-gray-300 bg-gray-50 px-6 py-4">
+          <div className="rounded-2xl border-2 border-gray-300 bg-white shadow-sm dark:border-neutral-700 dark:bg-neutral-800">
+            <div className="rounded-t-2xl border-b-2 border-gray-300 bg-gray-50 px-6 py-4 dark:border-neutral-700 dark:bg-neutral-800">
               <div className="flex items-center gap-3">
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-300">
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
                   </svg>
                 </span>
                 <div>
-                  <h2 className="font-semibold text-navy">Parent / Guardian details</h2>
-                  <p className="text-xs text-gray-500">Parent 1 is required; Parent 2 is optional</p>
+                  <h2 className="font-semibold text-navy dark:text-cream-100">Parent / Guardian details</h2>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Parent 1 is required; Parent 2 is optional</p>
                 </div>
               </div>
             </div>
-            <div className="divide-y divide-cream-100 p-6 space-y-6">
+            <div className="divide-y divide-cream-100 p-6 space-y-6 dark:divide-neutral-700">
 
               {/* Parent 1 */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
                   <span className="flex h-6 w-6 items-center justify-center rounded-full bg-cta text-xs font-bold text-white">1</span>
-                  <h3 className="text-sm font-semibold text-navy">Parent 1 *</h3>
+                  <h3 className="text-sm font-semibold text-navy dark:text-cream-100">Parent 1 *</h3>
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
                     <label className={labelClass}>Name *</label>
                     <input type="text" value={form.guardian1Name} onChange={(e) => { setForm((f) => ({ ...f, guardian1Name: e.target.value })); if (e.target.value.trim()) setFieldErrors((s) => { const n = new Set(s); n.delete("guardian1Name"); return n; }); }} required className={inp("guardian1Name")} />
-                    {fieldErrors.has("guardian1Name") && <p className="mt-1 text-xs text-red-500">Parent 1 name is required.</p>}
+                    {fieldErrors.has("guardian1Name") && <p className="mt-1 text-xs text-red-500 dark:text-red-400">Parent 1 name is required.</p>}
                   </div>
                   <div>
                     <label className={labelClass}>Relationship *</label>
                     <input type="text" value={form.guardian1Relationship} onChange={(e) => { setForm((f) => ({ ...f, guardian1Relationship: e.target.value })); if (e.target.value.trim()) setFieldErrors((s) => { const n = new Set(s); n.delete("guardian1Relationship"); return n; }); }} placeholder="e.g. Mother, Father" required className={inp("guardian1Relationship")} />
-                    {fieldErrors.has("guardian1Relationship") && <p className="mt-1 text-xs text-red-500">Relationship is required.</p>}
+                    {fieldErrors.has("guardian1Relationship") && <p className="mt-1 text-xs text-red-500 dark:text-red-400">Relationship is required.</p>}
                   </div>
                   <div>
                     <label className={labelClass}>Phone *</label>
-                    <div className={`mt-1 flex overflow-hidden rounded-xl border bg-white shadow-sm focus-within:ring-1 ${fieldErrors.has("guardian1Phone") ? "border-red-400 bg-red-50 focus-within:border-red-500 focus-within:ring-red-400" : "border-gray-200 focus-within:border-cta focus-within:ring-cta"}`}>
-                      <span className="flex items-center border-r border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-500">+1</span>
+                    <div className={`mt-1 flex overflow-hidden rounded-xl border bg-white shadow-sm focus-within:ring-1 dark:bg-neutral-900 ${fieldErrors.has("guardian1Phone") ? "border-red-400 bg-red-50 focus-within:border-red-500 focus-within:ring-red-400 dark:border-red-700 dark:bg-red-950/40 dark:focus-within:border-red-600 dark:focus-within:ring-red-700" : "border-gray-200 focus-within:border-cta focus-within:ring-cta dark:border-neutral-600"}`}>
+                      <span className="flex items-center border-r border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-500 dark:border-neutral-700 dark:bg-neutral-700 dark:text-gray-400">+1</span>
                       <input
                         type="tel"
                         inputMode="numeric"
@@ -759,19 +759,19 @@ export default function PatientProfilePage() {
                         onChange={(e) => { const digits = e.target.value.replace(/\D/g, "").slice(0, 10); setForm((f) => ({ ...f, guardian1Phone: digits })); if (digits.length >= 10) setFieldErrors((s) => { const n = new Set(s); n.delete("guardian1Phone"); return n; }); }}
                         placeholder="2175551234"
                         required
-                        className="w-full border-0 bg-transparent px-3.5 py-2.5 text-sm text-navy placeholder:text-gray-400 focus:ring-0"
+                        className="w-full border-0 bg-transparent px-3.5 py-2.5 text-sm text-navy placeholder:text-gray-400 focus:ring-0 dark:text-cream-100 dark:placeholder:text-gray-500"
                       />
                     </div>
-                    {fieldErrors.has("guardian1Phone") && <p className="mt-1 text-xs text-red-500">Valid 10-digit phone is required.</p>}
+                    {fieldErrors.has("guardian1Phone") && <p className="mt-1 text-xs text-red-500 dark:text-red-400">Valid 10-digit phone is required.</p>}
                   </div>
                   <div>
-                    <label className={labelClass}>Email <span className="font-normal text-gray-400">(optional)</span></label>
+                    <label className={labelClass}>Email <span className="font-normal text-gray-400 dark:text-gray-400">(optional)</span></label>
                     <input type="email" value={form.guardian1Email} onChange={(e) => setForm((f) => ({ ...f, guardian1Email: e.target.value }))} placeholder="parent@example.com" className={inp("_optional")} />
                   </div>
                   <div>
                     <label className={labelClass}>Address *</label>
                     <CaliforniaAddressAutocomplete id="profile-guardian1-address" value={form.guardian1Address} onChange={(address) => { setForm((f) => ({ ...f, guardian1Address: address })); if (address.trim()) setFieldErrors((s) => { const n = new Set(s); n.delete("guardian1Address"); return n; }); }} placeholder="Start typing address…" restrictToCalifornia={false} required className={inp("guardian1Address")} />
-                    {fieldErrors.has("guardian1Address") && <p className="mt-1 text-xs text-red-500">Parent 1 address is required.</p>}
+                    {fieldErrors.has("guardian1Address") && <p className="mt-1 text-xs text-red-500 dark:text-red-400">Parent 1 address is required.</p>}
                   </div>
                 </div>
               </div>
@@ -779,8 +779,8 @@ export default function PatientProfilePage() {
               {/* Parent 2 */}
               <div className="pt-6">
                 <div className="flex items-center gap-2 mb-4">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 text-xs font-bold text-gray-600">2</span>
-                  <h3 className="text-sm font-semibold text-navy">Parent 2</h3>
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 text-xs font-bold text-gray-600 dark:bg-neutral-700 dark:text-gray-300">2</span>
+                  <h3 className="text-sm font-semibold text-navy dark:text-cream-100">Parent 2</h3>
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
@@ -793,8 +793,8 @@ export default function PatientProfilePage() {
                   </div>
                   <div>
                     <label className={labelClass}>Phone</label>
-                    <div className="mt-1 flex overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm focus-within:border-cta focus-within:ring-1 focus-within:ring-cta">
-                      <span className="flex items-center border-r border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-500">+1</span>
+                    <div className="mt-1 flex overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm focus-within:border-cta focus-within:ring-1 focus-within:ring-cta dark:border-neutral-600 dark:bg-neutral-900">
+                      <span className="flex items-center border-r border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-500 dark:border-neutral-700 dark:bg-neutral-700 dark:text-gray-400">+1</span>
                       <input
                         type="tel"
                         inputMode="numeric"
@@ -802,7 +802,7 @@ export default function PatientProfilePage() {
                         value={form.guardian2Phone}
                         onChange={(e) => { const digits = e.target.value.replace(/\D/g, "").slice(0, 10); setForm((f) => ({ ...f, guardian2Phone: digits })); }}
                         placeholder="2175551234"
-                        className="w-full border-0 bg-transparent px-3.5 py-2.5 text-sm text-navy placeholder:text-gray-400 focus:ring-0"
+                        className="w-full border-0 bg-transparent px-3.5 py-2.5 text-sm text-navy placeholder:text-gray-400 focus:ring-0 dark:text-cream-100 dark:placeholder:text-gray-500"
                       />
                     </div>
                   </div>
@@ -836,37 +836,37 @@ export default function PatientProfilePage() {
                 </>
               ) : "Save profile"}
             </button>
-            <Link href="/patient" className="text-sm text-gray-500 hover:text-gray-700 hover:underline">
+            <Link href="/patient" className="text-sm text-gray-500 hover:text-gray-700 hover:underline dark:text-gray-400 dark:hover:text-gray-300">
               Cancel
             </Link>
           </div>
         </form>
 
         {/* ── Medical records ── */}
-        <div className="mt-6 rounded-2xl border-2 border-gray-300 bg-white shadow-sm">
-          <div className="rounded-t-2xl border-b-2 border-gray-300 bg-gray-50 px-6 py-4">
+        <div className="mt-6 rounded-2xl border-2 border-gray-300 bg-white shadow-sm dark:border-neutral-700 dark:bg-neutral-800">
+          <div className="rounded-t-2xl border-b-2 border-gray-300 bg-gray-50 px-6 py-4 dark:border-neutral-700 dark:bg-neutral-800">
             <div className="flex items-center gap-3">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 text-gray-500">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 text-gray-500 dark:bg-neutral-700 dark:text-gray-400">
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-8.625a1.125 1.125 0 00-1.125-1.125H8.25m11.25 9.75l-3-3m3 3l-3 3m-2.25-12h-6A1.125 1.125 0 007.125 6.375v11.25A1.125 1.125 0 008.25 18.75h8.625A1.125 1.125 0 0018 17.625V9.75a1.125 1.125 0 00-.33-.795l-3.375-3.375A1.125 1.125 0 0013.5 5.25z" />
                 </svg>
               </span>
               <div>
-                <h2 className="font-semibold text-navy">Previous medical records</h2>
-                <p className="text-xs text-gray-500">PDF, PNG, JPG — max 10 MB per file</p>
+                <h2 className="font-semibold text-navy dark:text-cream-100">Previous medical records</h2>
+                <p className="text-xs text-gray-500 dark:text-gray-400">PDF, PNG, JPG — max 10 MB per file</p>
               </div>
             </div>
           </div>
           <div className="p-6">
             <form onSubmit={handleUpload} className="flex flex-wrap items-end gap-3">
               <div className="flex-1 min-w-[180px]">
-                <label className="block text-xs font-medium text-gray-600 mb-1">Select files</label>
+                <label className="block text-xs font-medium text-gray-600 mb-1 dark:text-gray-300">Select files</label>
                 <input
                   type="file"
                   accept=".pdf,.png,.jpg,.jpeg,.gif,.webp"
                   multiple
                   onChange={() => setUploadError(null)}
-                  className="block w-full text-sm text-gray-600 file:mr-3 file:rounded-lg file:border-0 file:bg-cta/10 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-cta hover:file:bg-cta/20"
+                  className="block w-full text-sm text-gray-600 file:mr-3 file:rounded-lg file:border-0 file:bg-cta/10 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-cta hover:file:bg-cta/20 dark:text-gray-300"
                 />
               </div>
               <button type="submit" disabled={uploading} className="rounded-xl bg-cta px-4 py-2.5 text-sm font-medium text-white hover:bg-cta/90 disabled:opacity-50">
@@ -874,7 +874,7 @@ export default function PatientProfilePage() {
               </button>
             </form>
             {uploadError && (
-              <div className="mt-3 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700">
+              <div className="mt-3 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-300">
                 <svg className="mt-0.5 h-4 w-4 shrink-0 text-red-500" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                   <circle cx="12" cy="12" r="9" /><path strokeLinecap="round" d="M12 8v4m0 4h.01" />
                 </svg>
@@ -884,18 +884,18 @@ export default function PatientProfilePage() {
             {documents.length > 0 && (
               <ul className="mt-5 space-y-2">
                 {documents.map((doc) => (
-                  <li key={doc.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-gray-100 bg-gray-50/60 px-4 py-3">
+                  <li key={doc.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-gray-100 bg-gray-50/60 px-4 py-3 dark:border-neutral-700 dark:bg-neutral-900/60">
                     <div className="flex items-center gap-2.5">
-                      <svg className="h-4 w-4 shrink-0 text-gray-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                      <svg className="h-4 w-4 shrink-0 text-gray-400 dark:text-gray-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-8.625a1.125 1.125 0 00-1.125-1.125H8.25m11.25 9.75l-3-3m3 3l-3 3m-2.25-12h-6A1.125 1.125 0 007.125 6.375v11.25A1.125 1.125 0 008.25 18.75h8.625A1.125 1.125 0 0018 17.625V9.75a1.125 1.125 0 00-.33-.795l-3.375-3.375A1.125 1.125 0 0013.5 5.25z" />
                       </svg>
-                      <span className="text-sm font-medium text-navy">{doc.fileName}</span>
+                      <span className="text-sm font-medium text-navy dark:text-cream-100">{doc.fileName}</span>
                     </div>
                     <div className="flex items-center gap-4">
                       {doc.downloadUrl && (
                         <a href={doc.downloadUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-cta hover:underline">View</a>
                       )}
-                      <button type="button" onClick={() => handleRemoveDocument(doc.id)} disabled={removingDocumentId === doc.id} className="text-sm font-medium text-red-500 hover:underline disabled:opacity-50">
+                      <button type="button" onClick={() => handleRemoveDocument(doc.id)} disabled={removingDocumentId === doc.id} className="text-sm font-medium text-red-500 hover:underline disabled:opacity-50 dark:text-red-400">
                         {removingDocumentId === doc.id ? "Removing…" : "Remove"}
                       </button>
                     </div>

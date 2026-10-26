@@ -32,18 +32,18 @@ export default function DoctorForgotPasswordPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col bg-cream-50">
+    <div className="flex flex-1 flex-col bg-cream-50 dark:bg-neutral-900">
       <main className="flex-1 py-16">
         <div className="mx-auto max-w-md px-4 sm:px-6 lg:px-8">
-          <h1 className="section-heading">Doctor Portal — Reset password</h1>
-          <p className="mt-2 text-gray-600">
+          <h1 className="section-heading dark:text-cream-100">Doctor Portal — Reset password</h1>
+          <p className="mt-2 text-gray-600 dark:text-gray-300">
             Enter your email and we’ll send you a secure link to reset your password.
           </p>
 
           {status === "sent" ? (
-            <div className="card mt-10 border-green-200 bg-green-50">
-              <p className="font-medium text-green-800">Check your email</p>
-              <p className="mt-2 text-sm text-green-700">
+            <div className="card mt-10 border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/40">
+              <p className="font-medium text-green-800 dark:text-green-200">Check your email</p>
+              <p className="mt-2 text-sm text-green-700 dark:text-green-300">
                 If an account exists for that email, we sent a reset link. It expires in 24 hours.
               </p>
               <Link href="/doctor/login" className="mt-4 inline-block btn-primary">
@@ -53,7 +53,7 @@ export default function DoctorForgotPasswordPage() {
           ) : (
             <form onSubmit={handleSubmit} className="card mt-10 space-y-6">
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Email
                 </label>
                 <input
@@ -62,14 +62,14 @@ export default function DoctorForgotPasswordPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="mt-1 block w-full rounded-lg border border-cream-200 bg-white px-3 py-2 text-navy shadow-sm focus:border-cta focus:outline-none focus:ring-1 focus:ring-cta"
+                  className="mt-1 block w-full rounded-lg border border-cream-200 bg-white px-3 py-2 text-navy shadow-sm focus:border-cta focus:outline-none focus:ring-1 focus:ring-cta dark:border-neutral-600 dark:bg-neutral-900 dark:text-cream-100"
                 />
               </div>
-              {errorMessage && <p className="text-sm text-red-600">{errorMessage}</p>}
+              {errorMessage && <p className="text-sm text-red-600 dark:text-red-400">{errorMessage}</p>}
               <button type="submit" disabled={status === "submitting"} className="btn-primary w-full">
                 {status === "submitting" ? "Sending…" : "Send reset link"}
               </button>
-              <div className="text-center text-sm text-gray-600">
+              <div className="text-center text-sm text-gray-600 dark:text-gray-300">
                 <Link href="/doctor/login" className="text-cta hover:underline">
                   Back to Doctor Login
                 </Link>

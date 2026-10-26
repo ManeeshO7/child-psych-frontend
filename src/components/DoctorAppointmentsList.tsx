@@ -390,12 +390,12 @@ export default function DoctorAppointmentsList() {
   };
 
   const STATUS_STYLES: Record<string, string> = {
-    scheduled: "bg-blue-100 text-blue-800",
-    pending_confirmation: "bg-orange-100 text-orange-800",
-    card_on_file: "bg-amber-100 text-amber-800",
-    paid: "bg-indigo-100 text-indigo-800",
-    completed: "bg-green-100 text-green-800",
-    cancelled: "bg-gray-100 text-gray-500",
+    scheduled: "bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200",
+    pending_confirmation: "bg-orange-100 text-orange-800 dark:bg-orange-900/60 dark:text-orange-200",
+    card_on_file: "bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200",
+    paid: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/60 dark:text-indigo-200",
+    completed: "bg-green-100 text-green-800 dark:bg-green-900/60 dark:text-green-200",
+    cancelled: "bg-gray-100 text-gray-500 dark:bg-neutral-700 dark:text-gray-400",
   };
 
   const STATUS_LABELS: Record<string, string> = {
@@ -408,7 +408,7 @@ export default function DoctorAppointmentsList() {
   };
 
   return (
-    <div className="min-h-screen bg-cream-50/60">
+    <div className="min-h-screen bg-cream-50/60 dark:bg-neutral-900">
     <main className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
 
       {/* Toast notice */}
@@ -417,10 +417,10 @@ export default function DoctorAppointmentsList() {
           <div
             className={`flex w-full max-w-xl items-start justify-between gap-3 rounded-2xl border px-5 py-3.5 shadow-lg ${
               notice.type === "success"
-                ? "border-green-200 bg-green-50 text-green-900"
+                ? "border-green-200 bg-green-50 text-green-900 dark:border-green-800 dark:bg-green-950/40 dark:text-green-200"
                 : notice.type === "error"
-                  ? "border-red-200 bg-red-50 text-red-900"
-                  : "border-cream-200 bg-white text-navy"
+                  ? "border-red-200 bg-red-50 text-red-900 dark:border-red-800 dark:bg-red-950/40 dark:text-red-300"
+                  : "border-cream-200 bg-white text-navy dark:border-neutral-700 dark:bg-neutral-800 dark:text-cream-100"
             }`}
             role="status"
             aria-live="polite"
@@ -438,14 +438,14 @@ export default function DoctorAppointmentsList() {
 
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50">
-            <svg className="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50 dark:bg-blue-950/40">
+            <svg className="h-5 w-5 text-blue-600 dark:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
             </svg>
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-navy">Appointments</h1>
-            <p className="text-sm text-gray-500">
+            <h1 className="text-2xl font-bold text-navy dark:text-cream-100">Appointments</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               {appointments.length > 0 ? `${appointments.length} appointment${appointments.length !== 1 ? "s" : ""}` : "Upcoming and past appointments"}
             </p>
           </div>
@@ -453,7 +453,7 @@ export default function DoctorAppointmentsList() {
 
         {/* Search */}
         <div className="relative w-full max-w-sm">
-          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-400">
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
             </svg>
@@ -464,7 +464,7 @@ export default function DoctorAppointmentsList() {
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Search by patient name…"
-            className="w-full rounded-xl border border-cream-200 bg-white py-2.5 pl-9 pr-3 text-sm text-navy placeholder-gray-400 shadow-sm focus:border-cta focus:outline-none focus:ring-2 focus:ring-cta/20"
+            className="w-full rounded-xl border border-cream-200 bg-white py-2.5 pl-9 pr-3 text-sm text-navy placeholder-gray-400 shadow-sm focus:border-cta focus:outline-none focus:ring-2 focus:ring-cta/20 dark:border-neutral-600 dark:bg-neutral-900 dark:text-cream-100 dark:placeholder:text-gray-500"
             aria-label="Search by patient name"
           />
         </div>
@@ -473,14 +473,14 @@ export default function DoctorAppointmentsList() {
       {/* Filters row */}
       <div className="mb-6 flex flex-wrap items-center gap-3">
         {/* Tab toggle */}
-        <div className="rounded-xl border border-cream-200 bg-white p-1.5 shadow-sm flex gap-1">
+        <div className="rounded-xl border border-cream-200 bg-white p-1.5 shadow-sm flex gap-1 dark:border-neutral-700 dark:bg-neutral-800">
           {(["active", "completed"] as const).map((v) => (
             <button
               key={v}
               type="button"
               onClick={() => setView(v)}
               className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
-                view === v ? "bg-cta text-white shadow-sm" : "text-gray-500 hover:text-navy"
+                view === v ? "bg-cta text-white shadow-sm" : "text-gray-500 hover:text-navy dark:text-gray-400 dark:hover:text-cream-100"
               }`}
             >
               {v === "active" ? "Active" : "Completed"}
@@ -490,13 +490,13 @@ export default function DoctorAppointmentsList() {
 
         {/* Date filter */}
         <div className="flex items-center gap-2">
-          <label htmlFor="appt-date-filter" className="text-sm text-gray-500 whitespace-nowrap">Filter by date:</label>
+          <label htmlFor="appt-date-filter" className="text-sm text-gray-500 whitespace-nowrap dark:text-gray-400">Filter by date:</label>
           <input
             id="appt-date-filter"
             type="date"
             value={filterDate ?? ""}
             onChange={(e) => setFilterDate(e.target.value || null)}
-            className="rounded-xl border border-cream-200 bg-white px-3 py-2 text-sm text-navy shadow-sm focus:border-cta focus:outline-none"
+            className="rounded-xl border border-cream-200 bg-white px-3 py-2 text-sm text-navy shadow-sm focus:border-cta focus:outline-none dark:border-neutral-600 dark:bg-neutral-900 dark:text-cream-100"
           />
           {filterDate && (
             <button type="button" onClick={() => setFilterDate(null)} className="text-sm text-cta hover:underline">
@@ -515,15 +515,15 @@ export default function DoctorAppointmentsList() {
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
               </svg>
-              <p className="text-sm text-gray-500">Loading appointments…</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Loading appointments…</p>
             </div>
           </div>
         ) : appointments.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-cream-300 bg-white py-20 text-center">
-            <svg className="h-10 w-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-cream-300 bg-white py-20 text-center dark:border-neutral-700 dark:bg-neutral-800">
+            <svg className="h-10 w-10 text-gray-300 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
             </svg>
-            <p className="mt-3 text-sm font-medium text-gray-500">
+            <p className="mt-3 text-sm font-medium text-gray-500 dark:text-gray-400">
               {searchApplied
                 ? `No appointments found for "${searchApplied}"`
                 : filterDate
@@ -537,7 +537,7 @@ export default function DoctorAppointmentsList() {
               {formattedAppointments.map(({ appointment: a, formattedDate }, idx) => (
               <li
                 key={`${a.id}-${a.status}-${a.type}-${a.scheduledAt ?? "na"}-${idx}`}
-                className="rounded-2xl border border-cream-200 bg-white shadow-sm overflow-hidden"
+                className="rounded-2xl border border-cream-200 bg-white shadow-sm overflow-hidden dark:border-neutral-700 dark:bg-neutral-800"
               >
                 {/* Status strip */}
                 <div className={`h-1 w-full ${
@@ -546,7 +546,7 @@ export default function DoctorAppointmentsList() {
                   a.status === "card_on_file" ? "bg-amber-400" :
                   a.status === "paid" ? "bg-indigo-400" :
                   a.status === "completed" ? "bg-green-400" :
-                  "bg-gray-200"
+                  "bg-gray-200 dark:bg-neutral-600"
                 }`} />
 
                 <div className="p-5">
@@ -560,26 +560,26 @@ export default function DoctorAppointmentsList() {
                           </div>
                         )}
                         <div>
-                          <p className="font-semibold text-navy">{a.patient?.name ?? "Patient"}</p>
-                          <p className="text-xs text-gray-500">{formattedDate}</p>
+                          <p className="font-semibold text-navy dark:text-cream-100">{a.patient?.name ?? "Patient"}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">{formattedDate}</p>
                         </div>
                       </div>
 
                       {/* Type + duration */}
                       <div className="mt-3 flex flex-wrap items-center gap-2">
-                        <span className="inline-flex items-center rounded-full bg-cream-100 px-2.5 py-1 text-xs font-medium text-navy">
+                        <span className="inline-flex items-center rounded-full bg-cream-100 px-2.5 py-1 text-xs font-medium text-navy dark:bg-neutral-700 dark:text-cream-100">
                           {TYPE_LABELS[a.type] ?? a.type}
                         </span>
-                        <span className="text-xs text-gray-400">{a.durationMinutes} min</span>
+                        <span className="text-xs text-gray-400 dark:text-gray-400">{a.durationMinutes} min</span>
                       </div>
 
                       {/* Payment info */}
                       {(a.status === "paid" || a.status === "completed") && a.chargedAt && (
-                        <div className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-green-50 border border-green-200 px-2.5 py-1">
-                          <svg className="h-3.5 w-3.5 text-green-600" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                        <div className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-green-50 border border-green-200 px-2.5 py-1 dark:bg-green-950/40 dark:border-green-800">
+                          <svg className="h-3.5 w-3.5 text-green-600 dark:text-green-300" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
-                          <span className="text-xs font-medium text-green-800">
+                          <span className="text-xs font-medium text-green-800 dark:text-green-200">
                             Payment collected
                             {a.amountCents ? ` · $${(a.amountCents / 100).toFixed(2)}` : ""}
                             {" · "}
@@ -616,26 +616,26 @@ export default function DoctorAppointmentsList() {
                         )}
                         {a.status === "pending_confirmation" && (
                           <button type="button" onClick={(e) => { e.stopPropagation(); setRescheduleAppointment(a); }}
-                            className="inline-flex items-center rounded-xl border border-cream-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm hover:border-cta/30 hover:text-cta">
+                            className="inline-flex items-center rounded-xl border border-cream-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm hover:border-cta/30 hover:text-cta dark:border-neutral-700 dark:bg-neutral-800 dark:text-gray-300">
                             Change time
                           </button>
                         )}
                         {canReschedule(a) && (
                           <button type="button" onClick={(e) => { e.stopPropagation(); setRescheduleAppointment(a); }}
-                            className="inline-flex items-center rounded-xl border border-cream-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm hover:border-cta/30 hover:text-cta">
+                            className="inline-flex items-center rounded-xl border border-cream-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm hover:border-cta/30 hover:text-cta dark:border-neutral-700 dark:bg-neutral-800 dark:text-gray-300">
                             Reschedule
                           </button>
                         )}
                         {a.status === "card_on_file" && (
                           <button type="button" onClick={(e) => { e.stopPropagation(); openChargeModal(a); }}
                             disabled={openingChargeModalId === a.id}
-                            className="inline-flex items-center rounded-xl border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-100 disabled:opacity-50">
+                            className="inline-flex items-center rounded-xl border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-100 disabled:opacity-50 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
                             {openingChargeModalId === a.id ? "Opening…" : "Charge now"}
                           </button>
                         )}
                         {a.status === "paid" && (
                           <button type="button" onClick={() => completeAppointment(a.id)} disabled={completingId !== null}
-                            className="inline-flex items-center rounded-xl border border-green-200 bg-green-50 px-3 py-1.5 text-xs font-semibold text-green-800 hover:bg-green-100 disabled:opacity-50">
+                            className="inline-flex items-center rounded-xl border border-green-200 bg-green-50 px-3 py-1.5 text-xs font-semibold text-green-800 hover:bg-green-100 disabled:opacity-50 dark:border-green-800 dark:bg-green-950/40 dark:text-green-200">
                             {completingId === a.id ? "Marking…" : "Mark as complete"}
                           </button>
                         )}
@@ -645,16 +645,16 @@ export default function DoctorAppointmentsList() {
                             const hasForms = a.hasFormsForThisAppointment === true;
                             const count = a.formsAssignedCount ?? 0;
                             if (noFormsRequired) return (
-                              <span className="inline-flex items-center rounded-xl border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs text-gray-500">No forms required</span>
+                              <span className="inline-flex items-center rounded-xl border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs text-gray-500 dark:border-neutral-700 dark:bg-neutral-700 dark:text-gray-400">No forms required</span>
                             );
                             if (hasForms) return (
-                              <span className="inline-flex items-center rounded-xl border border-teal-200 bg-teal-50 px-3 py-1.5 text-xs font-semibold text-teal-800">
+                              <span className="inline-flex items-center rounded-xl border border-teal-200 bg-teal-50 px-3 py-1.5 text-xs font-semibold text-teal-800 dark:border-teal-800 dark:bg-teal-950/40 dark:text-teal-200">
                                 {count === 1 ? "1 form assigned" : `${count} forms assigned`}
                               </span>
                             );
                             return (
                               <button type="button" onClick={(e) => { e.stopPropagation(); setAssignFormsAppointment({ id: a.id, patientId: a.patient!.id }); setAssignFormsModalOpen(true); }}
-                                className="inline-flex items-center rounded-xl border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-100">
+                                className="inline-flex items-center rounded-xl border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
                                 No forms assigned
                               </button>
                             );
@@ -664,12 +664,12 @@ export default function DoctorAppointmentsList() {
                           <>
                             {!a.patientHasPendingClinicalIntake && (
                               <button type="button" onClick={(e) => { e.stopPropagation(); setScheduleClinicalIntakeAppointment({ id: a.id, patientId: a.patient!.id, patientName: a.patient!.name || "" }); setScheduleClinicalIntakeOpen(true); }}
-                                className="inline-flex items-center rounded-xl border border-cream-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm hover:border-cta/30 hover:text-cta">
+                                className="inline-flex items-center rounded-xl border border-cream-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm hover:border-cta/30 hover:text-cta dark:border-neutral-700 dark:bg-neutral-800 dark:text-gray-300">
                                 Schedule clinical intake →
                               </button>
                             )}
                             <button type="button" onClick={(e) => { e.stopPropagation(); rejectAfterOrientation(a.id); }} disabled={rejectingId !== null}
-                              className="inline-flex items-center rounded-xl border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100 disabled:opacity-50">
+                              className="inline-flex items-center rounded-xl border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100 disabled:opacity-50 dark:border-red-800 dark:bg-red-950/40 dark:text-red-300">
                               {rejectingId === a.id ? "Rejecting…" : "Reject patient"}
                             </button>
                           </>
@@ -692,13 +692,13 @@ export default function DoctorAppointmentsList() {
                               });
                             }}
                             disabled={openingFollowupForPatientId === a.patient.id}
-                            className="inline-flex items-center rounded-xl border border-cream-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm hover:border-cta/30 hover:text-cta">
+                            className="inline-flex items-center rounded-xl border border-cream-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm hover:border-cta/30 hover:text-cta dark:border-neutral-700 dark:bg-neutral-800 dark:text-gray-300">
                             {openingFollowupForPatientId === a.patient.id ? "Opening…" : "Schedule follow-up →"}
                           </button>
                         )}
                         {a.patient && (
                           <Link href={`/doctor/patients/${a.patient.id}`}
-                            className="inline-flex items-center gap-1 rounded-xl border border-cream-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm hover:border-cta/30 hover:text-cta">
+                            className="inline-flex items-center gap-1 rounded-xl border border-cream-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm hover:border-cta/30 hover:text-cta dark:border-neutral-700 dark:bg-neutral-800 dark:text-gray-300">
                             View patient
                             <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                           </Link>
@@ -707,7 +707,7 @@ export default function DoctorAppointmentsList() {
                     </div>
 
                     {/* Status badge */}
-                    <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_STYLES[a.status] ?? "bg-gray-100 text-gray-600"}`}>
+                    <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_STYLES[a.status] ?? "bg-gray-100 text-gray-600 dark:bg-neutral-700 dark:text-gray-300"}`}>
                       {STATUS_LABELS[a.status] ?? a.status}
                     </span>
                   </div>
@@ -717,17 +717,17 @@ export default function DoctorAppointmentsList() {
             </ul>
 
             {/* Pagination */}
-            <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-cream-200 bg-white px-5 py-3.5 shadow-sm">
-              <p className="text-sm text-gray-500">
+            <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-cream-200 bg-white px-5 py-3.5 shadow-sm dark:border-neutral-700 dark:bg-neutral-800">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 Showing {appointments.length} appointment{appointments.length !== 1 ? "s" : ""}
               </p>
               <div className="flex items-center gap-2">
                 <button type="button" onClick={goPrev} disabled={loading || prevStack.length === 0}
-                  className="rounded-xl border border-cream-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 shadow-sm hover:bg-cream-50 disabled:opacity-40 disabled:pointer-events-none">
+                  className="rounded-xl border border-cream-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 shadow-sm hover:bg-cream-50 disabled:opacity-40 disabled:pointer-events-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-gray-300 dark:hover:bg-neutral-700">
                   Previous
                 </button>
                 <button type="button" onClick={goNext} disabled={loading || !hasMore || !nextCursor}
-                  className="rounded-xl border border-cream-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 shadow-sm hover:bg-cream-50 disabled:opacity-40 disabled:pointer-events-none">
+                  className="rounded-xl border border-cream-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 shadow-sm hover:bg-cream-50 disabled:opacity-40 disabled:pointer-events-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-gray-300 dark:hover:bg-neutral-700">
                   Next
                 </button>
               </div>

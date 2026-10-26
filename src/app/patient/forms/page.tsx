@@ -297,15 +297,15 @@ export default function PatientFormsPage() {
     if (formKey === PHQA_QUESTIONNAIRE_KEY) {
       return (
         <div className="space-y-6">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-gray-300">
             <strong>Timeframe: 2 weeks.</strong> Choose one response for each item:{" "}
             <strong>Not at all</strong>, <strong>Several days</strong>, <strong>More than half the days</strong>, or{" "}
             <strong>Nearly every day</strong>.
           </p>
           <ul className="space-y-3">
             {PHQA_QUESTIONS.map((q) => (
-              <li key={q.linkId} className="rounded-lg border border-gray-200 bg-white p-3">
-                <p className="text-sm font-medium text-gray-700">{q.question}</p>
+              <li key={q.linkId} className="rounded-lg border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-3">
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{q.question}</p>
                 <div className="mt-2 flex flex-wrap gap-4">
                   {PHQA_OPTIONS.map((opt) => (
                     <label key={opt.value} className="inline-flex items-center gap-2">
@@ -316,20 +316,20 @@ export default function PatientFormsPage() {
                         onChange={() =>
                           updateQuestionnaireResponse(assignment.id, q.linkId, opt.value)
                         }
-                        className="h-4 w-4 border-gray-300 text-cta focus:ring-cta"
+                        className="h-4 w-4 border-gray-300 dark:border-neutral-600 text-cta focus:ring-cta"
                       />
-                      <span className="text-sm text-gray-700">{opt.label}</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">{opt.label}</span>
                     </label>
                   ))}
                 </div>
               </li>
             ))}
           </ul>
-          <div className="rounded-lg border border-gray-200 bg-white p-3">
-            <p className="text-sm font-medium text-gray-700">
+          <div className="rounded-lg border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-3">
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Optional functional impairment question
             </p>
-            <p className="mt-1 text-sm text-gray-700">{PHQA_FUNCTIONAL_IMPAIRMENT_QUESTION.question}</p>
+            <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">{PHQA_FUNCTIONAL_IMPAIRMENT_QUESTION.question}</p>
             <div className="mt-2 flex flex-wrap gap-4">
               {PHQA_FUNCTIONAL_IMPAIRMENT_OPTIONS.map((opt) => (
                 <label key={opt.value} className="inline-flex items-center gap-2">
@@ -346,9 +346,9 @@ export default function PatientFormsPage() {
                         opt.value
                       )
                     }
-                    className="h-4 w-4 border-gray-300 text-cta focus:ring-cta"
+                    className="h-4 w-4 border-gray-300 dark:border-neutral-600 text-cta focus:ring-cta"
                   />
-                  <span className="text-sm text-gray-700">{opt.label}</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">{opt.label}</span>
                 </label>
               ))}
             </div>
@@ -368,13 +368,13 @@ export default function PatientFormsPage() {
     if (formKey === PHQ9_QUESTIONNAIRE_KEY) {
       return (
         <div className="space-y-6">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-gray-300">
             Over the past 2 weeks, please choose one response for each question: Not at all, Several days, More than half the days, or Nearly every day. Your answers help your care team understand your current emotional well-being and provide the right support.
           </p>
           <ul className="space-y-3">
             {PHQ9_QUESTIONS.map((q) => (
-              <li key={q.linkId} className="rounded-lg border border-gray-200 bg-white p-3">
-                <p className="text-sm font-medium text-gray-700">{q.question}</p>
+              <li key={q.linkId} className="rounded-lg border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-3">
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{q.question}</p>
                 <div className="mt-2 flex flex-wrap gap-4">
                   {PHQ9_OPTIONS.map((opt) => (
                     <label key={opt.value} className="inline-flex items-center gap-2">
@@ -385,9 +385,9 @@ export default function PatientFormsPage() {
                         onChange={() =>
                           updateQuestionnaireResponse(assignment.id, q.linkId, opt.value)
                         }
-                        className="h-4 w-4 border-gray-300 text-cta focus:ring-cta"
+                        className="h-4 w-4 border-gray-300 dark:border-neutral-600 text-cta focus:ring-cta"
                       />
-                      <span className="text-sm text-gray-700">{opt.label}</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">{opt.label}</span>
                     </label>
                   ))}
                 </div>
@@ -409,14 +409,14 @@ export default function PatientFormsPage() {
     if (formKey === SCARED_CHILD_QUESTIONNAIRE_KEY) {
       return (
         <div className="space-y-6">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-gray-300">
             <strong>Timeframe: Past 3 months.</strong> Response scale:{" "}
             <strong>Not true</strong>, <strong>Somewhat true</strong>, or <strong>Very true</strong>.
           </p>
           <ul className="space-y-3">
             {SCARED_CHILD_QUESTIONS.map((q, idx) => (
-              <li key={q.linkId} className="rounded-lg border border-gray-200 bg-white p-3">
-                <p className="text-sm font-medium text-gray-700">{idx + 1}. {q.question}</p>
+              <li key={q.linkId} className="rounded-lg border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-3">
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{idx + 1}. {q.question}</p>
                 <div className="mt-2 flex flex-wrap gap-4">
                   {SCARED_CHILD_OPTIONS.map((opt) => (
                     <label key={opt.value} className="inline-flex items-center gap-2">
@@ -427,9 +427,9 @@ export default function PatientFormsPage() {
                         onChange={() =>
                           updateQuestionnaireResponse(assignment.id, q.linkId, opt.value)
                         }
-                        className="h-4 w-4 border-gray-300 text-cta focus:ring-cta"
+                        className="h-4 w-4 border-gray-300 dark:border-neutral-600 text-cta focus:ring-cta"
                       />
-                      <span className="text-sm text-gray-700">{opt.label}</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">{opt.label}</span>
                     </label>
                   ))}
                 </div>
@@ -451,14 +451,14 @@ export default function PatientFormsPage() {
     if (formKey === SCARED_PARENT_QUESTIONNAIRE_KEY) {
       return (
         <div className="space-y-6">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-gray-300">
             <strong>Timeframe: Past 3 months.</strong> Response scale:{" "}
             <strong>Not true</strong>, <strong>Somewhat true</strong>, or <strong>Very true</strong>.
           </p>
           <ul className="space-y-3">
             {SCARED_PARENT_QUESTIONS.map((q, idx) => (
-              <li key={q.linkId} className="rounded-lg border border-gray-200 bg-white p-3">
-                <p className="text-sm font-medium text-gray-700">{idx + 1}. {q.question}</p>
+              <li key={q.linkId} className="rounded-lg border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-3">
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{idx + 1}. {q.question}</p>
                 <div className="mt-2 flex flex-wrap gap-4">
                   {SCARED_PARENT_OPTIONS.map((opt) => (
                     <label key={opt.value} className="inline-flex items-center gap-2">
@@ -469,9 +469,9 @@ export default function PatientFormsPage() {
                         onChange={() =>
                           updateQuestionnaireResponse(assignment.id, q.linkId, opt.value)
                         }
-                        className="h-4 w-4 border-gray-300 text-cta focus:ring-cta"
+                        className="h-4 w-4 border-gray-300 dark:border-neutral-600 text-cta focus:ring-cta"
                       />
-                      <span className="text-sm text-gray-700">{opt.label}</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">{opt.label}</span>
                     </label>
                   ))}
                 </div>
@@ -497,11 +497,11 @@ export default function PatientFormsPage() {
         startIndex: number
       ) => (
         <div className="space-y-3">
-          <h4 className="text-sm font-semibold text-navy">{title}</h4>
+          <h4 className="text-sm font-semibold text-navy dark:text-cream-100">{title}</h4>
           <ul className="space-y-3">
             {questions.map((q, i) => (
-              <li key={q.linkId} className="rounded-lg border border-gray-200 bg-white p-3">
-                <p className="text-sm font-medium text-gray-700">
+              <li key={q.linkId} className="rounded-lg border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-3">
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   {startIndex + i}. {q.question}
                 </p>
                 <div className="mt-2 flex flex-wrap gap-4">
@@ -514,9 +514,9 @@ export default function PatientFormsPage() {
                         onChange={() =>
                           updateQuestionnaireResponse(assignment.id, q.linkId, opt.value)
                         }
-                        className="h-4 w-4 border-gray-300 text-cta focus:ring-cta"
+                        className="h-4 w-4 border-gray-300 dark:border-neutral-600 text-cta focus:ring-cta"
                       />
-                      <span className="text-sm text-gray-700">{opt.label}</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">{opt.label}</span>
                     </label>
                   ))}
                 </div>
@@ -528,7 +528,7 @@ export default function PatientFormsPage() {
 
       return (
         <div className="space-y-6">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-gray-300">
             <strong>Timeframe: Past 6 months.</strong> Response scale:{" "}
             <strong>Never/Rarely</strong>, <strong>Sometimes</strong>, <strong>Often</strong>, or{" "}
             <strong>Very Often</strong>.
@@ -542,11 +542,11 @@ export default function PatientFormsPage() {
           )}
 
           <div className="space-y-3">
-            <h4 className="text-sm font-semibold text-navy">Section C: Functional Impact</h4>
+            <h4 className="text-sm font-semibold text-navy dark:text-cream-100">Section C: Functional Impact</h4>
             <ul className="space-y-3">
               {ADHD_PARENT_FUNCTIONAL_IMPACT_QUESTIONS.map((q) => (
-                <li key={q.linkId} className="rounded-lg border border-gray-200 bg-white p-3">
-                  <p className="text-sm font-medium text-gray-700">{q.question}</p>
+                <li key={q.linkId} className="rounded-lg border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-3">
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{q.question}</p>
                   <div className="mt-2 flex flex-wrap gap-4">
                     {ADHD_PARENT_RATING_OPTIONS.map((opt) => (
                       <label key={opt.value} className="inline-flex items-center gap-2">
@@ -557,9 +557,9 @@ export default function PatientFormsPage() {
                           onChange={() =>
                             updateQuestionnaireResponse(assignment.id, q.linkId, opt.value)
                           }
-                          className="h-4 w-4 border-gray-300 text-cta focus:ring-cta"
+                          className="h-4 w-4 border-gray-300 dark:border-neutral-600 text-cta focus:ring-cta"
                         />
-                        <span className="text-sm text-gray-700">{opt.label}</span>
+                        <span className="text-sm text-gray-700 dark:text-gray-300">{opt.label}</span>
                       </label>
                     ))}
                   </div>
@@ -587,11 +587,11 @@ export default function PatientFormsPage() {
         startIndex: number
       ) => (
         <div className="space-y-3">
-          <h4 className="text-sm font-semibold text-navy">{title}</h4>
+          <h4 className="text-sm font-semibold text-navy dark:text-cream-100">{title}</h4>
           <ul className="space-y-3">
             {questions.map((q, i) => (
-              <li key={q.linkId} className="rounded-lg border border-gray-200 bg-white p-3">
-                <p className="text-sm font-medium text-gray-700">
+              <li key={q.linkId} className="rounded-lg border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-3">
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   {startIndex + i}. {q.question}
                 </p>
                 <div className="mt-2 flex flex-wrap gap-4">
@@ -604,9 +604,9 @@ export default function PatientFormsPage() {
                         onChange={() =>
                           updateQuestionnaireResponse(assignment.id, q.linkId, opt.value)
                         }
-                        className="h-4 w-4 border-gray-300 text-cta focus:ring-cta"
+                        className="h-4 w-4 border-gray-300 dark:border-neutral-600 text-cta focus:ring-cta"
                       />
-                      <span className="text-sm text-gray-700">{opt.label}</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">{opt.label}</span>
                     </label>
                   ))}
                 </div>
@@ -618,7 +618,7 @@ export default function PatientFormsPage() {
 
       return (
         <div className="space-y-6">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-gray-300">
             <strong>Timeframe: Past 6 months.</strong> Response scale:{" "}
             <strong>Never/Rarely</strong>, <strong>Sometimes</strong>, <strong>Often</strong>, or{" "}
             <strong>Very Often</strong>.
@@ -632,11 +632,11 @@ export default function PatientFormsPage() {
           )}
 
           <div className="space-y-3">
-            <h4 className="text-sm font-semibold text-navy">Section C: Functional Impact</h4>
+            <h4 className="text-sm font-semibold text-navy dark:text-cream-100">Section C: Functional Impact</h4>
             <ul className="space-y-3">
               {ADHD_TEACHER_FUNCTIONAL_IMPACT_QUESTIONS.map((q) => (
-                <li key={q.linkId} className="rounded-lg border border-gray-200 bg-white p-3">
-                  <p className="text-sm font-medium text-gray-700">{q.question}</p>
+                <li key={q.linkId} className="rounded-lg border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-3">
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{q.question}</p>
                   <div className="mt-2 flex flex-wrap gap-4">
                     {ADHD_TEACHER_RATING_OPTIONS.map((opt) => (
                       <label key={opt.value} className="inline-flex items-center gap-2">
@@ -647,9 +647,9 @@ export default function PatientFormsPage() {
                           onChange={() =>
                             updateQuestionnaireResponse(assignment.id, q.linkId, opt.value)
                           }
-                          className="h-4 w-4 border-gray-300 text-cta focus:ring-cta"
+                          className="h-4 w-4 border-gray-300 dark:border-neutral-600 text-cta focus:ring-cta"
                         />
-                        <span className="text-sm text-gray-700">{opt.label}</span>
+                        <span className="text-sm text-gray-700 dark:text-gray-300">{opt.label}</span>
                       </label>
                     ))}
                   </div>
@@ -673,25 +673,25 @@ export default function PatientFormsPage() {
     return (
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             How are you feeling today?
           </label>
           <textarea
             value={responses.moodToday || ""}
             onChange={(e) => updateQuestionnaireResponse(assignment.id, "moodToday", e.target.value)}
-            className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+            className="mt-1 w-full rounded-lg border border-gray-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-cream-100 px-3 py-2 text-sm"
             rows={3}
             placeholder="Describe your current mood and feelings..."
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Any concerns or questions?
           </label>
           <textarea
             value={responses.concerns || ""}
             onChange={(e) => updateQuestionnaireResponse(assignment.id, "concerns", e.target.value)}
-            className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+            className="mt-1 w-full rounded-lg border border-gray-300 dark:border-neutral-600 dark:bg-neutral-800 dark:text-cream-100 px-3 py-2 text-sm"
             rows={3}
             placeholder="Share any concerns or questions..."
           />
@@ -717,7 +717,7 @@ export default function PatientFormsPage() {
               href={assignment.downloadUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="inline-flex items-center gap-2 rounded-lg border border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-700"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -728,7 +728,7 @@ export default function PatientFormsPage() {
         )}
         {assignment.status === "pending" && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Upload Completed PDF
             </label>
             <input
@@ -741,10 +741,10 @@ export default function PatientFormsPage() {
                 }
               }}
               disabled={uploading === assignment.id}
-              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-cta file:text-white hover:file:bg-cta/90 disabled:opacity-50"
+              className="block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-cta file:text-white hover:file:bg-cta/90 disabled:opacity-50"
             />
             {uploading === assignment.id && (
-              <p className="mt-2 text-sm text-gray-600">Uploading…</p>
+              <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Uploading…</p>
             )}
           </div>
         )}
@@ -775,8 +775,8 @@ export default function PatientFormsPage() {
           <div
             className={`w-full max-w-xl rounded-lg border px-4 py-3 shadow-lg ${
               notice.type === "success"
-                ? "border-green-200 bg-green-50 text-green-900"
-                : "border-red-200 bg-red-50 text-red-900"
+                ? "border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950/40 text-green-900 dark:text-green-200"
+                : "border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/40 text-red-900 dark:text-red-300"
             }`}
             role="status"
             aria-live="polite"
@@ -795,7 +795,7 @@ export default function PatientFormsPage() {
         </div>
       )}
 
-      <div className="sticky top-0 z-10 -mx-4 bg-cream-50 px-4 py-3 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+      <div className="sticky top-0 z-10 -mx-4 bg-cream-50 dark:bg-neutral-900 px-4 py-3 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
         <p className="mb-2">
           <a
             href="/patient"
@@ -806,25 +806,25 @@ export default function PatientFormsPage() {
           </a>
         </p>
         <h1 className="section-heading">Forms & Documents</h1>
-        <p className="mt-2 text-gray-600">
+        <p className="mt-2 text-gray-600 dark:text-gray-300">
           Complete the forms assigned by your doctor before booking your next appointment.
         </p>
       </div>
 
       {pendingCount > 0 && (
-        <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4">
-          <p className="text-sm font-medium text-amber-900">
+        <div className="mt-4 rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 p-4">
+          <p className="text-sm font-medium text-amber-900 dark:text-amber-200">
             You have {pendingCount} pending form{pendingCount === 1 ? "" : "s"} to complete.
           </p>
         </div>
       )}
 
       {loading ? (
-        <p className="mt-10 text-gray-500">Loading forms…</p>
+        <p className="mt-10 text-gray-500 dark:text-gray-400">Loading forms…</p>
       ) : assignments.length === 0 ? (
-        <div className="mt-10 rounded-lg border border-gray-200 bg-white p-8 text-center">
-          <p className="text-gray-600">No forms have been assigned to you yet.</p>
-          <p className="mt-2 text-sm text-gray-500">
+        <div className="mt-10 rounded-lg border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-8 text-center">
+          <p className="text-gray-600 dark:text-gray-300">No forms have been assigned to you yet.</p>
+          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
             After your orientation consult, your doctor will assign forms for you to complete. They will appear here.
           </p>
           <a
@@ -839,7 +839,7 @@ export default function PatientFormsPage() {
         <div className="mt-10 space-y-6">
           {pendingCount > 0 && (
             <div>
-              <h2 className="text-lg font-semibold text-navy mb-4">Pending Forms</h2>
+              <h2 className="text-lg font-semibold text-navy dark:text-cream-100 mb-4">Pending Forms</h2>
               <div className="space-y-4">
                 {pendingAssignments.map((assignment) => {
                   const isExpanded = assignment.id === effectiveExpandedId;
@@ -847,11 +847,11 @@ export default function PatientFormsPage() {
                     <div key={assignment.id} className="card">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
-                          <h3 className="text-lg font-semibold text-navy">
+                          <h3 className="text-lg font-semibold text-navy dark:text-cream-100">
                             {assignment.form?.title ?? "Untitled"}
                           </h3>
                           {assignment.form?.description && (
-                            <p className="mt-1 text-sm text-gray-600">{assignment.form.description}</p>
+                            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">{assignment.form.description}</p>
                           )}
                           {isExpanded ? (
                             <div className="mt-4">
@@ -869,7 +869,7 @@ export default function PatientFormsPage() {
                             </button>
                           )}
                         </div>
-                        <span className="shrink-0 rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">
+                        <span className="shrink-0 rounded-full bg-amber-100 dark:bg-amber-950/40 px-3 py-1 text-xs font-medium text-amber-800 dark:text-amber-300">
                           Pending
                         </span>
                       </div>
@@ -887,25 +887,25 @@ export default function PatientFormsPage() {
               onClick={handleCompletedSectionClick}
               className="select-none"
             >
-              <h2 className="text-lg font-semibold text-navy mb-4">Completed Forms</h2>
+              <h2 className="text-lg font-semibold text-navy dark:text-cream-100 mb-4">Completed Forms</h2>
               <div className="space-y-4">
                 {completedAssignments.map((assignment) => (
                     <div key={assignment.id} className="card pointer-events-auto">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
-                          <h3 className="text-lg font-semibold text-navy">
+                          <h3 className="text-lg font-semibold text-navy dark:text-cream-100">
                             {assignment.form?.title ?? "Untitled"}
                           </h3>
                           {assignment.form?.description && (
-                            <p className="mt-1 text-sm text-gray-600">{assignment.form.description}</p>
+                            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">{assignment.form.description}</p>
                           )}
                           {assignment.completedAt && (
-                            <p className="mt-2 text-xs text-gray-500">
+                            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                               Completed on {new Date(assignment.completedAt).toLocaleDateString()}
                             </p>
                           )}
                         </div>
-                        <span className="shrink-0 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
+                        <span className="shrink-0 rounded-full bg-green-100 dark:bg-green-950/40 px-3 py-1 text-xs font-medium text-green-800 dark:text-green-300">
                           Completed
                         </span>
                       </div>

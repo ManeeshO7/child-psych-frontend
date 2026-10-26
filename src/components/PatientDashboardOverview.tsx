@@ -347,15 +347,15 @@ export default function PatientDashboardOverview() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-cream-50/60 px-4 py-10 sm:px-6 lg:px-8">
+      <main className="min-h-screen bg-cream-50/60 px-4 py-10 sm:px-6 lg:px-8 dark:bg-neutral-900">
         <div className="mx-auto max-w-6xl animate-pulse">
           {/* Header banner skeleton */}
-          <div className="rounded-2xl bg-cream-200/70 p-6 sm:p-8">
+          <div className="rounded-2xl bg-cream-200/70 p-6 sm:p-8 dark:bg-neutral-800">
             <div className="flex items-center gap-4">
-              <div className="h-14 w-14 rounded-full bg-cream-300/80" />
+              <div className="h-14 w-14 rounded-full bg-cream-300/80 dark:bg-neutral-700" />
               <div className="space-y-2">
-                <div className="h-5 w-40 rounded bg-cream-300/80" />
-                <div className="h-3.5 w-28 rounded bg-cream-300/60" />
+                <div className="h-5 w-40 rounded bg-cream-300/80 dark:bg-neutral-700" />
+                <div className="h-3.5 w-28 rounded bg-cream-300/60 dark:bg-neutral-700" />
               </div>
             </div>
           </div>
@@ -363,10 +363,10 @@ export default function PatientDashboardOverview() {
           {/* Card grid skeleton */}
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="rounded-2xl border border-cream-200 bg-white p-5">
-                <div className="h-4 w-24 rounded bg-cream-200" />
-                <div className="mt-3 h-3.5 w-32 rounded bg-cream-100" />
-                <div className="mt-2 h-3.5 w-20 rounded bg-cream-100" />
+              <div key={i} className="rounded-2xl border border-cream-200 bg-white p-5 dark:border-neutral-700 dark:bg-neutral-800">
+                <div className="h-4 w-24 rounded bg-cream-200 dark:bg-neutral-700" />
+                <div className="mt-3 h-3.5 w-32 rounded bg-cream-100 dark:bg-neutral-600" />
+                <div className="mt-2 h-3.5 w-20 rounded bg-cream-100 dark:bg-neutral-600" />
               </div>
             ))}
           </div>
@@ -412,7 +412,7 @@ export default function PatientDashboardOverview() {
     : null;
 
   return (
-    <div className="min-h-screen bg-cream-50/60">
+    <div className="min-h-screen bg-cream-50/60 dark:bg-neutral-900">
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
 
         {/* ── Hero welcome banner ── */}
@@ -437,19 +437,19 @@ export default function PatientDashboardOverview() {
             {/* right: session chips */}
             <div className="flex flex-wrap gap-2 sm:flex-col sm:items-end sm:gap-2">
               {lastLoginLabel && (
-                <div className="flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm">
+                <div className="flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm dark:bg-neutral-800 dark:text-gray-300">
                   <svg className="h-3.5 w-3.5 shrink-0 text-cta" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z" />
                   </svg>
-                  <span className="text-gray-400">Last login:</span>&nbsp;{lastLoginLabel}
+                  <span className="text-gray-400 dark:text-gray-400">Last login:</span>&nbsp;{lastLoginLabel}
                 </div>
               )}
               {typeof sessionRemainingMs === "number" && sessionRemainingMs > 0 && (
-                <div className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium shadow-sm ${sessionRemainingMs <= 5 * 60 * 1000 ? "bg-red-100 text-red-700" : "bg-white text-gray-700"}`}>
+                <div className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium shadow-sm ${sessionRemainingMs <= 5 * 60 * 1000 ? "bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300" : "bg-white text-gray-700 dark:bg-neutral-800 dark:text-gray-300"}`}>
                   <svg className={`h-3.5 w-3.5 shrink-0 ${sessionRemainingMs <= 5 * 60 * 1000 ? "text-red-500" : "text-cta"}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                   </svg>
-                  <span className="text-gray-400">Session:</span>&nbsp;{formatSessionRemaining(sessionRemainingMs)} left
+                  <span className="text-gray-400 dark:text-gray-400">Session:</span>&nbsp;{formatSessionRemaining(sessionRemainingMs)} left
                 </div>
               )}
             </div>
@@ -537,15 +537,15 @@ export default function PatientDashboardOverview() {
 
         {/* ── Profile completion alert ── */}
         {profileComplete === false && (
-          <div className="mt-5 flex items-start gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-5 shadow-sm">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-200 text-amber-800">
+          <div className="mt-5 flex items-start gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-5 shadow-sm dark:border-amber-800 dark:bg-amber-950/40">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-200 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200">
               <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
               </svg>
             </div>
             <div className="min-w-0 flex-1">
-              <p className="font-semibold text-amber-900">Complete your profile to book an appointment</p>
-              <p className="mt-1 text-sm text-amber-800">
+              <p className="font-semibold text-amber-900 dark:text-amber-200">Complete your profile to book an appointment</p>
+              <p className="mt-1 text-sm text-amber-800 dark:text-amber-300">
                 We need your name, date of birth, SSN, and contact info before your orientation consult.
               </p>
               <Link href="/patient/profile" className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-amber-700 px-4 py-2 text-sm font-medium text-white hover:bg-amber-800">
@@ -560,15 +560,15 @@ export default function PatientDashboardOverview() {
 
         {/* ── Preferred pharmacy needed (now that clinical intake is confirmed) ── */}
         {profileComplete !== false && fullProfile?.intakeConfirmed === true && !fullProfile?.profile?.preferredPharmacyName && (
-          <div className="mt-5 flex items-start gap-4 rounded-2xl border border-indigo-200 bg-indigo-50 p-5 shadow-sm">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-200 text-indigo-800">
+          <div className="mt-5 flex items-start gap-4 rounded-2xl border border-indigo-200 bg-indigo-50 p-5 shadow-sm dark:border-indigo-800 dark:bg-indigo-950/40">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-200 text-indigo-800 dark:bg-indigo-900/60 dark:text-indigo-200">
               <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72m-13.5 8.65h3.75a.75.75 0 00.75-.75V13.5a.75.75 0 00-.75-.75H6.75a.75.75 0 00-.75.75v3.75c0 .415.336.75.75.75z" />
               </svg>
             </div>
             <div className="min-w-0 flex-1">
-              <p className="font-semibold text-indigo-900">Add your preferred pharmacy</p>
-              <p className="mt-1 text-sm text-indigo-800">
+              <p className="font-semibold text-indigo-900 dark:text-indigo-200">Add your preferred pharmacy</p>
+              <p className="mt-1 text-sm text-indigo-800 dark:text-indigo-300">
                 Now that your clinical intake is scheduled, please add your preferred pharmacy so your doctor can send prescriptions if needed.
               </p>
               <Link href="/patient/profile" className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-800">
@@ -583,28 +583,28 @@ export default function PatientDashboardOverview() {
 
         {/* ── Pending confirmation alert ── */}
         {pendingAppointments.length > 0 && (
-          <div className="mt-5 rounded-2xl border border-blue-200 bg-blue-50 p-5 shadow-sm">
+          <div className="mt-5 rounded-2xl border border-blue-200 bg-blue-50 p-5 shadow-sm dark:border-blue-800 dark:bg-blue-950/40">
             <div className="flex items-start gap-4">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-200 text-blue-800">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-200 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200">
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
                 </svg>
               </div>
               <div className="min-w-0 flex-1">
-                <p className="font-semibold text-blue-900">Action required — Confirm your appointment</p>
-                <p className="mt-1 text-sm text-blue-800">
+                <p className="font-semibold text-blue-900 dark:text-blue-200">Action required — Confirm your appointment</p>
+                <p className="mt-1 text-sm text-blue-800 dark:text-blue-300">
                   Your doctor has scheduled an appointment. Please confirm and add payment to secure your time.
                 </p>
                 <ul className="mt-4 space-y-3">
                   {pendingAppointments.map((a) => {
                     const mustCompleteForms = a.hasPendingFormsForThisAppointment === true;
                     return (
-                      <li key={a.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-blue-200/60 bg-white p-4">
+                      <li key={a.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-blue-200/60 bg-white p-4 dark:border-blue-800/60 dark:bg-neutral-800">
                         <div>
-                          <p className="font-medium text-navy">{formatAppointmentDateTime(a.scheduledAt)} · {typeLabel(a.type)}</p>
-                          <p className="text-sm text-gray-500">{a.durationMinutes} minutes</p>
+                          <p className="font-medium text-navy dark:text-cream-100">{formatAppointmentDateTime(a.scheduledAt)} · {typeLabel(a.type)}</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">{a.durationMinutes} minutes</p>
                           {mustCompleteForms && (
-                            <p className="mt-1 text-sm font-medium text-blue-700">Complete forms before confirming.</p>
+                            <p className="mt-1 text-sm font-medium text-blue-700 dark:text-blue-300">Complete forms before confirming.</p>
                           )}
                         </div>
                         <div className="flex flex-wrap gap-2">
@@ -617,11 +617,11 @@ export default function PatientDashboardOverview() {
                               <Link href={`/patient/confirm-scheduled?appointmentId=${encodeURIComponent(a.id)}`} className="rounded-lg bg-cta px-4 py-2 text-sm font-medium text-white hover:bg-cta/90">
                                 Confirm & add payment
                               </Link>
-                              <button type="button" onClick={() => setChangeTimeAppointment(a)} className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                              <button type="button" onClick={() => setChangeTimeAppointment(a)} className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-neutral-600 dark:bg-neutral-800 dark:text-gray-300 dark:hover:bg-neutral-700">
                                 Change time
                               </button>
                               {canCancel(a) && (
-                                <button type="button" onClick={() => openCancelConfirm(a)} className="rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50">
+                                <button type="button" onClick={() => openCancelConfirm(a)} className="rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:border-red-800 dark:bg-neutral-800 dark:text-red-400 dark:hover:bg-red-950/40">
                                   Cancel
                                 </button>
                               )}
@@ -641,7 +641,7 @@ export default function PatientDashboardOverview() {
         <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
 
           {/* My Profile */}
-          <a href="/patient/profile" onClick={(e) => handleNav(e, "/patient/profile")} className="group flex flex-col overflow-hidden rounded-2xl border border-cream-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md cursor-pointer">
+          <a href="/patient/profile" onClick={(e) => handleNav(e, "/patient/profile")} className="group flex flex-col overflow-hidden rounded-2xl border border-cream-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md cursor-pointer dark:border-neutral-700 dark:bg-neutral-800">
             <div className="h-1.5 w-full bg-cta" />
             <div className="flex flex-1 flex-col p-6">
               <div className="flex items-center gap-3">
@@ -651,21 +651,21 @@ export default function PatientDashboardOverview() {
                   </svg>
                 </span>
                 <div>
-                  <h2 className="font-semibold text-navy">My Profile</h2>
-                  <p className="text-xs text-gray-500">Personal & health info</p>
+                  <h2 className="font-semibold text-navy dark:text-cream-100">My Profile</h2>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Personal & health info</p>
                 </div>
               </div>
               <div className="mt-4 flex-1">
-                <p className="text-sm font-medium text-navy">{fullName}</p>
-                <p className="mt-0.5 text-sm text-gray-500">{profile?.email || fullProfile?.user?.email || "—"}</p>
+                <p className="text-sm font-medium text-navy dark:text-cream-100">{fullName}</p>
+                <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">{profile?.email || fullProfile?.user?.email || "—"}</p>
                 {profileComplete === false && (
-                  <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800">
+                  <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/60 dark:text-amber-200">
                     <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
                     Incomplete
                   </span>
                 )}
                 {profileComplete === true && (
-                  <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
+                  <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/60 dark:text-green-200">
                     <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
                     Complete
                   </span>
@@ -676,7 +676,7 @@ export default function PatientDashboardOverview() {
           </a>
 
           {/* Upcoming Visit */}
-          <div className="group flex flex-col overflow-hidden rounded-2xl border border-cream-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+          <div className="group flex flex-col overflow-hidden rounded-2xl border border-cream-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md dark:border-neutral-700 dark:bg-neutral-800">
             <div className="h-1.5 w-full bg-cta" />
             <div className="flex flex-1 flex-col p-6">
               <div className="flex items-center gap-3">
@@ -686,17 +686,17 @@ export default function PatientDashboardOverview() {
                   </svg>
                 </span>
                 <div>
-                  <h2 className="font-semibold text-navy">Upcoming Visit</h2>
-                  <p className="text-xs text-gray-500">Your next appointment</p>
+                  <h2 className="font-semibold text-navy dark:text-cream-100">Upcoming Visit</h2>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Your next appointment</p>
                 </div>
               </div>
               <div className="mt-4 flex-1">
                 {nextAppointment ? (
                   <>
-                    <p className="text-sm font-semibold text-navy">{formatAppointmentDateTime(nextAppointment.scheduledAt)}</p>
-                    <p className="mt-1 text-sm text-gray-600">{typeLabel(nextAppointment.type)} · {nextAppointment.durationMinutes} min</p>
+                    <p className="text-sm font-semibold text-navy dark:text-cream-100">{formatAppointmentDateTime(nextAppointment.scheduledAt)}</p>
+                    <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">{typeLabel(nextAppointment.type)} · {nextAppointment.durationMinutes} min</p>
                     {nextAppointment.doctor?.name && (
-                      <p className="text-sm text-gray-500">Dr. {nextAppointment.doctor.name}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Dr. {nextAppointment.doctor.name}</p>
                     )}
                     <div className="mt-3 flex flex-wrap gap-2">
                       {nextAppointment.status === "pending_confirmation" ? (
@@ -709,19 +709,19 @@ export default function PatientDashboardOverview() {
                         <a href={nextAppointment.meetLink} target="_blank" rel="noopener noreferrer" className="rounded-lg bg-cta px-3 py-1.5 text-xs font-medium text-white hover:bg-cta/90">Join visit</a>
                       ) : null}
                       {canReschedule(nextAppointment) && (
-                        <button type="button" onClick={() => setChangeTimeAppointment(nextAppointment)} className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50">
+                        <button type="button" onClick={() => setChangeTimeAppointment(nextAppointment)} className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 dark:border-neutral-600 dark:text-gray-300 dark:hover:bg-neutral-700">
                           Reschedule
                         </button>
                       )}
                       {canCancel(nextAppointment) && (
-                        <button type="button" onClick={() => openCancelConfirm(nextAppointment)} className="rounded-lg border border-red-100 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50">
+                        <button type="button" onClick={() => openCancelConfirm(nextAppointment)} className="rounded-lg border border-red-100 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/40">
                           Cancel
                         </button>
                       )}
                     </div>
                   </>
                 ) : (
-                  <p className="text-sm text-gray-500">No upcoming appointments.</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">No upcoming appointments.</p>
                 )}
               </div>
               <Link href="/patient/appointments" className="mt-4 text-sm font-medium text-cta hover:underline">
@@ -731,7 +731,7 @@ export default function PatientDashboardOverview() {
           </div>
 
           {/* Billing & Payments */}
-          <div className="group flex flex-col overflow-hidden rounded-2xl border border-cream-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+          <div className="group flex flex-col overflow-hidden rounded-2xl border border-cream-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md dark:border-neutral-700 dark:bg-neutral-800">
             <div className="h-1.5 w-full bg-cta" />
             <div className="flex flex-1 flex-col p-6">
               <div className="flex items-center gap-3">
@@ -741,15 +741,15 @@ export default function PatientDashboardOverview() {
                   </svg>
                 </span>
                 <div>
-                  <h2 className="font-semibold text-navy">Billing & Payments</h2>
-                  <p className="text-xs text-gray-500">Invoices and payment method</p>
+                  <h2 className="font-semibold text-navy dark:text-cream-100">Billing & Payments</h2>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Invoices and payment method</p>
                 </div>
               </div>
               <div className="mt-4 flex-1 space-y-2">
                 {billingLoading ? (
                   <div className="animate-pulse space-y-2">
-                    <div className="h-4 w-36 rounded bg-cream-200" />
-                    <div className="h-3.5 w-28 rounded bg-cream-100" />
+                    <div className="h-4 w-36 rounded bg-cream-200 dark:bg-neutral-700" />
+                    <div className="h-3.5 w-28 rounded bg-cream-100 dark:bg-neutral-600" />
                   </div>
                 ) : (
                   <>
@@ -760,14 +760,14 @@ export default function PatientDashboardOverview() {
                             <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5m-19.5 3h19.5" />
                           </svg>
                         </span>
-                        <p className="text-sm font-medium text-navy">
+                        <p className="text-sm font-medium text-navy dark:text-cream-100">
                           {(cardSummary.brand || "Card").toString().toUpperCase()} •••• {cardSummary.last4 || "—"}
                         </p>
                       </div>
                     ) : (
-                      <p className="text-sm text-gray-500">No card on file.</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">No card on file.</p>
                     )}
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       {paymentHistory.length > 0 ? `${paymentHistory.length} recent payment${paymentHistory.length === 1 ? "" : "s"}` : "No payment history yet."}
                     </p>
                   </>
@@ -784,7 +784,7 @@ export default function PatientDashboardOverview() {
 
           {/* Forms & Documents — only shown when assigned */}
           {hasAssignedForms && (
-            <a href="/patient/forms" onClick={(e) => handleNav(e, "/patient/forms")} className="group flex flex-col overflow-hidden rounded-2xl border border-cream-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md cursor-pointer">
+            <a href="/patient/forms" onClick={(e) => handleNav(e, "/patient/forms")} className="group flex flex-col overflow-hidden rounded-2xl border border-cream-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md cursor-pointer dark:border-neutral-700 dark:bg-neutral-800">
               <div className="h-1.5 w-full bg-cta" />
               <div className="flex flex-1 flex-col p-6">
                 <div className="flex items-center gap-3">
@@ -794,22 +794,22 @@ export default function PatientDashboardOverview() {
                     </svg>
                   </span>
                   <div>
-                    <h2 className="font-semibold text-navy">Forms & Documents</h2>
-                    <p className="text-xs text-gray-500">
+                    <h2 className="font-semibold text-navy dark:text-cream-100">Forms & Documents</h2>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
                       {pendingFormsCheck?.pendingCount
                         ? `${pendingFormsCheck.pendingCount} form${pendingFormsCheck.pendingCount === 1 ? "" : "s"} pending`
                         : "Forms assigned by your doctor"}
                     </p>
                   </div>
                 </div>
-                <p className="mt-4 flex-1 text-sm text-gray-600">Complete forms assigned by your provider before your appointment.</p>
+                <p className="mt-4 flex-1 text-sm text-gray-600 dark:text-gray-300">Complete forms assigned by your provider before your appointment.</p>
                 <p className="mt-4 text-sm font-medium text-cta group-hover:underline">View forms →</p>
               </div>
             </a>
           )}
 
           {/* Book appointment */}
-          <a href="/patient/book" onClick={(e) => handleNav(e, "/patient/book")} className="group flex flex-col overflow-hidden rounded-2xl border border-cream-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md cursor-pointer">
+          <a href="/patient/book" onClick={(e) => handleNav(e, "/patient/book")} className="group flex flex-col overflow-hidden rounded-2xl border border-cream-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md cursor-pointer dark:border-neutral-700 dark:bg-neutral-800">
             <div className="h-1.5 w-full bg-cta" />
             <div className="flex flex-1 flex-col p-6">
               <div className="flex items-center gap-3">
@@ -819,11 +819,11 @@ export default function PatientDashboardOverview() {
                   </svg>
                 </span>
                 <div>
-                  <h2 className="font-semibold text-navy">Book Appointment</h2>
-                  <p className="text-xs text-gray-500">Schedule a new visit</p>
+                  <h2 className="font-semibold text-navy dark:text-cream-100">Book Appointment</h2>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Schedule a new visit</p>
                 </div>
               </div>
-              <p className="mt-4 flex-1 text-sm text-gray-600">Schedule a new appointment or a follow-up visit with your provider.</p>
+              <p className="mt-4 flex-1 text-sm text-gray-600 dark:text-gray-300">Schedule a new appointment or a follow-up visit with your provider.</p>
               <p className="mt-4 text-sm font-medium text-cta group-hover:underline">Book now →</p>
             </div>
           </a>

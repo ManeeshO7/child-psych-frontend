@@ -51,7 +51,7 @@ export type QuestionnaireFormData = {
 };
 
 const inputClass =
-  "mt-1 block w-full rounded-lg border border-cream-200 bg-white px-3 py-2 text-cta shadow-sm focus:border-cta focus:outline-none focus:ring-1 focus:ring-cta";
+  "mt-1 block w-full rounded-lg border border-cream-200 bg-white px-3 py-2 text-cta shadow-sm focus:border-cta focus:outline-none focus:ring-1 focus:ring-cta dark:bg-neutral-900 dark:border-neutral-600";
 const labelClass = "block text-sm font-medium text-cta";
 
 function QuestionnaireContent() {
@@ -206,20 +206,20 @@ function QuestionnaireContent() {
 
   if (status === "success") {
     return (
-      <div className="flex flex-col bg-cream-50/60">
+      <div className="flex flex-col bg-cream-50/60 dark:bg-neutral-900">
         <Header />
         <main className="flex min-h-screen flex-col items-center justify-center px-4 py-20">
-          <div className="w-full max-w-md rounded-2xl border border-green-200 bg-white p-8 shadow-sm text-center">
-            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-              <svg className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <div className="w-full max-w-md rounded-2xl border border-green-200 bg-white p-8 shadow-sm text-center dark:bg-neutral-800 dark:border-green-800">
+            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-950/40">
+              <svg className="h-8 w-8 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h2 className="text-xl font-bold text-navy">Questionnaire Received</h2>
-            <p className="mt-3 text-sm leading-relaxed text-gray-600">
+            <h2 className="text-xl font-bold text-navy dark:text-cream-100">Questionnaire Received</h2>
+            <p className="mt-3 text-sm leading-relaxed text-gray-600 dark:text-gray-300">
               We&apos;ve received your pre-screening questionnaire and will review it shortly.
             </p>
-            <p className="mt-2 text-sm leading-relaxed text-gray-600">
+            <p className="mt-2 text-sm leading-relaxed text-gray-600 dark:text-gray-300">
               We&apos;ll let you know within 1–3 working days. If approved, we&apos;ll email you next steps to complete registration.
             </p>
             <Link href="/" className="mt-7 inline-block btn-primary px-8">
@@ -234,20 +234,20 @@ function QuestionnaireContent() {
 
   if (status === "rejected") {
     return (
-      <div className="flex flex-col bg-cream-50/60">
+      <div className="flex flex-col bg-cream-50/60 dark:bg-neutral-900">
         <Header />
         <main className="flex min-h-screen flex-col items-center justify-center px-4 py-20">
-          <div className="w-full max-w-md rounded-2xl border border-amber-200 bg-white p-8 shadow-sm text-center">
-            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-amber-100">
-              <svg className="h-8 w-8 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <div className="w-full max-w-md rounded-2xl border border-amber-200 bg-white p-8 shadow-sm text-center dark:bg-neutral-800 dark:border-amber-800">
+            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-950/40">
+              <svg className="h-8 w-8 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
               </svg>
             </div>
-            <h2 className="text-xl font-bold text-navy">Thank You for Your Interest</h2>
-            <p className="mt-3 text-sm leading-relaxed text-gray-600">
+            <h2 className="text-xl font-bold text-navy dark:text-cream-100">Thank You for Your Interest</h2>
+            <p className="mt-3 text-sm leading-relaxed text-gray-600 dark:text-gray-300">
               Based on your pre-screening questionnaire responses, our practice may not be the most appropriate setting for your child&apos;s current needs.
             </p>
-            <p className="mt-2 text-sm leading-relaxed text-gray-500">
+            <p className="mt-2 text-sm leading-relaxed text-gray-500 dark:text-gray-400">
               If you have questions or concerns, please contact us directly.
             </p>
             <Link href="/" className="mt-7 inline-block btn-primary px-8">
@@ -263,7 +263,7 @@ function QuestionnaireContent() {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-cream-50 py-8">
+      <main className="min-h-screen bg-cream-50 py-8 dark:bg-neutral-900">
         <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
           <h1 className="section-heading">Pre-Screening Questionnaire</h1>
           <p className="mt-1 text-sm font-medium uppercase tracking-wider text-cta">
@@ -290,7 +290,7 @@ function QuestionnaireContent() {
                         value={opt}
                         checked={formData.childAge === opt}
                         onChange={() => setFormData((d) => ({ ...d, childAge: opt }))}
-                        className="h-4 w-4 border-cream-300 text-cta focus:ring-cta"
+                        className="h-4 w-4 border-cream-300 text-cta focus:ring-cta dark:border-neutral-600"
                         required
                       />
                       <span className="text-sm text-cta">{opt}</span>
@@ -334,7 +334,7 @@ function QuestionnaireContent() {
                           setErrorMessage("");
                           setPrimaryReasons(e.target.checked, opt);
                         }}
-                        className="h-4 w-4 rounded border-cream-300 text-cta focus:ring-cta"
+                        className="h-4 w-4 rounded border-cream-300 text-cta focus:ring-cta dark:border-neutral-600"
                       />
                       <span className="text-sm text-cta">{opt}</span>
                     </label>
@@ -347,14 +347,14 @@ function QuestionnaireContent() {
                         setErrorMessage("");
                         setPrimaryReasons(e.target.checked, "Other");
                       }}
-                      className="h-4 w-4 rounded border-cream-300 text-cta focus:ring-cta"
+                      className="h-4 w-4 rounded border-cream-300 text-cta focus:ring-cta dark:border-neutral-600"
                     />
                     <span className="text-sm text-cta">Other (briefly):<span className="text-red-500" aria-hidden="true"> *</span></span>
                     <input
                       type="text"
                       value={formData.primaryReasonOther ?? ""}
                       onChange={(e) => setFormData((d) => ({ ...d, primaryReasonOther: e.target.value }))}
-                      className="ml-1 flex-1 rounded border border-cream-200 px-2 py-1 text-sm text-cta"
+                      className="ml-1 flex-1 rounded border border-cream-200 px-2 py-1 text-sm text-cta dark:bg-neutral-900 dark:border-neutral-600"
                       placeholder="Please specify"
                       disabled={!formData.primaryReasons?.includes("Other")}
                     />
@@ -373,7 +373,7 @@ function QuestionnaireContent() {
                         value="yes"
                         checked={formData.activeSuicidalThoughts === "yes"}
                         onChange={() => setFormData((d) => ({ ...d, activeSuicidalThoughts: "yes" }))}
-                        className="h-4 w-4 text-cta focus:ring-cta"
+                        className="h-4 w-4 text-cta focus:ring-cta dark:border-neutral-600"
                         required
                       />
                       <span className="text-sm text-cta">Yes</span>
@@ -385,7 +385,7 @@ function QuestionnaireContent() {
                         value="no"
                         checked={formData.activeSuicidalThoughts === "no"}
                         onChange={() => setFormData((d) => ({ ...d, activeSuicidalThoughts: "no" }))}
-                        className="h-4 w-4 text-cta focus:ring-cta"
+                        className="h-4 w-4 text-cta focus:ring-cta dark:border-neutral-600"
                       />
                       <span className="text-sm text-cta">No</span>
                     </label>
@@ -401,7 +401,7 @@ function QuestionnaireContent() {
                         value="yes"
                         checked={formData.psychiatricHospitalization === "yes"}
                         onChange={() => setFormData((d) => ({ ...d, psychiatricHospitalization: "yes" }))}
-                        className="h-4 w-4 text-cta focus:ring-cta"
+                        className="h-4 w-4 text-cta focus:ring-cta dark:border-neutral-600"
                         required
                       />
                       <span className="text-sm text-cta">Yes</span>
@@ -413,7 +413,7 @@ function QuestionnaireContent() {
                         value="no"
                         checked={formData.psychiatricHospitalization === "no"}
                         onChange={() => setFormData((d) => ({ ...d, psychiatricHospitalization: "no" }))}
-                        className="h-4 w-4 text-cta focus:ring-cta"
+                        className="h-4 w-4 text-cta focus:ring-cta dark:border-neutral-600"
                       />
                       <span className="text-sm text-cta">No</span>
                     </label>
@@ -429,7 +429,7 @@ function QuestionnaireContent() {
                         value="yes"
                         checked={formData.psychoticSymptoms === "yes"}
                         onChange={() => setFormData((d) => ({ ...d, psychoticSymptoms: "yes" }))}
-                        className="h-4 w-4 text-cta focus:ring-cta"
+                        className="h-4 w-4 text-cta focus:ring-cta dark:border-neutral-600"
                         required
                       />
                       <span className="text-sm text-cta">Yes</span>
@@ -441,7 +441,7 @@ function QuestionnaireContent() {
                         value="no"
                         checked={formData.psychoticSymptoms === "no"}
                         onChange={() => setFormData((d) => ({ ...d, psychoticSymptoms: "no" }))}
-                        className="h-4 w-4 text-cta focus:ring-cta"
+                        className="h-4 w-4 text-cta focus:ring-cta dark:border-neutral-600"
                       />
                       <span className="text-sm text-cta">No</span>
                     </label>
@@ -457,7 +457,7 @@ function QuestionnaireContent() {
                         value="yes"
                         checked={formData.severeAggression === "yes"}
                         onChange={() => setFormData((d) => ({ ...d, severeAggression: "yes" }))}
-                        className="h-4 w-4 text-cta focus:ring-cta"
+                        className="h-4 w-4 text-cta focus:ring-cta dark:border-neutral-600"
                         required
                       />
                       <span className="text-sm text-cta">Yes</span>
@@ -469,7 +469,7 @@ function QuestionnaireContent() {
                         value="no"
                         checked={formData.severeAggression === "no"}
                         onChange={() => setFormData((d) => ({ ...d, severeAggression: "no" }))}
-                        className="h-4 w-4 text-cta focus:ring-cta"
+                        className="h-4 w-4 text-cta focus:ring-cta dark:border-neutral-600"
                       />
                       <span className="text-sm text-cta">No</span>
                     </label>
@@ -488,7 +488,7 @@ function QuestionnaireContent() {
                         value="yes"
                         checked={formData.legalCustodyCourt === "yes"}
                         onChange={() => setFormData((d) => ({ ...d, legalCustodyCourt: "yes" }))}
-                        className="h-4 w-4 text-cta focus:ring-cta"
+                        className="h-4 w-4 text-cta focus:ring-cta dark:border-neutral-600"
                         required
                       />
                       <span className="text-sm text-cta">Yes</span>
@@ -500,7 +500,7 @@ function QuestionnaireContent() {
                         value="no"
                         checked={formData.legalCustodyCourt === "no"}
                         onChange={() => setFormData((d) => ({ ...d, legalCustodyCourt: "no" }))}
-                        className="h-4 w-4 text-cta focus:ring-cta"
+                        className="h-4 w-4 text-cta focus:ring-cta dark:border-neutral-600"
                       />
                       <span className="text-sm text-cta">No</span>
                     </label>
@@ -516,7 +516,7 @@ function QuestionnaireContent() {
                         value="yes"
                         checked={formData.childProtectiveServices === "yes"}
                         onChange={() => setFormData((d) => ({ ...d, childProtectiveServices: "yes" }))}
-                        className="h-4 w-4 text-cta focus:ring-cta"
+                        className="h-4 w-4 text-cta focus:ring-cta dark:border-neutral-600"
                         required
                       />
                       <span className="text-sm text-cta">Yes</span>
@@ -528,7 +528,7 @@ function QuestionnaireContent() {
                         value="no"
                         checked={formData.childProtectiveServices === "no"}
                         onChange={() => setFormData((d) => ({ ...d, childProtectiveServices: "no" }))}
-                        className="h-4 w-4 text-cta focus:ring-cta"
+                        className="h-4 w-4 text-cta focus:ring-cta dark:border-neutral-600"
                       />
                       <span className="text-sm text-cta">No</span>
                     </label>
@@ -544,7 +544,7 @@ function QuestionnaireContent() {
                         value="yes"
                         checked={formData.substanceUseConcerns === "yes"}
                         onChange={() => setFormData((d) => ({ ...d, substanceUseConcerns: "yes" }))}
-                        className="h-4 w-4 text-cta focus:ring-cta"
+                        className="h-4 w-4 text-cta focus:ring-cta dark:border-neutral-600"
                         required
                       />
                       <span className="text-sm text-cta">Yes</span>
@@ -556,7 +556,7 @@ function QuestionnaireContent() {
                         value="no"
                         checked={formData.substanceUseConcerns === "no"}
                         onChange={() => setFormData((d) => ({ ...d, substanceUseConcerns: "no" }))}
-                        className="h-4 w-4 text-cta focus:ring-cta"
+                        className="h-4 w-4 text-cta focus:ring-cta dark:border-neutral-600"
                       />
                       <span className="text-sm text-cta">No</span>
                     </label>
@@ -575,7 +575,7 @@ function QuestionnaireContent() {
                           value="yes"
                           checked={formData.currentlyReceivingCarePsychiatrist === "yes"}
                           onChange={() => setFormData((d) => ({ ...d, currentlyReceivingCarePsychiatrist: "yes" }))}
-                          className="h-4 w-4 text-cta focus:ring-cta"
+                          className="h-4 w-4 text-cta focus:ring-cta dark:border-neutral-600"
                           required
                         />
                         <span className="text-sm text-cta">Yes</span>
@@ -587,7 +587,7 @@ function QuestionnaireContent() {
                           value="no"
                           checked={formData.currentlyReceivingCarePsychiatrist === "no"}
                           onChange={() => setFormData((d) => ({ ...d, currentlyReceivingCarePsychiatrist: "no" }))}
-                          className="h-4 w-4 text-cta focus:ring-cta"
+                          className="h-4 w-4 text-cta focus:ring-cta dark:border-neutral-600"
                         />
                         <span className="text-sm text-cta">No</span>
                       </label>
@@ -603,7 +603,7 @@ function QuestionnaireContent() {
                           value="yes"
                           checked={formData.currentlyReceivingCareTherapist === "yes"}
                           onChange={() => setFormData((d) => ({ ...d, currentlyReceivingCareTherapist: "yes" }))}
-                          className="h-4 w-4 text-cta focus:ring-cta"
+                          className="h-4 w-4 text-cta focus:ring-cta dark:border-neutral-600"
                           required
                         />
                         <span className="text-sm text-cta">Yes</span>
@@ -615,7 +615,7 @@ function QuestionnaireContent() {
                           value="no"
                           checked={formData.currentlyReceivingCareTherapist === "no"}
                           onChange={() => setFormData((d) => ({ ...d, currentlyReceivingCareTherapist: "no" }))}
-                          className="h-4 w-4 text-cta focus:ring-cta"
+                          className="h-4 w-4 text-cta focus:ring-cta dark:border-neutral-600"
                         />
                         <span className="text-sm text-cta">No</span>
                       </label>
@@ -631,7 +631,7 @@ function QuestionnaireContent() {
                     type="checkbox"
                     checked={formData.seekingOngoingCare ?? false}
                     onChange={(e) => setFormData((d) => ({ ...d, seekingOngoingCare: e.target.checked }))}
-                    className="h-4 w-4 rounded border-cream-300 text-cta focus:ring-cta"
+                    className="h-4 w-4 rounded border-cream-300 text-cta focus:ring-cta dark:border-neutral-600"
                   />
                   <span className="text-sm text-cta">Ongoing longitudinal care</span>
                 </label>
@@ -640,7 +640,7 @@ function QuestionnaireContent() {
                     type="checkbox"
                     checked={formData.seekingConsultation ?? false}
                     onChange={(e) => setFormData((d) => ({ ...d, seekingConsultation: e.target.checked }))}
-                    className="h-4 w-4 rounded border-cream-300 text-cta focus:ring-cta"
+                    className="h-4 w-4 rounded border-cream-300 text-cta focus:ring-cta dark:border-neutral-600"
                   />
                   <span className="text-sm text-cta">Consultation / second opinion only</span>
                 </label>
@@ -669,7 +669,7 @@ function QuestionnaireContent() {
                     type="checkbox"
                     checked={formData.understandNonUrgentCare ?? false}
                     onChange={(e) => setFormData((d) => ({ ...d, understandNonUrgentCare: e.target.checked }))}
-                    className="mt-1 h-4 w-4 rounded border-cream-300 text-cta focus:ring-cta"
+                    className="mt-1 h-4 w-4 rounded border-cream-300 text-cta focus:ring-cta dark:border-neutral-600"
                   />
                   <span className="text-sm italic text-cta">
                     I understand this practice provides non-urgent, scheduled care only<span className="text-red-500" aria-hidden="true"> *</span>
@@ -680,7 +680,7 @@ function QuestionnaireContent() {
                     type="checkbox"
                     checked={formData.comfortableConciergeFee ?? false}
                     onChange={(e) => setFormData((d) => ({ ...d, comfortableConciergeFee: e.target.checked }))}
-                    className="mt-1 h-4 w-4 rounded border-cream-300 text-cta focus:ring-cta"
+                    className="mt-1 h-4 w-4 rounded border-cream-300 text-cta focus:ring-cta dark:border-neutral-600"
                   />
                   <span className="text-sm italic text-cta">
                     I am comfortable with a concierge / retainer-based fee structure<span className="text-red-500" aria-hidden="true"> *</span>
@@ -691,7 +691,7 @@ function QuestionnaireContent() {
                     type="checkbox"
                     checked={formData.understandStructuredCommunication ?? false}
                     onChange={(e) => setFormData((d) => ({ ...d, understandStructuredCommunication: e.target.checked }))}
-                    className="mt-1 h-4 w-4 rounded border-cream-300 text-cta focus:ring-cta"
+                    className="mt-1 h-4 w-4 rounded border-cream-300 text-cta focus:ring-cta dark:border-neutral-600"
                   />
                   <span className="text-sm italic text-cta">
                     I understand communication is structured and not on-demand<span className="text-red-500" aria-hidden="true"> *</span>
@@ -725,7 +725,7 @@ export default function QuestionnairePage() {
       fallback={
         <>
           <Header />
-          <main className="min-h-screen bg-cream-50 py-16">
+          <main className="min-h-screen bg-cream-50 py-16 dark:bg-neutral-900">
             <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
               <p className="text-cta">Loading…</p>
             </div>

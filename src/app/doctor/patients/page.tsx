@@ -80,18 +80,18 @@ export default function DoctorPatientsListPage() {
   const tableRows =
     filteredPatients.length === 0 ? (
       <tr>
-        <td colSpan={4} className="px-4 py-8 text-center text-sm text-gray-500">
+        <td colSpan={4} className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
           {searchApplied ? `No patients match "${searchApplied}".` : "No patients yet."}
         </td>
       </tr>
     ) : (
       filteredPatients.map((patient) => (
-        <tr key={patient.id} className="hover:bg-gray-50">
+        <tr key={patient.id} className="hover:bg-gray-50 dark:hover:bg-neutral-700">
           <td className="whitespace-nowrap px-4 py-3">
-            <span className="font-medium text-navy">{patient.name || "—"}</span>
+            <span className="font-medium text-navy dark:text-cream-100">{patient.name || "—"}</span>
           </td>
-          <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">{patient.email}</td>
-          <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">{patient.appointmentCount}</td>
+          <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600 dark:text-gray-300">{patient.email}</td>
+          <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600 dark:text-gray-300">{patient.appointmentCount}</td>
           <td className="whitespace-nowrap px-4 py-3 text-right">
             <Link
               href={`/doctor/patients/${patient.id}`}
@@ -105,7 +105,7 @@ export default function DoctorPatientsListPage() {
     );
 
   return (
-    <div className="min-h-screen bg-cream-50/60">
+    <div className="min-h-screen bg-cream-50/60 dark:bg-neutral-900">
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
 
         {/* Header */}
@@ -116,14 +116,14 @@ export default function DoctorPatientsListPage() {
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <div>
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-50">
-                <svg className="h-5 w-5 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-50 dark:bg-violet-950/40">
+                <svg className="h-5 w-5 text-violet-600 dark:text-violet-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-navy">Patients</h1>
-                <p className="text-sm text-gray-500">
+                <h1 className="text-2xl font-bold text-navy dark:text-cream-100">Patients</h1>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   {total > 0 ? `${total} patient${total !== 1 ? "s" : ""}` : "View all patients and their details"}
                 </p>
               </div>
@@ -132,7 +132,7 @@ export default function DoctorPatientsListPage() {
 
           {!loading && !error && (total > 0 || searchApplied) && (
             <div className="relative w-full max-w-sm">
-              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" aria-hidden>
+              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-400" aria-hidden>
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                 </svg>
@@ -143,7 +143,7 @@ export default function DoctorPatientsListPage() {
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 placeholder="Search by patient name…"
-                className="w-full rounded-xl border border-cream-200 bg-white py-2.5 pl-9 pr-3 text-sm text-navy placeholder-gray-400 shadow-sm focus:border-cta focus:outline-none focus:ring-2 focus:ring-cta/20"
+                className="w-full rounded-xl border border-cream-200 bg-white py-2.5 pl-9 pr-3 text-sm text-navy placeholder-gray-400 shadow-sm focus:border-cta focus:outline-none focus:ring-2 focus:ring-cta/20 dark:bg-neutral-900 dark:border-neutral-600 dark:text-cream-100 dark:placeholder:text-gray-500"
                 aria-label="Search by patient name"
               />
             </div>
@@ -157,38 +157,38 @@ export default function DoctorPatientsListPage() {
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
               </svg>
-              <p className="text-sm text-gray-500">Loading patients…</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Loading patients…</p>
             </div>
           </div>
         ) : error ? (
-          <div className="rounded-2xl border border-red-200 bg-red-50 p-6">
-            <p className="font-medium text-red-800">{error}</p>
-            <button type="button" onClick={() => loadPatients()} className="mt-2 text-sm font-medium text-red-700 hover:underline">
+          <div className="rounded-2xl border border-red-200 bg-red-50 p-6 dark:bg-red-950/40 dark:border-red-800">
+            <p className="font-medium text-red-800 dark:text-red-300">{error}</p>
+            <button type="button" onClick={() => loadPatients()} className="mt-2 text-sm font-medium text-red-700 hover:underline dark:text-red-300">
               Try again
             </button>
           </div>
         ) : patients.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-cream-300 bg-white py-20 text-center">
-            <svg className="h-10 w-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-cream-300 bg-white py-20 text-center dark:bg-neutral-800 dark:border-neutral-700">
+            <svg className="h-10 w-10 text-gray-300 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
-            <p className="mt-3 text-sm font-medium text-gray-500">
+            <p className="mt-3 text-sm font-medium text-gray-500 dark:text-gray-400">
               {searchApplied ? `No patients match "${searchApplied}"` : "No patients yet"}
             </p>
-            <p className="mt-1 text-xs text-gray-400">Approved patient requests will appear here.</p>
+            <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">Approved patient requests will appear here.</p>
           </div>
         ) : (
-          <div className="rounded-2xl border border-cream-200 bg-white shadow-sm overflow-hidden">
+          <div className="rounded-2xl border border-cream-200 bg-white shadow-sm overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
             <table className="min-w-full">
               <thead>
-                <tr className="border-b border-cream-200 bg-cream-50/80">
-                  <th scope="col" className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                <tr className="border-b border-cream-200 bg-cream-50/80 dark:border-neutral-700 dark:bg-neutral-900/60">
+                  <th scope="col" className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
                     Patient
                   </th>
-                  <th scope="col" className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  <th scope="col" className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
                     Email
                   </th>
-                  <th scope="col" className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  <th scope="col" className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
                     Appointments
                   </th>
                   <th scope="col" className="relative px-6 py-4">
@@ -196,24 +196,24 @@ export default function DoctorPatientsListPage() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-cream-100">
+              <tbody className="divide-y divide-cream-100 dark:divide-neutral-700">
                 {filteredPatients.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="px-6 py-12 text-center text-sm text-gray-400">
+                    <td colSpan={4} className="px-6 py-12 text-center text-sm text-gray-400 dark:text-gray-500">
                       {searchApplied ? `No patients match "${searchApplied}".` : "No patients yet."}
                     </td>
                   </tr>
                 ) : filteredPatients.map((patient) => (
-                  <tr key={patient.id} className="group transition hover:bg-cream-50/60">
+                  <tr key={patient.id} className="group transition hover:bg-cream-50/60 dark:hover:bg-neutral-700/60">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-cta/10 text-sm font-semibold text-cta">
                           {(patient.name || "?")[0].toUpperCase()}
                         </div>
-                        <span className="font-semibold text-navy">{patient.name || "—"}</span>
+                        <span className="font-semibold text-navy dark:text-cream-100">{patient.name || "—"}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">{patient.email}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{patient.email}</td>
                     <td className="px-6 py-4">
                       <span className="inline-flex items-center gap-1 rounded-full bg-cta/10 px-2.5 py-1 text-xs font-semibold text-cta">
                         {patient.appointmentCount} appt{patient.appointmentCount !== 1 ? "s" : ""}
@@ -222,7 +222,7 @@ export default function DoctorPatientsListPage() {
                     <td className="px-6 py-4 text-right">
                       <Link
                         href={`/doctor/patients/${patient.id}`}
-                        className="inline-flex items-center gap-1 rounded-lg border border-cream-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm transition hover:border-cta/30 hover:text-cta"
+                        className="inline-flex items-center gap-1 rounded-lg border border-cream-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm transition hover:border-cta/30 hover:text-cta dark:bg-neutral-800 dark:border-neutral-700 dark:text-gray-300"
                       >
                         View details
                         <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
@@ -234,8 +234,8 @@ export default function DoctorPatientsListPage() {
             </table>
 
             {totalPages > 1 && (
-              <div className="flex flex-wrap items-center justify-between gap-4 border-t border-cream-200 bg-cream-50/50 px-6 py-4">
-                <p className="text-sm text-gray-500">
+              <div className="flex flex-wrap items-center justify-between gap-4 border-t border-cream-200 bg-cream-50/50 px-6 py-4 dark:border-neutral-700 dark:bg-neutral-900/40">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, total)} of {total} patients
                 </p>
                 <div className="flex items-center gap-2">
@@ -243,16 +243,16 @@ export default function DoctorPatientsListPage() {
                     type="button"
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={page <= 1 || loading}
-                    className="rounded-xl border border-cream-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 shadow-sm hover:bg-cream-50 disabled:opacity-40 disabled:pointer-events-none"
+                    className="rounded-xl border border-cream-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 shadow-sm hover:bg-cream-50 disabled:opacity-40 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:text-gray-300 dark:hover:bg-neutral-700"
                   >
                     Previous
                   </button>
-                  <span className="text-sm text-gray-500">Page {page} of {totalPages}</span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Page {page} of {totalPages}</span>
                   <button
                     type="button"
                     onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                     disabled={page >= totalPages || loading}
-                    className="rounded-xl border border-cream-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 shadow-sm hover:bg-cream-50 disabled:opacity-40 disabled:pointer-events-none"
+                    className="rounded-xl border border-cream-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 shadow-sm hover:bg-cream-50 disabled:opacity-40 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:text-gray-300 dark:hover:bg-neutral-700"
                   >
                     Next
                   </button>

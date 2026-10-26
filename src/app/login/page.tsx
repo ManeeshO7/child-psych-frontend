@@ -40,17 +40,17 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-cream-50">
+    <div className="flex min-h-screen flex-col bg-cream-50 dark:bg-neutral-900">
       <Header />
       <main className="flex flex-1 flex-col items-center justify-center min-h-screen px-4 py-12 sm:px-6 lg:px-8">
         <div className="w-full max-w-sm">
           <h1 className="section-heading">Patient Login</h1>
-          <p className="mt-2 text-gray-600">
+          <p className="mt-2 text-gray-600 dark:text-gray-300">
             Sign in with the email and password you received after your access was approved.
           </p>
           <form onSubmit={handleSubmit} className="card mt-10 space-y-6">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Email
               </label>
               <input
@@ -59,11 +59,11 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="mt-1 block w-full rounded-lg border border-cream-200 bg-white px-3 py-2 text-navy shadow-sm focus:border-cta focus:outline-none focus:ring-1 focus:ring-cta"
+                className="mt-1 block w-full rounded-lg border border-cream-200 bg-white px-3 py-2 text-navy shadow-sm focus:border-cta focus:outline-none focus:ring-1 focus:ring-cta dark:bg-neutral-900 dark:border-neutral-600 dark:text-cream-100"
               />
             </div>
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Password
               </label>
               <div className="mt-1 relative">
@@ -73,12 +73,12 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="block w-full rounded-lg border border-cream-200 bg-white px-3 py-2 pr-10 text-navy shadow-sm focus:border-cta focus:outline-none focus:ring-1 focus:ring-cta"
+                  className="block w-full rounded-lg border border-cream-200 bg-white px-3 py-2 pr-10 text-navy shadow-sm focus:border-cta focus:outline-none focus:ring-1 focus:ring-cta dark:bg-neutral-900 dark:border-neutral-600 dark:text-cream-100"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? (
@@ -110,18 +110,18 @@ export default function LoginPage() {
               {loading ? "Signing in…" : "Sign In"}
             </button>
           </form>
-          <p className="mt-6 text-center text-sm text-gray-600">
+          <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-300">
             <Link href="/reset-password" className="text-cta hover:underline">
               Forgot password? Reset it here
             </Link>
           </p>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-300">
             New patient?{" "}
             <Link href="/request-access" className="text-cta hover:underline">
               Request access
             </Link>
           </p>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-300">
             <Link href="/doctor/login" className="text-cta hover:underline">
               Doctor login
             </Link>

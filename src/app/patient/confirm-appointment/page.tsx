@@ -114,7 +114,7 @@ export default function ConfirmAppointmentPage() {
   if (loading) {
     return (
       <main className="mx-auto max-w-xl px-4 py-10 sm:px-6 lg:px-8">
-        <p className="text-gray-500">Loading…</p>
+        <p className="text-gray-500 dark:text-gray-400">Loading…</p>
       </main>
     );
   }
@@ -123,7 +123,7 @@ export default function ConfirmAppointmentPage() {
     return (
       <main className="mx-auto max-w-xl px-4 py-10 sm:px-6 lg:px-8">
         <h1 className="section-heading">Confirm appointment</h1>
-        <p className="mt-2 text-red-600">{error}</p>
+        <p className="mt-2 text-red-600 dark:text-red-400">{error}</p>
         <Link href="/patient/book" className="mt-4 inline-block text-cta hover:underline">
           ← Back to booking
         </Link>
@@ -135,7 +135,7 @@ export default function ConfirmAppointmentPage() {
     return (
       <main className="mx-auto max-w-xl px-4 py-10 sm:px-6 lg:px-8">
         <h1 className="section-heading">Confirm appointment</h1>
-        <p className="mt-2 text-gray-600">No appointment slot selected.</p>
+        <p className="mt-2 text-gray-600 dark:text-gray-300">No appointment slot selected.</p>
         <Link href="/patient/book" className="mt-4 inline-block text-cta hover:underline">
           ← Back to booking
         </Link>
@@ -150,38 +150,38 @@ export default function ConfirmAppointmentPage() {
   return (
     <main className="mx-auto max-w-xl px-4 py-10 sm:px-6 lg:px-8">
       <h1 className="section-heading">Confirm your appointment</h1>
-      <p className="mt-2 text-gray-600">
+      <p className="mt-2 text-gray-600 dark:text-gray-300">
         Please review your appointment details below. Your card has been saved securely and you will be charged after you attend your appointment.
       </p>
 
-      <div className="mt-6 rounded-lg border border-cream-200 bg-white p-6 shadow-sm">
+      <div className="mt-6 rounded-lg border border-cream-200 bg-white p-6 shadow-sm dark:border-neutral-700 dark:bg-neutral-800">
         <h2 className="text-lg font-semibold text-cta mb-4">Appointment Details</h2>
-        
+
         <div className="space-y-3">
           <div>
-            <p className="text-sm text-gray-600">Date & Time</p>
-            <p className="text-base font-medium text-navy">
+            <p className="text-sm text-gray-600 dark:text-gray-300">Date & Time</p>
+            <p className="text-base font-medium text-navy dark:text-cream-100">
               {formatSlotDate(slotStart)}, {formatSlotTime(slotStart)} {tzLabel}
             </p>
           </div>
 
           <div>
-            <p className="text-sm text-gray-600">Duration</p>
-            <p className="text-base font-medium text-navy">
+            <p className="text-sm text-gray-600 dark:text-gray-300">Duration</p>
+            <p className="text-base font-medium text-navy dark:text-cream-100">
               {durationMinutes} minute{durationMinutes === 1 ? "" : "s"}
             </p>
           </div>
 
           <div>
-            <p className="text-sm text-gray-600">Appointment Type</p>
-            <p className="text-base font-medium text-navy capitalize">{visitType.replace(/_/g, " ")}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">Appointment Type</p>
+            <p className="text-base font-medium text-navy capitalize dark:text-cream-100">{visitType.replace(/_/g, " ")}</p>
           </div>
 
           {visitPrice && (
-            <div className="mt-4 pt-4 border-t border-cream-200">
-              <p className="text-sm text-gray-600">Visit Fee</p>
+            <div className="mt-4 pt-4 border-t border-cream-200 dark:border-neutral-700">
+              <p className="text-sm text-gray-600 dark:text-gray-300">Visit Fee</p>
               <p className="text-lg font-semibold text-cta">{visitPrice.formatted}</p>
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                 You will be charged {visitPrice.formatted} after you attend your appointment. Your card on file will be used for payment.
               </p>
             </div>
@@ -190,8 +190,8 @@ export default function ConfirmAppointmentPage() {
       </div>
 
       {error && (
-        <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4">
-          <p className="text-sm text-red-600">{error}</p>
+        <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950/40">
+          <p className="text-sm text-red-600 dark:text-red-300">{error}</p>
         </div>
       )}
 
@@ -209,7 +209,7 @@ export default function ConfirmAppointmentPage() {
         </Link>
       </div>
 
-      <p className="mt-6 text-xs text-gray-500">
+      <p className="mt-6 text-xs text-gray-500 dark:text-gray-400">
         By confirming, you agree to attend this appointment at the scheduled time. Your card will be charged after the appointment is completed.
       </p>
     </main>

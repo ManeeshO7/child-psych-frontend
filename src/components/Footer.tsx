@@ -42,7 +42,7 @@ const QUICK_LINKS = [
 
 export default function Footer() {
   return (
-    <footer className="border-t border-cream-300/80 bg-header-footer">
+    <footer className="border-t border-cream-300/80 bg-header-footer dark:border-neutral-700 dark:bg-neutral-900">
       <div className="mx-auto max-w-7xl px-4 pt-12 pb-8 sm:px-6 lg:px-8">
 
         {/* Main 3-column grid */}
@@ -51,10 +51,10 @@ export default function Footer() {
           {/* Col 1: Brand */}
           <div>
             <Link href="/" className="flex flex-col items-start">
-              <span className="text-2xl font-semibold tracking-tight text-navy">TP</span>
-              <span className="text-sm font-medium text-gray-600">TelePsych</span>
+              <span className="text-2xl font-semibold tracking-tight text-navy dark:text-cream-100">TP</span>
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-300">TelePsych</span>
             </Link>
-            <p className="mt-4 text-sm leading-relaxed text-gray-600">
+            <p className="mt-4 text-sm leading-relaxed text-gray-600 dark:text-gray-300">
               Evidence-based psychiatric care for children, adolescents, and young adults — delivered via secure telehealth across California.
             </p>
             <div className="mt-5 flex items-center gap-4">
@@ -64,7 +64,7 @@ export default function Footer() {
                   href={href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-gray-500 transition-colors hover:text-cta"
+                  className="text-gray-500 transition-colors hover:text-cta dark:text-gray-400"
                   aria-label={name}
                 >
                   {icon}
@@ -75,11 +75,11 @@ export default function Footer() {
 
           {/* Col 2: Quick Links */}
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-gray-500">Quick Links</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">Quick Links</p>
             <ul className="mt-4 space-y-2">
               {QUICK_LINKS.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="text-sm text-gray-600 transition-colors hover:text-cta">
+                  <Link href={link.href} className="text-sm text-gray-600 transition-colors hover:text-cta dark:text-gray-300">
                     {link.label}
                   </Link>
                 </li>
@@ -89,8 +89,8 @@ export default function Footer() {
 
           {/* Col 3: Contact Info */}
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-gray-500">Contact</p>
-            <ul className="mt-4 space-y-3 text-sm text-gray-600">
+            <p className="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">Contact</p>
+            <ul className="mt-4 space-y-3 text-sm text-gray-600 dark:text-gray-300">
               <li className="flex items-start gap-2">
                 <svg className="mt-0.5 h-4 w-4 shrink-0 text-cta" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -102,7 +102,7 @@ export default function Footer() {
                 <svg className="h-4 w-4 shrink-0 text-cta" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                 </svg>
-                <a href="tel:+18587766267" className="transition-colors hover:text-cta">(858) 776-6267</a>
+                <a href="tel:+18587766267" className="transition-colors hover:text-cta dark:text-gray-300">(858) 776-6267</a>
               </li>
               <li className="flex items-center gap-2">
                 <svg className="h-4 w-4 shrink-0 text-cta" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -127,11 +127,11 @@ export default function Footer() {
         </div>
 
         {/* Divider + copyright */}
-        <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-cream-300/80 pt-6 sm:flex-row">
-          <p className="text-sm text-gray-500">
+        <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-cream-300/80 pt-6 sm:flex-row dark:border-neutral-700">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             © {new Date().getFullYear()} TelePsych. All rights reserved.
           </p>
-          <div className="flex gap-4 text-xs text-gray-400">
+          <div className="flex gap-4 text-xs text-gray-400 dark:text-gray-400">
             <span>Privacy Policy</span>
             <span>·</span>
             <span>Terms of Service</span>
@@ -139,13 +139,13 @@ export default function Footer() {
         </div>
 
         {/* Disclaimers */}
-        <div className="mt-6 rounded-2xl border border-cream-300/60 bg-white/30 px-6 pb-5 pt-6">
+        <div className="mt-6 rounded-2xl border border-cream-300/60 bg-white/30 px-6 pb-5 pt-6 dark:border-neutral-700 dark:bg-neutral-800/50">
           <div className="mb-4 flex items-center gap-3">
-            <div className="h-px flex-1 bg-cream-300/80" />
-            <p className="text-[10px] font-bold uppercase leading-5 tracking-[0.2em] text-gray-400">
+            <div className="h-px flex-1 bg-cream-300/80 dark:bg-neutral-700" />
+            <p className="text-[10px] font-bold uppercase leading-5 tracking-[0.2em] text-gray-400 dark:text-gray-400">
               California Telepsychiatry Disclaimers — Child &amp; Adolescent Care
             </p>
-            <div className="h-px flex-1 bg-cream-300/80" />
+            <div className="h-px flex-1 bg-cream-300/80 dark:bg-neutral-700" />
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {([
@@ -157,8 +157,8 @@ export default function Footer() {
               <div key={item.title} className="flex gap-2.5">
                 <div className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-cta/60" />
                 <div>
-                  <p className="text-xs font-semibold text-gray-600">{item.title}</p>
-                  <p className="mt-0.5 text-xs leading-relaxed text-gray-500">{item.text}</p>
+                  <p className="text-xs font-semibold text-gray-600 dark:text-gray-300">{item.title}</p>
+                  <p className="mt-0.5 text-xs leading-relaxed text-gray-500 dark:text-gray-400">{item.text}</p>
                 </div>
               </div>
             ))}

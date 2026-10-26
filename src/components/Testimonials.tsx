@@ -77,7 +77,7 @@ export default function Testimonials() {
     >
       <div className="absolute inset-0 -z-10">
         <Image src="/testimonials-bg.png" alt="" fill className="object-cover object-center" sizes="100vw" priority={false} />
-        <div className="absolute inset-0 bg-white/45" aria-hidden />
+        <div className="absolute inset-0 bg-white/45 dark:bg-neutral-900/70" aria-hidden />
       </div>
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -99,8 +99,8 @@ export default function Testimonials() {
           className="mt-8 grid grid-cols-2 gap-4 sm:mt-10 sm:gap-6 md:grid-cols-[1fr_1.15fr_1fr] md:items-stretch lg:gap-8"
         >
           {/* Left quote */}
-          <div className="order-2 relative col-span-1 flex flex-col overflow-hidden rounded-3xl bg-cream-50 p-5 pt-9 shadow-[0_18px_60px_rgba(0,0,0,0.10)] ring-1 ring-cream-300/80 sm:p-8 sm:pt-10 md:order-none">
-            <div className="pointer-events-none absolute left-5 top-4 z-0 select-none font-serif text-[64px] leading-none text-gray-300/90 sm:left-7 sm:top-5 sm:text-[88px]" aria-hidden>
+          <div className="order-2 relative col-span-1 flex flex-col overflow-hidden rounded-3xl bg-cream-50 p-5 pt-9 shadow-[0_18px_60px_rgba(0,0,0,0.10)] ring-1 ring-cream-300/80 sm:p-8 sm:pt-10 md:order-none dark:bg-neutral-800 dark:ring-neutral-700">
+            <div className="pointer-events-none absolute left-5 top-4 z-0 select-none font-serif text-[64px] leading-none text-gray-300/90 sm:left-7 sm:top-5 sm:text-[88px] dark:text-neutral-600/90" aria-hidden>
               &ldquo;
             </div>
             <AnimatePresence mode="wait">
@@ -111,10 +111,10 @@ export default function Testimonials() {
                 animate="center"
                 exit="exit"
                 transition={{ duration: 0.35 }}
-                className="relative z-10 mt-1 flex flex-1 flex-col justify-center text-left font-serif text-[13px] leading-relaxed text-gray-700 sm:mt-2 sm:text-[15px] md:text-[16px]"
+                className="relative z-10 mt-1 flex flex-1 flex-col justify-center text-left font-serif text-[13px] leading-relaxed text-gray-700 sm:mt-2 sm:text-[15px] md:text-[16px] dark:text-gray-300"
               >
                 <p className="max-w-[40ch]">{testimonials[leftIndex].quote}</p>
-                <p className="mt-3 max-w-[40ch] text-gray-600">{testimonials[leftIndex].detail}</p>
+                <p className="mt-3 max-w-[40ch] text-gray-600 dark:text-gray-400">{testimonials[leftIndex].detail}</p>
               </motion.div>
             </AnimatePresence>
             <Dots slideIndex={slideIndex} setSlideIndex={setSlideIndex} />
@@ -126,7 +126,7 @@ export default function Testimonials() {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7, delay: 0.15, ease: "easeOut" }}
-            className="order-1 relative col-span-2 w-full max-w-[380px] justify-self-center overflow-hidden rounded-3xl bg-white shadow-[0_18px_60px_rgba(0,0,0,0.10)] ring-1 ring-black/5 md:order-none md:col-span-1 md:max-w-none"
+            className="order-1 relative col-span-2 w-full max-w-[380px] justify-self-center overflow-hidden rounded-3xl bg-white shadow-[0_18px_60px_rgba(0,0,0,0.10)] ring-1 ring-black/5 md:order-none md:col-span-1 md:max-w-none dark:bg-neutral-800"
           >
             <div className="relative aspect-[4/5] w-full md:aspect-[3/4]">
               <Image
@@ -147,8 +147,8 @@ export default function Testimonials() {
           </motion.div>
 
           {/* Right quote */}
-          <div className="order-3 relative col-span-1 flex flex-col overflow-hidden rounded-3xl bg-cream-50 p-5 pt-9 shadow-[0_18px_60px_rgba(0,0,0,0.10)] ring-1 ring-cream-300/80 sm:p-8 sm:pt-10 md:order-none">
-            <div className="pointer-events-none absolute left-5 top-4 z-0 select-none font-serif text-[64px] leading-none text-gray-300/90 sm:left-7 sm:top-5 sm:text-[88px]" aria-hidden>
+          <div className="order-3 relative col-span-1 flex flex-col overflow-hidden rounded-3xl bg-cream-50 p-5 pt-9 shadow-[0_18px_60px_rgba(0,0,0,0.10)] ring-1 ring-cream-300/80 sm:p-8 sm:pt-10 md:order-none dark:bg-neutral-800 dark:ring-neutral-700">
+            <div className="pointer-events-none absolute left-5 top-4 z-0 select-none font-serif text-[64px] leading-none text-gray-300/90 sm:left-7 sm:top-5 sm:text-[88px] dark:text-neutral-600/90" aria-hidden>
               &ldquo;
             </div>
             <AnimatePresence mode="wait">
@@ -159,10 +159,10 @@ export default function Testimonials() {
                 animate="center"
                 exit="exit"
                 transition={{ duration: 0.35 }}
-                className="relative z-10 mt-1 flex flex-1 flex-col justify-center text-left font-serif text-[13px] leading-relaxed text-gray-700 sm:mt-2 sm:text-[15px] md:text-[16px]"
+                className="relative z-10 mt-1 flex flex-1 flex-col justify-center text-left font-serif text-[13px] leading-relaxed text-gray-700 sm:mt-2 sm:text-[15px] md:text-[16px] dark:text-gray-300"
               >
                 <p className="max-w-[40ch]">{testimonials[rightIndex].quote}</p>
-                <p className="mt-3 max-w-[40ch] text-gray-600">{testimonials[rightIndex].detail}</p>
+                <p className="mt-3 max-w-[40ch] text-gray-600 dark:text-gray-400">{testimonials[rightIndex].detail}</p>
               </motion.div>
             </AnimatePresence>
             <Dots slideIndex={slideIndex} setSlideIndex={setSlideIndex} />
@@ -187,7 +187,7 @@ function Dots({ slideIndex, setSlideIndex }: { slideIndex: number; setSlideIndex
           <motion.span
             animate={{ width: i === slideIndex ? 36 : 24, opacity: i === slideIndex ? 1 : 0.4 }}
             transition={{ duration: 0.3 }}
-            className={`block h-1 rounded-full ${i === slideIndex ? "bg-cta" : "bg-gray-300"}`}
+            className={`block h-1 rounded-full ${i === slideIndex ? "bg-cta" : "bg-gray-300 dark:bg-neutral-600"}`}
             style={{ width: i === slideIndex ? 36 : 24 }}
           />
         </button>

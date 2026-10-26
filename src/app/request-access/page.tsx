@@ -65,17 +65,17 @@ export default function RequestAccessPage() {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-cream-50 py-16">
+      <main className="min-h-screen bg-cream-50 py-16 dark:bg-neutral-900">
         <div className="mx-auto max-w-xl px-4 sm:px-6 lg:px-8">
           <h1 className="section-heading">New Patient — Request Access</h1>
-          <p className="mt-2 text-gray-600">
+          <p className="mt-2 text-gray-600 dark:text-gray-300">
             Fill out the form below. We will review your request and contact you with next steps.
           </p>
 
           <form onSubmit={handleSubmit} className="card mt-10 space-y-6">
               <div className="grid gap-6 sm:grid-cols-2">
                 <div>
-                  <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     First Name *
                   </label>
                   <input
@@ -83,11 +83,11 @@ export default function RequestAccessPage() {
                     name="firstName"
                     type="text"
                     required
-                    className="mt-1 block w-full rounded-lg border border-cream-200 bg-white px-3 py-2 text-navy shadow-sm focus:border-cta focus:outline-none focus:ring-1 focus:ring-cta"
+                    className="mt-1 block w-full rounded-lg border border-cream-200 bg-white px-3 py-2 text-navy shadow-sm focus:border-cta focus:outline-none focus:ring-1 focus:ring-cta dark:bg-neutral-900 dark:border-neutral-600 dark:text-cream-100"
                   />
                 </div>
                 <div>
-                  <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Last Name *
                   </label>
                   <input
@@ -95,12 +95,12 @@ export default function RequestAccessPage() {
                     name="lastName"
                     type="text"
                     required
-                    className="mt-1 block w-full rounded-lg border border-cream-200 bg-white px-3 py-2 text-navy shadow-sm focus:border-cta focus:outline-none focus:ring-1 focus:ring-cta"
+                    className="mt-1 block w-full rounded-lg border border-cream-200 bg-white px-3 py-2 text-navy shadow-sm focus:border-cta focus:outline-none focus:ring-1 focus:ring-cta dark:bg-neutral-900 dark:border-neutral-600 dark:text-cream-100"
                   />
                 </div>
               </div>
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Email *
                 </label>
                 <input
@@ -108,15 +108,15 @@ export default function RequestAccessPage() {
                   name="email"
                   type="email"
                   required
-                  className="mt-1 block w-full rounded-lg border border-cream-200 bg-white px-3 py-2 text-navy shadow-sm focus:border-cta focus:outline-none focus:ring-1 focus:ring-cta"
+                  className="mt-1 block w-full rounded-lg border border-cream-200 bg-white px-3 py-2 text-navy shadow-sm focus:border-cta focus:outline-none focus:ring-1 focus:ring-cta dark:bg-neutral-900 dark:border-neutral-600 dark:text-cream-100"
                 />
               </div>
               <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Phone Number *
                 </label>
-                <div className="mt-1 flex rounded-lg border border-cream-200 bg-white shadow-sm focus-within:border-cta focus-within:ring-1 focus-within:ring-cta">
-                  <span className="inline-flex items-center rounded-l-lg border-r border-cream-200 bg-gray-50 px-3 text-gray-600">+1</span>
+                <div className="mt-1 flex rounded-lg border border-cream-200 bg-white shadow-sm focus-within:border-cta focus-within:ring-1 focus-within:ring-cta dark:bg-neutral-900 dark:border-neutral-600">
+                  <span className="inline-flex items-center rounded-l-lg border-r border-cream-200 bg-gray-50 px-3 text-gray-600 dark:bg-neutral-700 dark:border-neutral-600 dark:text-gray-300">+1</span>
                   <input
                     id="phone"
                     name="phone"
@@ -127,13 +127,13 @@ export default function RequestAccessPage() {
                     maxLength={US_PHONE_DIGITS}
                     value={phoneDigits}
                     onChange={handlePhoneChange}
-                    className="block w-full rounded-r-lg border-0 bg-transparent py-2 pl-2 pr-3 text-navy placeholder-gray-400 focus:outline-none focus:ring-0"
+                    className="block w-full rounded-r-lg border-0 bg-transparent py-2 pl-2 pr-3 text-navy placeholder-gray-400 focus:outline-none focus:ring-0 dark:text-cream-100 dark:placeholder:text-gray-500"
                     aria-label="US phone number, 10 digits"
                   />
                 </div>
               </div>
               <div>
-                <label htmlFor="notes" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="notes" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Why do you need access?
                 </label>
                 <textarea
@@ -141,7 +141,7 @@ export default function RequestAccessPage() {
                   name="notes"
                   rows={4}
                   placeholder="Briefly describe what you’re looking for help with (e.g., anxiety, ADHD evaluation, medication management)."
-                  className="mt-1 block w-full rounded-lg border border-cream-200 bg-white px-3 py-2 text-navy shadow-sm focus:border-cta focus:outline-none focus:ring-1 focus:ring-cta"
+                  className="mt-1 block w-full rounded-lg border border-cream-200 bg-white px-3 py-2 text-navy shadow-sm focus:border-cta focus:outline-none focus:ring-1 focus:ring-cta dark:bg-neutral-900 dark:border-neutral-600 dark:text-cream-100 dark:placeholder:text-gray-500"
                 />
               </div>
               {errorMessage && (

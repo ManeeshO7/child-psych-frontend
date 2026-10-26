@@ -94,7 +94,7 @@ export default function PatientBillingPage() {
   if (loading) {
     return (
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-        <p className="text-gray-500">Loading billing…</p>
+        <p className="text-gray-500 dark:text-gray-400">Loading billing…</p>
       </main>
     );
   }
@@ -106,37 +106,37 @@ export default function PatientBillingPage() {
       </Link>
 
       <h1 className="mt-4 section-heading">Billing & Payments</h1>
-      <p className="mt-2 text-gray-600">View invoices and payment receipts.</p>
+      <p className="mt-2 text-gray-600 dark:text-gray-300">View invoices and payment receipts.</p>
 
-      <div className="mt-6 card rounded-[20px] bg-white p-6 shadow-sm ring-1 ring-cta/10">
+      <div className="mt-6 card rounded-[20px] bg-white dark:bg-neutral-800 p-6 shadow-sm ring-1 ring-cta/10">
         <h2 className="text-lg font-semibold text-cta">Card on file</h2>
         {cardSummary?.hasCard ? (
-          <p className="mt-2 text-navy">
+          <p className="mt-2 text-navy dark:text-cream-100">
             {(cardSummary.brand || "Card").toString().toUpperCase()} •••• {cardSummary.last4 || "—"}
           </p>
         ) : (
-          <p className="mt-2 text-gray-600">No card on file.</p>
+          <p className="mt-2 text-gray-600 dark:text-gray-300">No card on file.</p>
         )}
         <Link href="/patient/save-card?returnTo=/patient/billing" className="mt-3 inline-block text-sm font-medium text-cta hover:underline">
           {cardSummary?.hasCard ? "Manage card →" : "Add card →"}
         </Link>
       </div>
 
-      <div className="mt-6 card rounded-[20px] bg-white p-6 shadow-sm ring-1 ring-cta/10">
+      <div className="mt-6 card rounded-[20px] bg-white dark:bg-neutral-800 p-6 shadow-sm ring-1 ring-cta/10">
         <h2 className="text-lg font-semibold text-cta">Invoices & Receipts</h2>
         {paymentHistory.length === 0 ? (
-          <p className="mt-3 text-sm text-gray-600">No payment history yet.</p>
+          <p className="mt-3 text-sm text-gray-600 dark:text-gray-300">No payment history yet.</p>
         ) : (
           <ul className="mt-4 space-y-3">
             {paymentHistory.map((item) => {
               const viewUrl = item.hostedInvoiceUrl || item.receiptUrl || item.invoicePdfUrl;
               const downloadUrl = item.invoicePdfUrl || item.hostedInvoiceUrl || item.receiptUrl;
               return (
-                <li key={item.id || `${item.createdAt}-${item.amountCents}`} className="rounded-xl border border-cream-200 bg-cream-50 p-4">
-                  <p className="text-base font-semibold text-navy">
+                <li key={item.id || `${item.createdAt}-${item.amountCents}`} className="rounded-xl border border-cream-200 dark:border-neutral-700 bg-cream-50 dark:bg-neutral-900 p-4">
+                  <p className="text-base font-semibold text-navy dark:text-cream-100">
                     {formatMoney(item.amountCents, item.currency)}
                   </p>
-                  <p className="mt-1 text-sm text-gray-600">
+                  <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
                     {formatShortDate(item.createdAt)} · {(item.status || "paid").replaceAll("_", " ")}
                   </p>
                   <div className="mt-2 flex items-center gap-4">

@@ -114,10 +114,10 @@ export default function AssignFormsModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl">
+      <div className="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-neutral-800">
 
         {/* Header */}
-        <div className="border-b-2 border-gray-200 bg-gray-50 px-6 py-5">
+        <div className="border-b-2 border-gray-200 bg-gray-50 px-6 py-5 dark:border-neutral-700 dark:bg-neutral-900">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-3">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-cta/10 text-cta">
@@ -126,8 +126,8 @@ export default function AssignFormsModal({
                 </svg>
               </span>
               <div>
-                <h2 className="text-lg font-semibold text-navy">Assign Forms to Patient</h2>
-                <p className="mt-0.5 text-sm text-gray-500">
+                <h2 className="text-lg font-semibold text-navy dark:text-cream-100">Assign Forms to Patient</h2>
+                <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
                   Select forms the patient needs to complete before their appointment.
                 </p>
               </div>
@@ -135,7 +135,7 @@ export default function AssignFormsModal({
             <button
               type="button"
               onClick={onClose}
-              className="shrink-0 rounded-lg p-1.5 text-gray-400 hover:bg-gray-200 hover:text-gray-600 transition-colors"
+              className="shrink-0 rounded-lg p-1.5 text-gray-400 hover:bg-gray-200 hover:text-gray-600 transition-colors dark:text-gray-400 dark:hover:bg-neutral-700 dark:hover:text-gray-300"
               aria-label="Close"
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -148,7 +148,7 @@ export default function AssignFormsModal({
         {/* Form list */}
         <div className="max-h-[55vh] overflow-y-auto px-6 py-5">
           {loading ? (
-            <div className="flex items-center justify-center gap-3 py-10 text-gray-400">
+            <div className="flex items-center justify-center gap-3 py-10 text-gray-400 dark:text-gray-400">
               <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
@@ -156,16 +156,16 @@ export default function AssignFormsModal({
               Loading forms…
             </div>
           ) : error && !submitting ? (
-            <div className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/40 dark:border-red-800 dark:text-red-300">
               <svg className="mt-0.5 h-4 w-4 shrink-0 text-red-500" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                 <circle cx="12" cy="12" r="9" /><path strokeLinecap="round" d="M12 8v4m0 4h.01" />
               </svg>
               {error}
             </div>
           ) : forms.length === 0 ? (
-            <div className="rounded-xl border border-amber-200 bg-amber-50 px-5 py-6 text-center">
-              <p className="text-sm font-medium text-amber-900">No forms available</p>
-              <p className="mt-1 text-xs text-amber-700">
+            <div className="rounded-xl border border-amber-200 bg-amber-50 px-5 py-6 text-center dark:bg-amber-950/40 dark:border-amber-800">
+              <p className="text-sm font-medium text-amber-900 dark:text-amber-200">No forms available</p>
+              <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">
                 No forms have been added to the system yet. Run the form seed script from the backend to add forms.
               </p>
             </div>
@@ -179,12 +179,12 @@ export default function AssignFormsModal({
                     className={`group flex cursor-pointer items-start gap-4 rounded-xl border-2 p-4 transition-all duration-150 ${
                       isSelected
                         ? "border-cta bg-cta/5 shadow-sm"
-                        : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50"
+                        : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:border-neutral-600 dark:hover:bg-neutral-700"
                     }`}
                   >
                     {/* Custom checkbox */}
                     <div className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-2 transition-all ${
-                      isSelected ? "border-cta bg-cta" : "border-gray-300 bg-white group-hover:border-cta/50"
+                      isSelected ? "border-cta bg-cta" : "border-gray-300 bg-white group-hover:border-cta/50 dark:border-neutral-600 dark:bg-neutral-800"
                     }`}>
                       {isSelected && (
                         <svg className="h-3 w-3 text-white" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
@@ -200,19 +200,19 @@ export default function AssignFormsModal({
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-3">
-                        <p className={`font-medium leading-snug ${isSelected ? "text-navy" : "text-gray-800"}`}>
+                        <p className={`font-medium leading-snug ${isSelected ? "text-navy dark:text-cream-100" : "text-gray-800 dark:text-gray-300"}`}>
                           {form.title}
                         </p>
                         <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${
                           form.type === "questionnaire"
                             ? "bg-cta/10 text-cta"
-                            : "bg-gray-100 text-gray-600"
+                            : "bg-gray-100 text-gray-600 dark:bg-neutral-700 dark:text-gray-300"
                         }`}>
                           {form.type === "questionnaire" ? "Questionnaire" : "PDF Upload"}
                         </span>
                       </div>
                       {form.description && (
-                        <p className="mt-1 text-sm text-gray-500 leading-snug">{form.description}</p>
+                        <p className="mt-1 text-sm text-gray-500 leading-snug dark:text-gray-400">{form.description}</p>
                       )}
                     </div>
                   </label>
@@ -223,9 +223,9 @@ export default function AssignFormsModal({
         </div>
 
         {/* Footer */}
-        <div className="border-t-2 border-gray-200 bg-gray-50 px-6 py-4">
+        <div className="border-t-2 border-gray-200 bg-gray-50 px-6 py-4 dark:border-neutral-700 dark:bg-neutral-900">
           {error && submitting && (
-            <p className="mb-3 text-sm text-red-600">{error}</p>
+            <p className="mb-3 text-sm text-red-600 dark:text-red-400">{error}</p>
           )}
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
@@ -235,7 +235,7 @@ export default function AssignFormsModal({
                   {selectedFormIds.size} form{selectedFormIds.size === 1 ? "" : "s"} selected
                 </span>
               ) : (
-                <span className="text-sm text-gray-400">No forms selected</span>
+                <span className="text-sm text-gray-400 dark:text-gray-400">No forms selected</span>
               )}
             </div>
             <div className="flex items-center gap-3">
@@ -243,7 +243,7 @@ export default function AssignFormsModal({
                 type="button"
                 onClick={onClose}
                 disabled={submitting}
-                className="rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 transition-colors"
+                className="rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 transition-colors dark:border-neutral-600 dark:bg-neutral-800 dark:text-gray-300 dark:hover:bg-neutral-700"
               >
                 Cancel
               </button>

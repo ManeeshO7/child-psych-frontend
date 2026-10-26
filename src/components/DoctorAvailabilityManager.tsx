@@ -374,17 +374,17 @@ export default function DoctorAvailabilityManager() {
           type="button"
           onClick={() => setCurrentMonthIndex((i) => Math.max(i - 1, 0))}
           disabled={safeMonthIndex === 0}
-          className="flex h-8 w-8 items-center justify-center rounded-full border border-cream-200 text-gray-500 transition hover:bg-cream-100 disabled:cursor-not-allowed disabled:opacity-30"
+          className="flex h-8 w-8 items-center justify-center rounded-full border border-cream-200 text-gray-500 transition hover:bg-cream-100 disabled:cursor-not-allowed disabled:opacity-30 dark:border-neutral-700 dark:text-gray-400 dark:hover:bg-neutral-700"
           aria-label="Previous month"
         >
           ‹
         </button>
-        <span className="text-sm font-semibold tracking-wide text-gray-700">{currentMonth.label}</span>
+        <span className="text-sm font-semibold tracking-wide text-gray-700 dark:text-gray-300">{currentMonth.label}</span>
         <button
           type="button"
           onClick={() => setCurrentMonthIndex((i) => Math.min(i + 1, Math.max(months.length - 1, 0)))}
           disabled={safeMonthIndex >= Math.max(months.length - 1, 0)}
-          className="flex h-8 w-8 items-center justify-center rounded-full border border-cream-200 text-gray-500 transition hover:bg-cream-100 disabled:cursor-not-allowed disabled:opacity-30"
+          className="flex h-8 w-8 items-center justify-center rounded-full border border-cream-200 text-gray-500 transition hover:bg-cream-100 disabled:cursor-not-allowed disabled:opacity-30 dark:border-neutral-700 dark:text-gray-400 dark:hover:bg-neutral-700"
           aria-label="Next month"
         >
           ›
@@ -394,7 +394,7 @@ export default function DoctorAvailabilityManager() {
         {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((d, idx) => (
           <div
             key={`${d}-${idx}`}
-            className="flex h-8 items-center justify-center text-[11px] font-semibold uppercase tracking-wide text-gray-400"
+            className="flex h-8 items-center justify-center text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500"
           >
             {d}
           </div>
@@ -417,7 +417,7 @@ export default function DoctorAvailabilityManager() {
               return (
                 <span
                   key={iso}
-                  className="flex h-9 items-center justify-center text-xs text-gray-300 cursor-not-allowed"
+                  className="flex h-9 items-center justify-center text-xs text-gray-300 cursor-not-allowed dark:text-gray-600"
                   aria-hidden
                 >
                   {cell.dom}
@@ -435,8 +435,8 @@ export default function DoctorAvailabilityManager() {
                     ? "bg-cta text-white shadow-md"
                     : hasBlocks
                     ? "bg-cta/10 text-cta hover:bg-cta/20"
-                    : "text-gray-600 hover:bg-cream-100",
-                  isToday && !isSelected ? "ring-2 ring-cta/40 ring-offset-1" : "",
+                    : "text-gray-600 hover:bg-cream-100 dark:text-gray-300 dark:hover:bg-neutral-700",
+                  isToday && !isSelected ? "ring-2 ring-cta/40 ring-offset-1 dark:ring-offset-neutral-800" : "",
                 ]
                   .filter(Boolean)
                   .join(" ")}
@@ -454,7 +454,7 @@ export default function DoctorAvailabilityManager() {
   );
 
   return (
-    <main className="min-h-screen bg-cream-50/60">
+    <main className="min-h-screen bg-cream-50/60 dark:bg-neutral-900">
       <div className="mx-auto max-w-[1600px] px-4 py-10 sm:px-6 lg:px-8">
         {/* Page header */}
         <div className="mb-8 flex items-start justify-between gap-4">
@@ -474,14 +474,14 @@ export default function DoctorAvailabilityManager() {
                 </svg>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-navy">Manage Availability</h1>
-                <p className="text-sm text-gray-500">All times shown in Pacific Time (PST)</p>
+                <h1 className="text-2xl font-bold text-navy dark:text-cream-100">Manage Availability</h1>
+                <p className="text-sm text-gray-500 dark:text-gray-400">All times shown in Pacific Time (PST)</p>
               </div>
             </div>
           </div>
 
           {calendarConnected === true && (
-            <div className="flex items-center gap-2 rounded-full border border-green-200 bg-green-50 px-3 py-1.5 text-xs font-medium text-green-700">
+            <div className="flex items-center gap-2 rounded-full border border-green-200 bg-green-50 px-3 py-1.5 text-xs font-medium text-green-700 dark:border-green-800 dark:bg-green-950/40 dark:text-green-300">
               <span className="h-2 w-2 rounded-full bg-green-500" />
               Google Calendar connected
             </div>
@@ -489,15 +489,15 @@ export default function DoctorAvailabilityManager() {
         </div>
 
         {calendarConnected === false && (
-          <div className="mb-6 flex items-start gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-5">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-100">
+          <div className="mb-6 flex items-start gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-5 dark:border-amber-800 dark:bg-amber-950/40">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-900/60">
               <svg className="h-4 w-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
             <div className="flex-1">
-              <p className="text-sm font-semibold text-amber-800">Connect Google Calendar for Meet links</p>
-              <p className="mt-0.5 text-sm text-amber-700">Each patient booking will automatically get a unique Google Meet link.</p>
+              <p className="text-sm font-semibold text-amber-800 dark:text-amber-200">Connect Google Calendar for Meet links</p>
+              <p className="mt-0.5 text-sm text-amber-700 dark:text-amber-300">Each patient booking will automatically get a unique Google Meet link.</p>
               <a
                 href="/api/auth/google"
                 className="mt-3 inline-flex items-center gap-2 rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 transition"
@@ -515,24 +515,24 @@ export default function DoctorAvailabilityManager() {
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
               </svg>
-              <p className="text-sm text-gray-500">Loading availability…</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Loading availability…</p>
             </div>
           </div>
         ) : (
           <div className="grid gap-5 lg:grid-cols-[280px_1fr_1fr]">
             {/* Calendar */}
-            <div className="rounded-2xl border border-cream-200 bg-white p-6 shadow-sm lg:sticky lg:top-6 lg:self-start">
-              <h2 className="mb-1 text-sm font-semibold text-gray-800">Select a day</h2>
-              <p className="mb-4 text-xs text-gray-500">Days with a dot already have availability set.</p>
+            <div className="rounded-2xl border border-cream-200 bg-white p-6 shadow-sm lg:sticky lg:top-6 lg:self-start dark:border-neutral-700 dark:bg-neutral-800">
+              <h2 className="mb-1 text-sm font-semibold text-gray-800 dark:text-gray-200">Select a day</h2>
+              <p className="mb-4 text-xs text-gray-500 dark:text-gray-400">Days with a dot already have availability set.</p>
               {calendarGrid}
             </div>
 
             {/* Time ranges for the day */}
-            <div className="rounded-2xl border border-cream-200 bg-white p-6 shadow-sm lg:self-start">
+            <div className="rounded-2xl border border-cream-200 bg-white p-6 shadow-sm lg:self-start dark:border-neutral-700 dark:bg-neutral-800">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <h2 className="text-sm font-semibold text-gray-800">{formatDate(selectedDate)}</h2>
-                    <p className="mt-0.5 text-xs text-gray-500">The hours you're available this day.</p>
+                    <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-200">{formatDate(selectedDate)}</h2>
+                    <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">The hours you're available this day.</p>
                   </div>
                   {!showAddRange && (
                     <button
@@ -546,9 +546,9 @@ export default function DoctorAvailabilityManager() {
                 </div>
 
                 {rangesForSelected.length === 0 && !showAddRange && (
-                  <div className="mt-4 rounded-xl border border-dashed border-cream-300 bg-cream-50 p-6 text-center">
-                    <p className="text-sm text-gray-400">No hours set for this day yet.</p>
-                    <p className="mt-1 text-xs text-gray-400">Click "+ Add time range" to get started.</p>
+                  <div className="mt-4 rounded-xl border border-dashed border-cream-300 bg-cream-50 p-6 text-center dark:border-neutral-600 dark:bg-neutral-900">
+                    <p className="text-sm text-gray-400 dark:text-gray-400">No hours set for this day yet.</p>
+                    <p className="mt-1 text-xs text-gray-400 dark:text-gray-400">Click "+ Add time range" to get started.</p>
                   </div>
                 )}
 
@@ -559,21 +559,21 @@ export default function DoctorAvailabilityManager() {
                       return (
                         <div
                           key={b.id}
-                          className="group flex items-start justify-between gap-4 rounded-xl border border-cream-200 bg-cream-50/60 px-5 py-4"
+                          className="group flex items-start justify-between gap-4 rounded-xl border border-cream-200 bg-cream-50/60 px-5 py-4 dark:border-neutral-700 dark:bg-neutral-900"
                         >
                           <div className="flex flex-col gap-1.5">
-                            <span className="text-base font-semibold text-navy">
+                            <span className="text-base font-semibold text-navy dark:text-cream-100">
                               {formatTimeAmPm(b.startTime)} – {formatTimeAmPm(b.endTime)}
                             </span>
                             <div className="flex flex-wrap items-center gap-2 pt-0.5">
-                              <span className="text-xs text-gray-400">Allow:</span>
+                              <span className="text-xs text-gray-400 dark:text-gray-400">Allow:</span>
                               {DURATION_OPTIONS.map((dur) => {
                                 const checked = allowed.includes(dur);
                                 return (
                                   <label
                                     key={dur}
                                     className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium transition ${
-                                      checked ? "border-cta/40 bg-cta/10 text-cta" : "border-cream-200 text-gray-400 hover:border-cream-300"
+                                      checked ? "border-cta/40 bg-cta/10 text-cta" : "border-cream-200 text-gray-400 hover:border-cream-300 dark:border-neutral-600 dark:text-gray-500 dark:hover:border-slate-500"
                                     }`}
                                   >
                                     <input
@@ -591,7 +591,7 @@ export default function DoctorAvailabilityManager() {
                           <button
                             type="button"
                             onClick={() => removeRange(b.id)}
-                            className="mt-0.5 shrink-0 rounded-lg border border-red-100 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 opacity-0 transition group-hover:opacity-100 hover:bg-red-100"
+                            className="mt-0.5 shrink-0 rounded-lg border border-red-100 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 opacity-0 transition group-hover:opacity-100 hover:bg-red-100 dark:border-red-800 dark:bg-red-950/40 dark:text-red-300 dark:hover:bg-red-900/50"
                           >
                             Remove
                           </button>
@@ -605,21 +605,21 @@ export default function DoctorAvailabilityManager() {
                   <div className="mt-4 rounded-xl border border-cta/30 bg-cta/5 p-4">
                     <div className="flex flex-wrap items-end gap-3">
                       <div>
-                        <label className="block text-xs font-medium text-gray-500 mb-1">From (PST)</label>
+                        <label className="block text-xs font-medium text-gray-500 mb-1 dark:text-gray-400">From (PST)</label>
                         <input
                           type="time"
                           value={newStart}
                           onChange={(e) => setNewStart(e.target.value)}
-                          className="rounded-xl border border-cream-200 bg-white px-3 py-2.5 text-sm text-navy focus:border-cta focus:outline-none focus:ring-2 focus:ring-cta/20"
+                          className="rounded-xl border border-cream-200 bg-white px-3 py-2.5 text-sm text-navy focus:border-cta focus:outline-none focus:ring-2 focus:ring-cta/20 dark:border-neutral-600 dark:bg-neutral-900 dark:text-cream-100"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-gray-500 mb-1">To (PST)</label>
+                        <label className="block text-xs font-medium text-gray-500 mb-1 dark:text-gray-400">To (PST)</label>
                         <input
                           type="time"
                           value={newEnd}
                           onChange={(e) => setNewEnd(e.target.value)}
-                          className="rounded-xl border border-cream-200 bg-white px-3 py-2.5 text-sm text-navy focus:border-cta focus:outline-none focus:ring-2 focus:ring-cta/20"
+                          className="rounded-xl border border-cream-200 bg-white px-3 py-2.5 text-sm text-navy focus:border-cta focus:outline-none focus:ring-2 focus:ring-cta/20 dark:border-neutral-600 dark:bg-neutral-900 dark:text-cream-100"
                         />
                       </div>
                       <button
@@ -636,13 +636,13 @@ export default function DoctorAvailabilityManager() {
                           setShowAddRange(false);
                           setRangeError(null);
                         }}
-                        className="rounded-xl border border-cream-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-600 shadow-sm transition hover:bg-cream-50 hover:text-gray-800"
+                        className="rounded-xl border border-cream-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-600 shadow-sm transition hover:bg-cream-50 hover:text-gray-800 dark:border-neutral-600 dark:bg-neutral-800 dark:text-gray-300 dark:hover:bg-neutral-700 dark:hover:text-gray-100"
                       >
                         Cancel
                       </button>
                     </div>
                     {rangeError && (
-                      <p className="mt-3 flex items-center gap-1.5 text-sm font-medium text-red-600">
+                      <p className="mt-3 flex items-center gap-1.5 text-sm font-medium text-red-600 dark:text-red-400">
                         <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
@@ -653,7 +653,7 @@ export default function DoctorAvailabilityManager() {
                 )}
 
                 {saveMessage === "saved" && (
-                  <p className="mt-3 flex items-center gap-1.5 text-sm font-medium text-green-700">
+                  <p className="mt-3 flex items-center gap-1.5 text-sm font-medium text-green-700 dark:text-green-300">
                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
@@ -661,7 +661,7 @@ export default function DoctorAvailabilityManager() {
                   </p>
                 )}
                 {saveMessage === "error" && (
-                  <p className="mt-3 flex items-start gap-1.5 text-sm font-medium text-red-600">
+                  <p className="mt-3 flex items-start gap-1.5 text-sm font-medium text-red-600 dark:text-red-400">
                     <svg className="h-4 w-4 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -671,19 +671,19 @@ export default function DoctorAvailabilityManager() {
             </div>
 
             {/* Bookable slots preview for this day, derived from the ranges above */}
-            <div className="rounded-2xl border border-cream-200 bg-white p-6 shadow-sm lg:self-start">
+            <div className="rounded-2xl border border-cream-200 bg-white p-6 shadow-sm lg:self-start dark:border-neutral-700 dark:bg-neutral-800">
                 <div className="mb-4">
-                  <h2 className="text-sm font-semibold text-gray-800">Bookable slots</h2>
-                  <p className="mt-0.5 text-xs text-gray-500">Toggle which times patients can actually book, per visit length.</p>
+                  <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Bookable slots</h2>
+                  <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Toggle which times patients can actually book, per visit length.</p>
                 </div>
-                <div className="mb-4 grid grid-cols-3 gap-2 rounded-xl border border-cream-200 bg-cream-50 p-1">
+                <div className="mb-4 grid grid-cols-3 gap-2 rounded-xl border border-cream-200 bg-cream-50 p-1 dark:border-neutral-700 dark:bg-neutral-900">
                   {DURATION_OPTIONS.map((d) => (
                     <button
                       key={d}
                       type="button"
                       onClick={() => setSlotDuration(d)}
                       className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
-                        slotDuration === d ? "bg-cta text-white shadow-sm" : "text-gray-500 hover:text-gray-700"
+                        slotDuration === d ? "bg-cta text-white shadow-sm" : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                       }`}
                     >
                       {d} min
@@ -692,7 +692,7 @@ export default function DoctorAvailabilityManager() {
                 </div>
 
                 {slotsLoading ? (
-                  <div className="flex items-center gap-2 py-6 text-sm text-gray-500">
+                  <div className="flex items-center gap-2 py-6 text-sm text-gray-500 dark:text-gray-400">
                     <svg className="h-4 w-4 animate-spin text-cta" viewBox="0 0 24 24" fill="none">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
@@ -700,9 +700,9 @@ export default function DoctorAvailabilityManager() {
                     Loading slots…
                   </div>
                 ) : candidateSlots.length === 0 ? (
-                  <div className="rounded-xl border border-amber-200 bg-amber-50 p-5">
-                    <p className="text-sm font-semibold text-amber-900">No {slotDuration}-min slots available on this day</p>
-                    <p className="mt-1 text-sm text-amber-700">
+                  <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 dark:border-amber-800 dark:bg-amber-950/40">
+                    <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">No {slotDuration}-min slots available on this day</p>
+                    <p className="mt-1 text-sm text-amber-700 dark:text-amber-300">
                       {rangesForSelected.length > 0
                         ? `None of your time ranges above allow ${slotDuration}-min appointments. Check the "Allow" tags on a range, or add a new one.`
                         : 'Add a time range above (e.g. 9:00–12:00) and slots will appear here automatically.'}
@@ -717,7 +717,7 @@ export default function DoctorAvailabilityManager() {
                           setOfferedStartTimes(candidateSlots.map((s) => s.startTime));
                           setSlotsDirty(true);
                         }}
-                        className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
+                        className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm transition hover:bg-gray-50 dark:border-neutral-600 dark:bg-neutral-800 dark:text-gray-300 dark:hover:bg-neutral-700"
                       >
                         Select all ({candidateSlots.length})
                       </button>
@@ -727,7 +727,7 @@ export default function DoctorAvailabilityManager() {
                           setOfferedStartTimes([]);
                           setSlotsDirty(true);
                         }}
-                        className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
+                        className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm transition hover:bg-gray-50 dark:border-neutral-600 dark:bg-neutral-800 dark:text-gray-300 dark:hover:bg-neutral-700"
                       >
                         Deselect all
                       </button>
@@ -745,19 +745,19 @@ export default function DoctorAvailabilityManager() {
                             className={`flex cursor-pointer flex-col items-center gap-1 rounded-xl border-2 px-3 py-3 text-center transition ${
                               offered
                                 ? "border-cta bg-cta/8 text-cta shadow-sm"
-                                : "border-cream-200 bg-white text-gray-600 hover:border-cream-300 hover:bg-cream-50"
+                                : "border-cream-200 bg-white text-gray-600 hover:border-cream-300 hover:bg-cream-50 dark:border-neutral-600 dark:bg-neutral-900 dark:text-gray-300 dark:hover:border-slate-500 dark:hover:bg-neutral-800"
                             }`}
                           >
                             <input type="checkbox" checked={offered} onChange={() => toggleSlotOffered(slot.startTime)} className="sr-only" />
                             <span className="text-sm font-semibold">{formatTimeAmPm(slot.startTime)}</span>
-                            <span className="text-[11px] text-gray-400">→ {formatTimeAmPm(slot.endTime)}</span>
+                            <span className="text-[11px] text-gray-400 dark:text-gray-500">→ {formatTimeAmPm(slot.endTime)}</span>
                             {offered && <span className="mt-0.5 text-[10px] font-semibold uppercase tracking-wide text-cta">✓ Offered</span>}
                           </label>
                         );
                       })}
                     </div>
 
-                    <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-cream-100 pt-5">
+                    <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-cream-100 pt-5 dark:border-neutral-700">
                       <button
                         type="button"
                         onClick={saveOfferedSlots}
@@ -779,7 +779,7 @@ export default function DoctorAvailabilityManager() {
                         )}
                       </button>
                       {slotsSaveMessage === "saved" && (
-                        <span className="flex items-center gap-1.5 text-sm font-medium text-green-700">
+                        <span className="flex items-center gap-1.5 text-sm font-medium text-green-700 dark:text-green-300">
                           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
@@ -787,7 +787,7 @@ export default function DoctorAvailabilityManager() {
                         </span>
                       )}
                       {slotsSaveMessage === "error" && (
-                        <span className="flex items-center gap-1.5 text-sm font-medium text-red-600">
+                        <span className="flex items-center gap-1.5 text-sm font-medium text-red-600 dark:text-red-400">
                           <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>

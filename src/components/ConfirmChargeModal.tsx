@@ -163,59 +163,59 @@ export default function ConfirmChargeModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-md rounded-lg bg-white shadow-xl">
-        <div className="border-b border-gray-200 px-6 py-4">
-          <h2 className="text-xl font-semibold text-navy">Confirm charge</h2>
-          <p className="mt-1 text-sm text-gray-600">
+      <div className="w-full max-w-md rounded-lg bg-white shadow-xl dark:bg-neutral-800">
+        <div className="border-b border-gray-200 px-6 py-4 dark:border-neutral-700">
+          <h2 className="text-xl font-semibold text-navy dark:text-cream-100">Confirm charge</h2>
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
             Review the amount below. The patient&apos;s card will be charged.
           </p>
         </div>
         <div className="px-6 py-4 space-y-4">
-          <div className="rounded-lg border border-cream-200 bg-gray-50 p-4 space-y-2">
+          <div className="rounded-lg border border-cream-200 bg-gray-50 p-4 space-y-2 dark:border-neutral-700 dark:bg-neutral-700">
             <div>
-              <p className="text-xs text-gray-500">Patient</p>
-              <p className="font-medium text-navy">{appointment?.patient?.name ?? "—"}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Patient</p>
+              <p className="font-medium text-navy dark:text-cream-100">{appointment?.patient?.name ?? "—"}</p>
             </div>
             <div>
-              <p className="text-xs text-gray-500">Appointment</p>
-              <p className="font-medium text-navy">
+              <p className="text-xs text-gray-500 dark:text-gray-400">Appointment</p>
+              <p className="font-medium text-navy dark:text-cream-100">
                 {typeLabel}
                 {appointment?.durationMinutes ? ` · ${appointment.durationMinutes} min` : ""}
               </p>
             </div>
             <div>
-              <p className="text-xs text-gray-500">Date & time</p>
-              <p className="font-medium text-navy">{formattedDate} PST</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Date & time</p>
+              <p className="font-medium text-navy dark:text-cream-100">{formattedDate} PST</p>
             </div>
-            <div className="pt-2 border-t border-cream-200">
-              <p className="text-xs text-gray-500">Amount to charge (from Stripe)</p>
+            <div className="pt-2 border-t border-cream-200 dark:border-neutral-600">
+              <p className="text-xs text-gray-500 dark:text-gray-400">Amount to charge (from Stripe)</p>
               {pricingLoading ? (
-                <p className="font-medium text-gray-500">Loading…</p>
+                <p className="font-medium text-gray-500 dark:text-gray-400">Loading…</p>
               ) : visitPrice ? (
                 <p className="text-lg font-semibold text-cta">{visitPrice.formatted}</p>
               ) : (
-                <p className="font-medium text-amber-700">Pricing not available — will use configured amount</p>
+                <p className="font-medium text-amber-700 dark:text-amber-300">Pricing not available — will use configured amount</p>
               )}
             </div>
           </div>
           {error && (
             <div className="space-y-3">
-              <div className="rounded-lg border border-red-200 bg-red-50 p-3">
-                <p className="text-sm text-red-700">{error}</p>
+              <div className="rounded-lg border border-red-200 bg-red-50 p-3 dark:bg-red-950/40 dark:border-red-800">
+                <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
               </div>
-              <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
-                <p className="text-sm font-medium text-amber-900">Ask the patient to update their card</p>
-                <p className="mt-1 text-xs text-amber-800">
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:bg-amber-950/40 dark:border-amber-800">
+                <p className="text-sm font-medium text-amber-900 dark:text-amber-200">Ask the patient to update their card</p>
+                <p className="mt-1 text-xs text-amber-800 dark:text-amber-300">
                   Share the link below so they can add a new card. Then click &quot;Confirm charge&quot; again.
                 </p>
                 <div className="mt-2 flex items-center gap-2">
-                  <code className="flex-1 truncate rounded bg-white/80 px-2 py-1 text-xs text-amber-900">
+                  <code className="flex-1 truncate rounded bg-white/80 px-2 py-1 text-xs text-amber-900 dark:bg-neutral-900/60 dark:text-amber-200">
                     {updateCardUrl}
                   </code>
                   <button
                     type="button"
                     onClick={copyUpdateCardLink}
-                    className="shrink-0 rounded border border-amber-300 bg-white px-2 py-1 text-xs font-medium text-amber-900 hover:bg-amber-100"
+                    className="shrink-0 rounded border border-amber-300 bg-white px-2 py-1 text-xs font-medium text-amber-900 hover:bg-amber-100 dark:border-amber-700 dark:bg-neutral-800 dark:text-amber-200 dark:hover:bg-neutral-700"
                   >
                     {linkCopied ? "Copied!" : "Copy link"}
                   </button>
@@ -225,24 +225,24 @@ export default function ConfirmChargeModal({
                     type="button"
                     onClick={handleEmailRequestCardUpdate}
                     disabled={emailSending}
-                    className="rounded border border-amber-400 bg-amber-100 px-3 py-1.5 text-xs font-medium text-amber-900 hover:bg-amber-200 disabled:opacity-50"
+                    className="rounded border border-amber-400 bg-amber-100 px-3 py-1.5 text-xs font-medium text-amber-900 hover:bg-amber-200 disabled:opacity-50 dark:border-amber-700 dark:bg-amber-900/60 dark:text-amber-200 dark:hover:bg-amber-900"
                   >
                     {emailSending ? "Sending…" : "Email patient to update card"}
                   </button>
                   {emailSent && (
-                    <span className="text-xs text-green-700">Email sent. Retry charge after they update their card.</span>
+                    <span className="text-xs text-green-700 dark:text-green-300">Email sent. Retry charge after they update their card.</span>
                   )}
                 </div>
               </div>
             </div>
           )}
         </div>
-        <div className="border-t border-gray-200 px-6 py-4 flex justify-end gap-3">
+        <div className="border-t border-gray-200 px-6 py-4 flex justify-end gap-3 dark:border-neutral-700">
           <button
             type="button"
             onClick={onClose}
             disabled={submitting}
-            className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+            className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-neutral-600 dark:bg-neutral-800 dark:text-gray-300 dark:hover:bg-neutral-700"
           >
             Cancel
           </button>

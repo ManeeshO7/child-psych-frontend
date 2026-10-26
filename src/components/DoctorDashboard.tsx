@@ -351,16 +351,16 @@ export default function DoctorDashboard() {
   const processed = requests.filter((r) => r.status !== "pending");
 
   return (
-    <div className="min-h-screen bg-cream-50">
+    <div className="min-h-screen bg-cream-50 dark:bg-neutral-900">
       {notice && (
         <div className="fixed inset-x-0 top-4 z-50 flex justify-center px-4">
           <div
             className={`w-full max-w-xl rounded-lg border px-4 py-3 shadow-lg ${
               notice.type === "success"
-                ? "border-green-200 bg-green-50 text-green-900"
+                ? "border-green-200 bg-green-50 text-green-900 dark:border-green-800 dark:bg-green-950/40 dark:text-green-200"
                 : notice.type === "error"
-                  ? "border-red-200 bg-red-50 text-red-900"
-                  : "border-cream-200 bg-white text-navy"
+                  ? "border-red-200 bg-red-50 text-red-900 dark:border-red-800 dark:bg-red-950/40 dark:text-red-200"
+                  : "border-cream-200 bg-white text-navy dark:border-neutral-700 dark:bg-neutral-800 dark:text-cream-100"
             }`}
             role="status"
             aria-live="polite"
@@ -379,7 +379,7 @@ export default function DoctorDashboard() {
         </div>
       )}
 
-      <header className="sticky top-0 z-40 border-b border-cream-200 bg-white">
+      <header className="sticky top-0 z-40 border-b border-cream-200 bg-white dark:border-neutral-700 dark:bg-neutral-800">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="font-semibold text-cta">
             TelePsych — Doctor Portal
@@ -387,20 +387,20 @@ export default function DoctorDashboard() {
           <button
             type="button"
             onClick={logout}
-            className="rounded-lg border border-cta/40 bg-white px-4 py-2 text-sm font-medium text-cta shadow-sm transition-colors hover:bg-cta hover:text-white focus:outline-none focus:ring-2 focus:ring-cta focus:ring-offset-2"
+            className="rounded-lg border border-cta/40 bg-white px-4 py-2 text-sm font-medium text-cta shadow-sm transition-colors hover:bg-cta hover:text-white focus:outline-none focus:ring-2 focus:ring-cta focus:ring-offset-2 dark:bg-neutral-800"
           >
             Logout
           </button>
         </div>
       </header>
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-        <h1 className="section-heading">Patient Requests</h1>
-        <p className="mt-2 text-gray-600">
+        <h1 className="section-heading dark:text-cream-100">Patient Requests</h1>
+        <p className="mt-2 text-gray-600 dark:text-gray-300">
           Review new patient access requests. Approve to create their account and send login credentials; reject to decline.
         </p>
 
         {loading ? (
-          <p className="mt-10 text-gray-500">Loading…</p>
+          <p className="mt-10 text-gray-500 dark:text-gray-400">Loading…</p>
         ) : (
           <>
             {pending.length > 0 && (
@@ -411,17 +411,17 @@ export default function DoctorDashboard() {
                     <li key={req.id} className="card">
                       <div className="flex flex-wrap justify-between gap-4">
                         <div>
-                          <p className="font-medium text-navy">
+                          <p className="font-medium text-navy dark:text-cream-100">
                             {req.firstName} {req.lastName}
                           </p>
-                          <p className="text-sm text-gray-600">{req.email}</p>
-                          <p className="text-sm text-gray-600">{formatPhone(req.phone)}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-300">{req.email}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-300">{formatPhone(req.phone)}</p>
                           {req.notes && (
-                            <p className="mt-2 text-sm text-gray-600">
+                            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
                               <span className="font-medium">Notes:</span> {req.notes}
                             </p>
                           )}
-                          <p className="mt-1 text-xs text-gray-500">
+                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                             Submitted {new Date(req.createdAt).toLocaleString()}
                             {req.consentAt && (
                               <> · Consent {new Date(req.consentAt).toLocaleString()}</>
@@ -444,12 +444,12 @@ export default function DoctorDashboard() {
                               onChange={(e) =>
                                 setRejectNote((prev) => ({ ...prev, [req.id]: e.target.value }))
                               }
-                              className="rounded-lg border border-cream-200 px-3 py-1.5 text-sm"
+                              className="rounded-lg border border-cream-200 px-3 py-1.5 text-sm dark:border-neutral-600 dark:bg-neutral-900 dark:text-cream-100 dark:placeholder:text-gray-500"
                             />
                             <button
                               onClick={() => reject(req.id)}
                               disabled={!!rejectingId}
-                              className="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-sm text-red-700 hover:bg-red-50"
+                              className="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-sm text-red-700 hover:bg-red-50 dark:border-red-800 dark:bg-neutral-800 dark:text-red-300 dark:hover:bg-red-950/40"
                             >
                               {rejectingId === req.id ? "Rejecting…" : "Reject"}
                             </button>
@@ -457,7 +457,7 @@ export default function DoctorDashboard() {
                         </div>
                       </div>
                       {(req.consentAt || req.questionnaireData) && (
-                        <div className="mt-4 border-t border-cream-200 pt-4">
+                        <div className="mt-4 border-t border-cream-200 pt-4 dark:border-neutral-700">
                           <button
                             type="button"
                             onClick={() =>
@@ -473,18 +473,18 @@ export default function DoctorDashboard() {
                             {expandedPrescreen.has(req.id) ? "Hide" : "Show"} pre-screening responses
                           </button>
                           {expandedPrescreen.has(req.id) && (
-                            <div className="mt-3 rounded-lg bg-gray-50 p-4">
+                            <div className="mt-3 rounded-lg bg-gray-50 p-4 dark:bg-neutral-700">
                               {req.consentAt && (
-                                <p className="text-xs text-gray-600">
+                                <p className="text-xs text-gray-600 dark:text-gray-300">
                                   Consent given: {new Date(req.consentAt).toLocaleString()}
                                 </p>
                               )}
                               {req.questionnaireData && Object.keys(req.questionnaireData).length > 0 ? (
-                                <pre className="mt-2 max-h-80 overflow-auto whitespace-pre-wrap rounded bg-white p-3 text-sm text-navy">
+                                <pre className="mt-2 max-h-80 overflow-auto whitespace-pre-wrap rounded bg-white p-3 text-sm text-navy dark:bg-neutral-800 dark:text-cream-100">
                                   {JSON.stringify(req.questionnaireData, null, 2)}
                                 </pre>
                               ) : (
-                                <p className="mt-2 text-sm text-gray-500">No questionnaire data yet.</p>
+                                <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">No questionnaire data yet.</p>
                               )}
                             </div>
                           )}
@@ -496,7 +496,7 @@ export default function DoctorDashboard() {
               </section>
             )}
             {pending.length === 0 && requests.length === 0 && (
-              <p className="mt-10 text-gray-500">No patient requests yet.</p>
+              <p className="mt-10 text-gray-500 dark:text-gray-400">No patient requests yet.</p>
             )}
             {processed.length > 0 && (
               <section className="mt-10">
@@ -505,10 +505,10 @@ export default function DoctorDashboard() {
                   {processed.map((req) => (
                     <li key={req.id} className="card flex flex-wrap items-center justify-between gap-4">
                       <div>
-                        <p className="font-medium text-navy">
+                        <p className="font-medium text-navy dark:text-cream-100">
                           {req.firstName} {req.lastName} — {req.email}
                         </p>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
                           {req.status === "approved" ? "Approved" : "Rejected"}
                           {req.rejectedNote && `: ${req.rejectedNote}`}
                         </p>
@@ -521,20 +521,20 @@ export default function DoctorDashboard() {
 
             <section className="mt-12">
               <h2 className="text-lg font-semibold text-cta">Appointments</h2>
-              <p className="mt-1 text-sm text-gray-600">Your upcoming and past appointments.</p>
+              <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Your upcoming and past appointments.</p>
               {appointmentsLoading ? (
-                <p className="mt-4 text-gray-500">Loading…</p>
+                <p className="mt-4 text-gray-500 dark:text-gray-400">Loading…</p>
               ) : appointments.length === 0 ? (
-                <p className="mt-4 text-gray-500">No appointments yet.</p>
+                <p className="mt-4 text-gray-500 dark:text-gray-400">No appointments yet.</p>
               ) : (
                 <ul className="mt-4 space-y-3">
                   {formattedAppointments.slice(0, 20).map((a) => (
                     <li key={a.id} className="card flex flex-wrap items-center justify-between gap-4">
                       <div className="min-w-0 flex-1">
-                        <p className="font-medium text-navy">
+                        <p className="font-medium text-navy dark:text-cream-100">
                           {a.formattedDate}
                         </p>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-gray-600 dark:text-gray-300">
                           {a.durationMinutes} min · {a.type}
                           {a.patient?.name && ` · ${a.patient.name}`}
                         </p>
@@ -577,7 +577,7 @@ export default function DoctorDashboard() {
                                 }
                               }}
                               disabled={completingAppointmentId !== null}
-                              className="text-sm font-medium text-green-700 hover:underline disabled:opacity-50"
+                              className="text-sm font-medium text-green-700 hover:underline disabled:opacity-50 dark:text-green-300"
                             >
                               {completingAppointmentId === a.id ? "Marking…" : "Mark as complete"}
                             </button>
@@ -587,16 +587,16 @@ export default function DoctorDashboard() {
                       <span
                         className={`rounded-full px-2 py-0.5 text-xs ${
                           a.status === "scheduled"
-                            ? "bg-green-100 text-green-800"
+                            ? "bg-green-100 text-green-800 dark:bg-green-900/60 dark:text-green-200"
                             : a.status === "card_on_file"
-                              ? "bg-amber-100 text-amber-800"
+                              ? "bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200"
                               : a.status === "paid"
-                                ? "bg-blue-100 text-blue-800"
+                                ? "bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200"
                                 : a.status === "completed"
-                                  ? "bg-purple-100 text-purple-800"
+                                  ? "bg-purple-100 text-purple-800 dark:bg-purple-900/60 dark:text-purple-200"
                                   : a.status === "cancelled"
-                                    ? "bg-gray-100 text-gray-600"
-                                    : "bg-gray-100 text-gray-600"
+                                    ? "bg-gray-100 text-gray-600 dark:bg-neutral-700 dark:text-gray-300"
+                                    : "bg-gray-100 text-gray-600 dark:bg-neutral-700 dark:text-gray-300"
                         }`}
                       >
                         {a.status === "card_on_file" ? "Card on file" : a.status === "paid" ? "Paid" : a.status}

@@ -126,7 +126,7 @@ export default function ConfirmScheduledPage() {
   if (!appointmentId) {
     return (
       <main className="mx-auto max-w-xl px-4 py-10 sm:px-6 lg:px-8">
-        <p className="text-gray-600">No appointment specified.</p>
+        <p className="text-gray-600 dark:text-gray-300">No appointment specified.</p>
         <Link href="/patient" className="mt-4 inline-block text-cta hover:underline">
           ← Back to dashboard
         </Link>
@@ -137,7 +137,7 @@ export default function ConfirmScheduledPage() {
   if (loading || !appointment) {
     return (
       <main className="mx-auto max-w-xl px-4 py-10 sm:px-6 lg:px-8">
-        <p className="text-gray-500">Loading…</p>
+        <p className="text-gray-500 dark:text-gray-400">Loading…</p>
       </main>
     );
   }
@@ -145,7 +145,7 @@ export default function ConfirmScheduledPage() {
   if (appointment.status !== "pending_confirmation") {
     return (
       <main className="mx-auto max-w-xl px-4 py-10 sm:px-6 lg:px-8">
-        <p className="text-gray-600">
+        <p className="text-gray-600 dark:text-gray-300">
           This appointment has already been confirmed or is no longer pending.
         </p>
         <Link href="/patient" className="mt-4 inline-block text-cta hover:underline">
@@ -187,30 +187,30 @@ export default function ConfirmScheduledPage() {
         </Link>
       </p>
       <h1 className="section-heading">Confirm your scheduled appointment</h1>
-      <p className="mt-2 text-gray-600">
+      <p className="mt-2 text-gray-600 dark:text-gray-300">
         Your doctor has scheduled this appointment for you. Add your card (if needed) and confirm to secure it.
       </p>
 
-      <div className="mt-6 rounded-lg border border-cream-200 bg-white p-6 shadow-sm">
+      <div className="mt-6 rounded-lg border border-cream-200 bg-white p-6 shadow-sm dark:border-neutral-700 dark:bg-neutral-800">
         <h2 className="text-lg font-semibold text-cta mb-4">Appointment details</h2>
         <div className="space-y-3">
           <div>
-            <p className="text-sm text-gray-600">Date & Time</p>
-            <p className="text-base font-medium text-navy">
+            <p className="text-sm text-gray-600 dark:text-gray-300">Date & Time</p>
+            <p className="text-base font-medium text-navy dark:text-cream-100">
               {formattedDate}, {formattedTime} PST
             </p>
           </div>
           <div>
-            <p className="text-sm text-gray-600">Duration</p>
-            <p className="text-base font-medium text-navy">
+            <p className="text-sm text-gray-600 dark:text-gray-300">Duration</p>
+            <p className="text-base font-medium text-navy dark:text-cream-100">
               {appointment.durationMinutes} min · {typeLabel}
             </p>
           </div>
           {visitPrice && (
-            <div className="mt-4 pt-4 border-t border-cream-200">
-              <p className="text-sm text-gray-600">Visit Fee</p>
+            <div className="mt-4 pt-4 border-t border-cream-200 dark:border-neutral-700">
+              <p className="text-sm text-gray-600 dark:text-gray-300">Visit Fee</p>
               <p className="text-lg font-semibold text-cta">{visitPrice.formatted}</p>
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                 You will be charged {visitPrice.formatted} after you attend your appointment. Your card on file will be used for payment.
               </p>
             </div>
@@ -219,9 +219,9 @@ export default function ConfirmScheduledPage() {
       </div>
 
       {mustCompleteForms && (
-        <div className="mt-6 rounded-lg border-2 border-amber-200 bg-amber-50 p-4">
-          <p className="text-sm font-semibold text-amber-900">Complete your forms first</p>
-          <p className="mt-1 text-sm text-amber-800">
+        <div className="mt-6 rounded-lg border-2 border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/40">
+          <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">Complete your forms first</p>
+          <p className="mt-1 text-sm text-amber-800 dark:text-amber-300">
             Your doctor has assigned {pendingForms?.pendingCount ?? 0} form{pendingForms?.pendingCount === 1 ? "" : "s"} for you to complete before confirming this appointment. Please complete them in Forms & Documents, then return here to confirm.
           </p>
           <Link
@@ -233,12 +233,12 @@ export default function ConfirmScheduledPage() {
         </div>
       )}
       {!mustCompleteForms && !hasCard ? (
-        <div className="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4">
-          <p className="text-sm font-medium text-amber-900">Add your card first</p>
-          <p className="mt-1 text-sm text-amber-800">
+        <div className="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/40">
+          <p className="text-sm font-medium text-amber-900 dark:text-amber-200">Add your card first</p>
+          <p className="mt-1 text-sm text-amber-800 dark:text-amber-300">
             Save your payment method before confirming. You will be charged after your visit.
             {visitPrice && (
-              <span className="block mt-2 font-medium text-amber-900">
+              <span className="block mt-2 font-medium text-amber-900 dark:text-amber-200">
                 Visit fee: {visitPrice.formatted}
               </span>
             )}
@@ -251,13 +251,13 @@ export default function ConfirmScheduledPage() {
           </Link>
         </div>
       ) : !mustCompleteForms && hasCard ? (
-        <div className="mt-6 rounded-lg border border-cream-200 bg-white p-6 shadow-sm">
+        <div className="mt-6 rounded-lg border border-cream-200 bg-white p-6 shadow-sm dark:border-neutral-700 dark:bg-neutral-800">
           <h2 className="text-lg font-semibold text-cta mb-4">Payment method</h2>
-          <p className="text-sm text-gray-600 mb-3">
+          <p className="text-sm text-gray-600 mb-3 dark:text-gray-300">
             Review your payment method. You will be charged after your appointment.
           </p>
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
-            <p className="font-medium text-navy">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 dark:border-neutral-700 dark:bg-neutral-700">
+            <p className="font-medium text-navy dark:text-cream-100">
               {cardSummary
                 ? `${(cardSummary.brand || "Card").charAt(0).toUpperCase() + (cardSummary.brand || "card").slice(1)} **** ${cardSummary.last4} (exp ${cardSummary.expMonth}/${cardSummary.expYear})`
                 : "Card on file"}
@@ -277,15 +277,15 @@ export default function ConfirmScheduledPage() {
           >
             {confirming ? "Confirming…" : "Keep this card & Confirm appointment"}
           </button>
-          <p className="mt-4 text-xs text-gray-500">
+          <p className="mt-4 text-xs text-gray-500 dark:text-gray-400">
             By confirming, you agree to attend this appointment at the scheduled time. Your card will be charged after the appointment is completed.
           </p>
         </div>
       ) : null}
 
       {error && (
-        <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4">
-          <p className="text-sm text-red-600">{error}</p>
+        <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950/40">
+          <p className="text-sm text-red-600 dark:text-red-300">{error}</p>
         </div>
       )}
     </main>

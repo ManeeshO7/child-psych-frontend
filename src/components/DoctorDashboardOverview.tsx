@@ -160,7 +160,7 @@ export default function DoctorDashboardOverview() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
       ),
-      accent: "bg-amber-50 text-amber-600",
+      accent: "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-300",
       badge: pendingCount !== null && pendingCount > 0,
     },
     {
@@ -188,14 +188,14 @@ export default function DoctorDashboardOverview() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
         </svg>
       ),
-      accent: "bg-violet-50 text-violet-600",
+      accent: "bg-violet-50 text-violet-600 dark:bg-violet-950/40 dark:text-violet-300",
       badge: false,
     },
   ];
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-cream-50/60">
+      <div className="min-h-screen bg-cream-50/60 dark:bg-neutral-900">
         <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
           <div className="flex items-center justify-center py-32">
             <div className="flex flex-col items-center gap-3">
@@ -203,7 +203,7 @@ export default function DoctorDashboardOverview() {
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
               </svg>
-              <p className="text-sm text-gray-500">Loading dashboard…</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Loading dashboard…</p>
             </div>
           </div>
         </div>
@@ -212,18 +212,18 @@ export default function DoctorDashboardOverview() {
   }
 
   return (
-    <div className="min-h-screen bg-cream-50/60">
+    <div className="min-h-screen bg-cream-50/60 dark:bg-neutral-900">
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
 
         {/* Header */}
         <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-medium text-gray-400">{todayLabel}</p>
-            <h1 className="mt-1 text-3xl font-bold text-navy">Doctor Dashboard</h1>
-            <p className="mt-1 text-sm text-gray-500">Welcome back — here&apos;s your practice at a glance.</p>
+            <p className="text-sm font-medium text-gray-400 dark:text-gray-400">{todayLabel}</p>
+            <h1 className="mt-1 text-3xl font-bold text-navy dark:text-cream-100">Doctor Dashboard</h1>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Welcome back — here&apos;s your practice at a glance.</p>
           </div>
           {calendarConnected === true && (
-            <div className="flex items-center gap-2 rounded-full border border-green-200 bg-green-50 px-3 py-1.5 text-xs font-medium text-green-700">
+            <div className="flex items-center gap-2 rounded-full border border-green-200 bg-green-50 px-3 py-1.5 text-xs font-medium text-green-700 dark:border-green-800 dark:bg-green-950/40 dark:text-green-300">
               <span className="h-2 w-2 rounded-full bg-green-500" />
               Google Calendar connected
             </div>
@@ -232,26 +232,26 @@ export default function DoctorDashboardOverview() {
 
         {/* Calendar banners */}
         {searchParams.get("calendar") === "connected" && (
-          <div className="mb-5 flex items-center gap-3 rounded-2xl border border-green-200 bg-green-50 px-5 py-3.5 text-sm text-green-800">
+          <div className="mb-5 flex items-center gap-3 rounded-2xl border border-green-200 bg-green-50 px-5 py-3.5 text-sm text-green-800 dark:border-green-800 dark:bg-green-950/40 dark:text-green-200">
             <svg className="h-4 w-4 shrink-0 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
             Google Calendar connected. New bookings will get a unique Meet link.
           </div>
         )}
         {searchParams.get("calendar") === "error" && (
-          <div className="mb-5 rounded-2xl border border-red-200 bg-red-50 px-5 py-3.5 text-sm text-red-800">
+          <div className="mb-5 rounded-2xl border border-red-200 bg-red-50 px-5 py-3.5 text-sm text-red-800 dark:border-red-800 dark:bg-red-950/40 dark:text-red-200">
             Could not connect Google Calendar. Please try again.
           </div>
         )}
         {calendarConnected === false && (
-          <div className="mb-6 flex items-start gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-5">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-100">
+          <div className="mb-6 flex items-start gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-5 dark:border-amber-800 dark:bg-amber-950/40">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-900/60">
               <svg className="h-4 w-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
             <div>
-              <p className="text-sm font-semibold text-amber-800">Connect Google Calendar</p>
-              <p className="mt-0.5 text-sm text-amber-700">Each patient booking will automatically get a unique Google Meet link.</p>
+              <p className="text-sm font-semibold text-amber-800 dark:text-amber-200">Connect Google Calendar</p>
+              <p className="mt-0.5 text-sm text-amber-700 dark:text-amber-300">Each patient booking will automatically get a unique Google Meet link.</p>
               <a href="/api/auth/google" className="mt-3 inline-flex items-center gap-2 rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 transition">
                 Connect now
               </a>
@@ -265,7 +265,7 @@ export default function DoctorDashboardOverview() {
             <Link
               key={card.href}
               href={card.href}
-              className="group relative flex flex-col rounded-2xl border border-cream-200 bg-white p-6 shadow-sm transition hover:border-cta/30 hover:shadow-md"
+              className="group relative flex flex-col rounded-2xl border border-cream-200 bg-white p-6 shadow-sm transition hover:border-cta/30 hover:shadow-md dark:border-neutral-700 dark:bg-neutral-800"
             >
               {card.badge && (
                 <span className="absolute right-4 top-4 flex h-7 w-7 items-center justify-center rounded-full bg-amber-500 text-xs font-bold text-white shadow-md">
@@ -275,14 +275,14 @@ export default function DoctorDashboardOverview() {
               <div className={`mb-4 flex h-11 w-11 items-center justify-center rounded-xl ${card.accent}`}>
                 {card.icon}
               </div>
-              <p className="text-4xl font-bold text-navy">
+              <p className="text-4xl font-bold text-navy dark:text-cream-100">
                 {card.value === null ? (
-                  <span className="text-gray-300">—</span>
+                  <span className="text-gray-300 dark:text-gray-500">—</span>
                 ) : card.value}
               </p>
-              <p className="text-sm text-gray-400">{card.sublabel}</p>
-              <p className="mt-3 text-base font-semibold text-gray-700 group-hover:text-cta transition-colors">{card.label}</p>
-              <p className="mt-1 text-sm leading-relaxed text-gray-500">{card.desc}</p>
+              <p className="text-sm text-gray-400 dark:text-gray-400">{card.sublabel}</p>
+              <p className="mt-3 text-base font-semibold text-gray-700 group-hover:text-cta transition-colors dark:text-gray-300">{card.label}</p>
+              <p className="mt-1 text-sm leading-relaxed text-gray-500 dark:text-gray-400">{card.desc}</p>
               <div className="mt-4 flex items-center gap-1 text-sm font-medium text-cta opacity-0 transition-opacity group-hover:opacity-100">
                 View <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
               </div>
@@ -291,7 +291,7 @@ export default function DoctorDashboardOverview() {
         </div>
 
         {/* Today's appointments */}
-        <section className="mt-6 rounded-2xl border border-cream-200 bg-white p-6 shadow-sm">
+        <section className="mt-6 rounded-2xl border border-cream-200 bg-white p-6 shadow-sm dark:border-neutral-700 dark:bg-neutral-800">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-cta/10">
@@ -300,8 +300,8 @@ export default function DoctorDashboardOverview() {
                 </svg>
               </div>
               <div>
-                <h2 className="text-sm font-semibold text-gray-800">Today&apos;s Appointments</h2>
-                <p className="text-xs text-gray-400">{todaysAppointments.length} scheduled</p>
+                <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Today&apos;s Appointments</h2>
+                <p className="text-xs text-gray-400 dark:text-gray-400">{todaysAppointments.length} scheduled</p>
               </div>
             </div>
             <Link href="/doctor/appointments" className="text-xs font-medium text-cta hover:underline">
@@ -310,30 +310,30 @@ export default function DoctorDashboardOverview() {
           </div>
 
           {todaysAppointments.length === 0 ? (
-            <div className="mt-5 rounded-xl border border-dashed border-cream-300 bg-cream-50 py-8 text-center">
-              <svg className="mx-auto h-8 w-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="mt-5 rounded-xl border border-dashed border-cream-300 bg-cream-50 py-8 text-center dark:border-neutral-600 dark:bg-neutral-900">
+              <svg className="mx-auto h-8 w-8 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              <p className="mt-2 text-sm text-gray-400">No appointments scheduled for today</p>
+              <p className="mt-2 text-sm text-gray-400 dark:text-gray-400">No appointments scheduled for today</p>
             </div>
           ) : (
             <ul className="mt-5 space-y-3">
               {todaysAppointments.map((apt) => (
                 <li
                   key={apt.id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-cream-200 bg-cream-50/60 px-5 py-4"
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-cream-200 bg-cream-50/60 px-5 py-4 dark:border-neutral-700 dark:bg-neutral-900"
                 >
                   <div className="min-w-0">
-                    <p className="font-semibold text-navy">
+                    <p className="font-semibold text-navy dark:text-cream-100">
                       {apt.patient?.name || "Patient"}
                     </p>
-                    <p className="mt-0.5 text-sm text-gray-600">
+                    <p className="mt-0.5 text-sm text-gray-600 dark:text-gray-300">
                       {formatTimeRangeInPracticeTz(apt.scheduledAt, apt.durationMinutes)} &middot; {typeLabel(apt.type)}
                     </p>
                     <span className={`mt-1.5 inline-block rounded-full px-2 py-0.5 text-[11px] font-medium capitalize ${
                       apt.status === "scheduled" ? "bg-cta/10 text-cta"
-                      : apt.status === "paid" ? "bg-green-100 text-green-700"
-                      : "bg-gray-100 text-gray-600"
+                      : apt.status === "paid" ? "bg-green-100 text-green-700 dark:bg-green-900/60 dark:text-green-200"
+                      : "bg-gray-100 text-gray-600 dark:bg-neutral-700 dark:text-gray-300"
                     }`}>
                       {apt.status.replaceAll("_", " ")}
                     </span>
@@ -353,7 +353,7 @@ export default function DoctorDashboardOverview() {
                     {apt.patient?.id && (
                       <Link
                         href={`/doctor/patients/${encodeURIComponent(apt.patient.id)}`}
-                        className="inline-flex rounded-xl border border-cream-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-cream-50 transition"
+                        className="inline-flex rounded-xl border border-cream-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-cream-50 transition dark:border-neutral-600 dark:bg-neutral-800 dark:text-gray-300 dark:hover:bg-neutral-700"
                       >
                         View notes
                       </Link>
@@ -369,40 +369,40 @@ export default function DoctorDashboardOverview() {
         <div className="mt-6 space-y-3">
           <Link
             href="/doctor/availability"
-            className="group flex items-center justify-between rounded-2xl border border-cream-200 bg-white px-6 py-5 shadow-sm transition hover:border-cta/30 hover:shadow-md"
+            className="group flex items-center justify-between rounded-2xl border border-cream-200 bg-white px-6 py-5 shadow-sm transition hover:border-cta/30 hover:shadow-md dark:border-neutral-700 dark:bg-neutral-800"
           >
             <div className="flex items-center gap-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300">
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                 </svg>
               </div>
               <div>
-                <p className="text-sm font-semibold text-gray-800 group-hover:text-cta transition-colors">Manage Availability</p>
-                <p className="text-xs text-gray-500">Set your available time blocks so patients can book appointments.</p>
+                <p className="text-sm font-semibold text-gray-800 group-hover:text-cta transition-colors dark:text-gray-200">Manage Availability</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Set your available time blocks so patients can book appointments.</p>
               </div>
             </div>
-            <svg className="h-4 w-4 text-gray-300 transition-colors group-hover:text-cta" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="h-4 w-4 text-gray-300 transition-colors group-hover:text-cta dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </Link>
 
           <Link
             href="/doctor/forms"
-            className="group flex items-center justify-between rounded-2xl border border-cream-200 bg-white px-6 py-5 shadow-sm transition hover:border-cta/30 hover:shadow-md"
+            className="group flex items-center justify-between rounded-2xl border border-cream-200 bg-white px-6 py-5 shadow-sm transition hover:border-cta/30 hover:shadow-md dark:border-neutral-700 dark:bg-neutral-800"
           >
             <div className="flex items-center gap-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-violet-600">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-violet-600 dark:bg-violet-950/40 dark:text-violet-300">
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
               <div>
-                <p className="text-sm font-semibold text-gray-800 group-hover:text-cta transition-colors">Manage Forms</p>
-                <p className="text-xs text-gray-500">Edit, activate, or add new forms patients can be assigned.</p>
+                <p className="text-sm font-semibold text-gray-800 group-hover:text-cta transition-colors dark:text-gray-200">Manage Forms</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Edit, activate, or add new forms patients can be assigned.</p>
               </div>
             </div>
-            <svg className="h-4 w-4 text-gray-300 transition-colors group-hover:text-cta" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="h-4 w-4 text-gray-300 transition-colors group-hover:text-cta dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </Link>
